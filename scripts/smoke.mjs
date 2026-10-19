@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -33,6 +33,9 @@ for (const lab of App.labs) {
     if (!doc.querySelector('#app').children.length) fail(lab.id + ' ' + tab + ' rendered nothing');
   }
   S.tab[lab.id] = 'do'; App.render();
+  { const want = window.__T.FLOWS[lab.id].steps.length, got = doc.querySelectorAll('#app .stephead').length;
+    if (want !== got) fail(lab.id + ' shows ' + got + ' step headers, flow defines ' + want);
+    if (!doc.querySelector('#app .mission') || !doc.querySelector('#app .checkpanel')) fail(lab.id + ' missing mission or check panel'); }
   // click every button a few rounds, re-querying after each render
   for (let round = 0; round < 3; round++) {
     for (let i = 0; i < 70; i++) {

@@ -34,6 +34,7 @@
       init(st); const t = totals(st); const [bn, tone] = band(t.total);
       const ctxRisk = (st.aud === 'public' || st.aud === 'cust') && st.role === 'dec';
       return [
+        stepHead('m08', 0),
         box('', label('System profile'),
           h('div', { class: 'split' },
             field(st.sys, v => { st.sys = v; }, { line: 1, id: 'm08-sys', ph: 'System name (anonymise if needed)' }),
@@ -43,6 +44,7 @@
             h('div', null, h('p', { class: 'small' }, 'Who it affects'), seg(AUD, st.aud, v => { st.aud = v; }, 'Who it affects')),
             h('div', null, h('p', { class: 'small' }, 'Its role'), seg(ROLE, st.role, v => { st.role = v; }, 'Its role'))),
           ctxRisk ? h('p', { class: 'flagline' }, 'This system decides on its own about people outside the company. Regulators will expect “Documented” on every test.') : null),
+        stepHead('m08', 1),
         h('div', { class: 'split wide' },
           box('dark', label('Live scorecard'),
             h('div', { class: 'radarbox' }, radar(P.map(p => p.name), [t.vals.map(v => v || 0)], 2, { target: 2, label: 'Principle scores' })),
@@ -61,6 +63,7 @@
             toggle(st.ch[i], st.ch[i] ? 'Regulator challenged this' : 'Regulator: challenge this score', () => { st.ch[i] = !st.ch[i]; }),
             details('What good evidence looks like', false, h('ul', { class: 'plain' }, p.ev.map(e => h('li', null, e))))),
           st.ch[i] && !(st.e[i] || '').trim() && +st.s[i] === 2 ? h('p', { class: 'flagline' }, 'Challenged with no evidence written: counted as 1.') : null)),
+        stepHead('m08', 2),
         box('dark', label('Your 30-day gap'),
           h('p', null, t.weakest.length ? 'Weakest: ' + t.weakest.join(', ') : 'Score the tests to find your weakest principle.'),
           field(st.gap.action, v => { st.gap.action = v; }, { id: 'm08-gap', ph: 'The one thing we will fix in 30 days' }),

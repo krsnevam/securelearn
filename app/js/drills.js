@@ -9,25 +9,25 @@
 function drillState(st, d) { st.dr = st.dr || {}; return st.dr[d.id] || (st.dr[d.id] = {}); }
 
 function drillBlock(lab, st, d) {
-  const ds = drillState(st, d); const rev = !!S.revealed[lab.id];
+  const ds = drillState(st, d);
   const answered = d.items.filter((_, i) => ds[i] != null).length;
   const right = d.type === 'match' ? d.items.filter((it, i) => ds[i] === it.a).length : 0;
-  const head = h('div', { class: 'rowhead' }, h('h3', null, d.title),
+  const head = h('div', { class: 'rowhead' }, h('h3', null, d.title), kindBadge(d.type === 'match' ? 'quiz' : 'decide'),
     pill(answered + ' / ' + d.items.length + ' answered', answered === d.items.length ? 'good' : ''),
-    d.type === 'match' && rev ? pill(right + ' / ' + d.items.length + ' correct', right === d.items.length ? 'good' : 'amber') : null);
+    d.type === 'match' && answered ? pill(right + ' / ' + answered + ' correct', right === answered ? 'good' : 'amber') : null);
   const items = d.items.map((it, i) => {
     const mine = ds[i]; const ok = mine === it.a;
-    return h('div', { class: 'drillitem' + (d.type === 'match' && rev && mine != null ? (ok ? ' right' : ' wrong') : '') },
+    return h('div', { class: 'drillitem' + (d.type === 'match' && mine != null ? (ok ? ' right' : ' wrong') : '') },
       h('p', { class: 'dq' }, h('span', { class: 'kn' }, i + 1), it.t),
       seg(d.cats, mine, v => { if (v == null) delete ds[i]; else ds[i] = v; }, it.t, d.cats.length > 4 || d.wide ? 'multi' : ''),
-      d.type === 'match' && rev ? h('p', { class: 'small' }, h('b', null, (ok ? 'Correct. ' : 'Answer: ' + nameOf(d.cats, it.a) + '. ')), it.why || '') : null);
+      d.type === 'match' && mine != null ? h('p', { class: 'feedback ' + (ok ? 'ok' : 'no') }, h('b', null, ok ? '✓ Correct. ' : '✗ Not quite. The answer is ' + nameOf(d.cats, it.a) + '. '), it.why || '') : null);
   });
   let radarEl = null;
   if (d.radar && answered) {
     radarEl = h('div', { class: 'radarbox' }, radar(d.items.map(it => it.short || it.t), [d.items.map((_, i) => ds[i] != null ? +ds[i] : 0)], d.cats.length, { label: d.title }));
   }
   return box('drill', head, d.intro ? h('p', { class: 'sub' }, d.intro) : null,
-    d.type === 'match' && !rev ? h('p', { class: 'small' }, 'Answers show here after the lab’s answers are revealed.') : null,
+    h('p', { class: 'small' }, d.type === 'match' ? 'Tap an answer for each question. You see right away whether it is correct and why; you can change it.' : 'A self-assessment for your own organization. There is no right answer.'),
     radarEl, items);
 }
 function drillsPane(lab) {
@@ -35,7 +35,7 @@ function drillsPane(lab) {
   if (!ds.length) return [box('', h('p', { class: 'sub' }, 'No drills for this lab.'))];
   const total = sum(ds.map(d => d.items.length));
   const done = sum(ds.map(d => { const x = (st.dr || {})[d.id] || {}; return d.items.filter((_, i) => x[i] != null).length; }));
-  return [box('dark', label('Concept drills'), h('p', null, 'Quick checks on every concept in this module’s slides. Work through them as a table; argue where you disagree.'),
+  return [box('dark', label('Quick quiz'), h('p', null, 'Short questions on every concept in this module’s slides. Each answer is marked straight away with the reason. Work through them as a table and argue where you disagree.'),
     stats(stat(done + ' / ' + total, 'Answered'), stat(ds.length, 'Drills')), meter(total ? done / total : 0, 'accent', 'Drills answered')),
     ds.map(d => drillBlock(lab, st, d))];
 }
@@ -60,20 +60,20 @@ function scenarioCard(lab, st, sc) {
   st.sc = st.sc || {}; const ans = st.sc[sc.id] || (st.sc[sc.id] = {});
   const key = lab.id + ':' + sc.id; const rev = !!S.revealed[key];
   const tone = /^Real/.test(sc.tag) ? 'real' : /^Research/.test(sc.tag) ? 'research' : 'composite';
-  return box('scenario', h('div', { class: 'rowhead' }, h('h3', null, sc.title), h('span', { class: 'tag ' + tone }, sc.tag)),
+  return box('scenario', h('div', { class: 'rowhead' }, h('h3', null, sc.title), h('span', { class: 'tag ' + tone }, sc.tag), kindBadge('write')),
     h('p', { class: 'small' }, label(sc.whatLabel)), h('p', null, sc.what),
     sc.situation ? h('p', { class: 'situation' }, h('b', null, sc.situationLabel + ': '), sc.situation) : null,
     h('div', { class: 'callbox' }, label('Your call · ' + sc.minutes + ' min'),
       sc.q.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, (i + 1) + '. '), q), field(ans[i], v => { ans[i] = v; }, { id: 'sc-' + lab.id + '-' + sc.id + '-' + i, ph: 'Your table’s answer' })))),
     sc.source ? h('p', { class: 'small' }, sc.source) : null,
-    rev ? h('div', { class: 'answer' }, h('b', null, 'Facilitator model answer'), h('p', null, sc.notes)) :
-      h('div', { class: 'btnrow' }, confirmTwice('rev-' + key, 'Reveal the model answer', () => { S.revealed[key] = true; })));
+    rev ? h('div', { class: 'answer' }, h('b', null, 'Expert answer'), h('p', null, sc.notes)) :
+      h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn', onclick: () => { S.revealed[key] = true; commit(); } }, 'Compare with the expert answer')));
 }
 function scenariosPane(lab) {
   const list = scenariosFor(lab); const st = L(lab.id);
   if (!list.length) return [box('', h('p', { class: 'sub' }, 'No scenarios for this module.'))];
   const answered = list.filter(sc => st.sc && st.sc[sc.id] && Object.values(st.sc[sc.id]).some(v => (v || '').trim())).length;
-  return [box('dark', label('Live scenarios'), h('p', null, 'Read (3 min), decide in role (8 min), debrief and compare tables (4 min). Real cases are documented incidents; research findings were shown by researchers; realistic scenarios are composites.'),
+  return [box('dark', label('Case studies'), h('p', null, 'For each case: read it (3 min), discuss in role and write your table’s answers (8 min), then tap Compare with the expert answer and debrief (4 min). Nothing here is scored.'),
     stats(stat(answered + ' / ' + list.length, 'Scenarios answered'))),
     list.map(sc => scenarioCard(lab, st, sc)), discussionCard(lab, st)];
 }
@@ -82,7 +82,7 @@ function discussionCard(lab, st) {
   st.disc = st.disc || {}; const key = lab.id + ':disc';
   return box('discussion', label('Leadership discussion · Module ' + lab.n), h('h3', null, d.q),
     d.items.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, '0' + (i + 1) + ' '), q), field(st.disc[i], v => { st.disc[i] = v; }, { id: 'disc-' + lab.id + '-' + i, ph: 'For our organization…' }))),
-    S.revealed[key] ? h('div', { class: 'answer' }, h('b', null, 'Facilitator note'), h('p', null, d.notes)) : h('div', { class: 'btnrow' }, confirmTwice('rev-' + key, 'Show the facilitator note', () => { S.revealed[key] = true; })));
+    S.revealed[key] ? h('div', { class: 'answer' }, h('b', null, 'Facilitator note'), h('p', null, d.notes)) : h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn', onclick: () => { S.revealed[key] = true; commit(); } }, 'Show the facilitator note')));
 }
 function scenarioAgg(lab, docs) {
   const d = typeof DISCUSSIONS !== 'undefined' && DISCUSSIONS[lab.id];

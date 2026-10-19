@@ -118,8 +118,9 @@
     render(st) {
       init(st); const sc = scores(st); const cur = st.at >= 0 ? toMin(INJ[st.at].clock) : START; const left = DEADLINE - cur;
       return [
+        stepHead('m16', 0),
         capstonePart(st),
-        h('h3', { class: 'sectionhead' }, 'Exercise 3 · Live incident tabletop'),
+        stepHead('m16', 1),
         box('', label('Company profile · fictional'), h('h3', null, 'Meridian Wealth Advisors'),
           h('p', null, '1,200 staff and 400 advisers in Mumbai and Bengaluru. Aria reads client documents, drafts portfolio summaries and can email clients directly. It answers from a knowledge base shared with three other teams’ assistants.'),
           architecture(), h('div', { class: 'roles' }, CREW.map(([, r]) => h('span', { class: 'role' }, r)))),
