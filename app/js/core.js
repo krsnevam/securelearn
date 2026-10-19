@@ -23,7 +23,7 @@ function h(tag, a, ...c) { const e = document.createElement(tag); setAttrs(e, a)
 function s(tag, a, ...c) { const e = document.createElementNS(NS, tag); setAttrs(e, a); addKids(e, c); return e; }
 
 /* ---------- state ---------- */
-const STORE_KEY = 'agentic-ai-labs-v2';
+const STORE_KEY = 'agentic-ai-labs-v3';
 const S = { table: '', tableId: '', labs: {}, revealed: {}, tab: {}, timer: null, collect: {}, present: false };
 try { const raw = localStorage.getItem(STORE_KEY); if (raw) Object.assign(S, JSON.parse(raw)); } catch (e) { /* storage blocked */ }
 if (!S.tableId) S.tableId = 't' + Math.random().toString(36).slice(2, 10);

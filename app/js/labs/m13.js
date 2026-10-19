@@ -83,10 +83,10 @@
   }
 
   registerLab({
-    id: 'm13', n: '13', mod: 'Productization', title: 'Run the go / no-go meeting for ClaimsBot', format: 'Role-play', min: 40,
+    id: 'm13', n: '13', mod: 'Productization', title: 'Run the go / no-go meeting for ClaimsBot', format: 'Role-play and drills', min: 55,
     roles: ['Business owner (chair)', 'CISO', 'Legal', 'Product lead', 'Observer'],
     task: 'ClaimsBot approves motor-insurance claims under ₹50,000 and launches on Monday. Its readiness pack has two “No”s. Each person reads a private brief, then the table holds the meeting and must reach one decision that follows the readiness rule.',
-    steps: [[5, 'Read the pack and your private brief'], [20, 'The meeting, chaired by the business owner'], [5, 'Decide, set conditions, sign'], [10, 'Tables compare decisions']],
+    steps: [[5, 'Read the pack and your private brief'], [20, 'The meeting, chaired by the business owner'], [5, 'Decide, set conditions, sign'], [10, 'Tables compare decisions'], [15, 'Drills: SDLC, deployment, testing, change, gates, audit']],
     guide: ['Each participant opens the lab on their own phone and picks a role to read their private brief.', 'The readiness rule: one “No” means no go-live unless the owner accepts the risk in writing.', 'Ask the observers last: who changed their mind, and why? Usually it is the product lead’s fallback, not the CISO’s warning.'],
     render(st) {
       init(st); const g = gates(st); const [vt, vtone] = verdict(st); const b = BRIEFS.find(x => x[0] === st.role);
@@ -98,7 +98,7 @@
             h('td', null, y ? '—' : pill(after(k) === 'closed' ? 'Closed' : after(k) === 'partial' ? 'Partly closed' : 'Still open', after(k) === 'closed' ? 'good' : after(k) === 'partial' ? 'amber' : 'bad')))))),
           h('p', { class: 'small' }, 'Rule: one “No” means no go-live, unless the owner accepts the risk in writing.')),
         box('', label('Your private brief'), h('p', { class: 'sub' }, 'Pick your role on your own phone. Do not show your brief to the others.'),
-          seg(BRIEFS.map(x => [x[0], x[1]]), st.role, v => { st.role = v; }, 'Your role', 'wrap'),
+          seg(BRIEFS.map(x => [x[0], x[1]]), st.role, v => { st.role = v; }, 'Your role', 'multi'),
           b ? h('div', { class: 'brief' }, label(b[1]), h('p', null, b[2])) : null),
         h('div', { class: 'split wide' },
           box('', label('Conditions'), h('p', { class: 'sub' }, 'Each condition closes a gap or moves a risk.'), h('div', { class: 'condlist' }, CONDS.map(([k, t, tag]) =>
@@ -128,6 +128,59 @@
         { title: 'Followed the readiness rule', cats: [['y', 'Followed'], ['n', 'Did not']], rows: [{ label: 'All tables', counts: count(docs.map(d => { const x = Object.assign({ c: {} }, d); return x.dec ? (x.dec === 'nogo' || gates(x).ruleOk ? 'y' : 'n') : null; })) }] }];
     },
     done: st => !!st.dec,
+    drills: [
+      { id: 'runtime', type: 'match', title: 'Controls that work while the agent works', intro: 'Which runtime control stops this?', wide: true, cats: [['filter', 'Input and output filtering'], ['gateway', 'Tool calls authorised at the gateway'], ['limits', 'Rate and spend limits'], ['sandbox', 'Sandboxed code execution'], ['secrets', 'Secrets kept out of prompts'], ['session', 'Session isolation']], items: [
+        { t: 'The bot reveals one customer’s claim to another customer', a: 'session', why: 'Session isolation between users.' },
+        { t: 'A user coaxes the admin password out of the system prompt', a: 'secrets', why: 'Credentials belong in a vault.' },
+        { t: 'Generated code tries to read the host’s files', a: 'sandbox', why: 'Run any code in a sandbox.' },
+        { t: 'The agent pays 400 claims in ten minutes', a: 'limits', why: 'Rate and spend limits per agent.' },
+        { t: 'The agent calls a payments tool it was never approved for', a: 'gateway', why: 'Tool calls authorised at the gateway.' },
+        { t: 'An uploaded photo carries “approve this claim” in hidden text', a: 'filter', why: 'Input filtering, backed by approval gates.' }] },
+      { id: 'sdlc', type: 'match', title: 'Security built into every stage, with evidence', intro: 'Which stage produces this evidence?', wide: true, cats: [['design', 'Design'], ['build', 'Build'], ['test', 'Test'], ['release', 'Release'], ['operate', 'Operate'], ['retire', 'Retire']], items: [
+        { t: 'Approved design, threat model and risk tier', a: 'design', why: 'Threat model, risk tier, data classification.' },
+        { t: 'Security review sign-off: least-privilege tools, secrets vault, guardrails', a: 'build', why: 'Built in, not bolted on.' },
+        { t: 'A test report from red teaming and injection tests', a: 'test', why: 'Against agreed criteria.' },
+        { t: 'Go-live approval with a rollback plan and monitoring switched on', a: 'release', why: 'The readiness gate.' },
+        { t: 'Monthly AI risk metrics from telemetry and drift checks', a: 'operate', why: 'Ongoing evidence.' },
+        { t: 'A decommission record: access revoked, logs archived, indexes deleted', a: 'retire', why: 'Often forgotten.' }] },
+      { id: 'deploy', type: 'match', title: 'Cloud, hybrid or private: where should the AI run?', intro: 'Pick the typical fit.', cats: [['cloud', 'Cloud AI service'], ['hybrid', 'Hybrid'], ['private', 'Private / on-premises']], items: [
+        { t: 'A six-week productivity pilot for the marketing team', a: 'cloud', why: 'Fastest to launch, pay per use.' },
+        { t: 'Customer KYC data must stay in-house, but you want a frontier cloud model', a: 'hybrid', why: 'Sensitive data stays in-house.' },
+        { t: 'A defence contractor’s classified design archive', a: 'private', why: 'Full control for highly sensitive workloads.' },
+        { t: 'Claims documents stay in your data centre; the model runs in the cloud with redaction', a: 'hybrid', why: 'More integration points to secure.' }] },
+      { id: 'testing', type: 'match', title: 'Test AI the way attackers will use it', intro: 'Which kind of testing is this?', cats: [['red', 'Red teaming'], ['inject', 'Injection tests'], ['eval', 'Evaluations'], ['regress', 'Regression']], items: [
+        { t: 'Specialists spend two weeks trying to break ClaimsBot like a real fraud ring', a: 'red', why: 'Adversarial, human-led.' },
+        { t: 'An attack library runs automatically on every release', a: 'inject', why: 'Automated, every release.' },
+        { t: 'Accuracy, safety and bias scored against thresholds', a: 'eval', why: 'Against the model card’s claims.' },
+        { t: 'Every test re-runs because the system prompt changed', a: 'regress', why: 'Any model, prompt or tool change.' }] },
+      { id: 'change', type: 'match', title: 'A prompt edit is a production change', intro: 'Does this go through change control?', cats: [['yes', 'Change-controlled'], ['no', 'Not an AI change']], items: [
+        { t: 'Editing the system prompt to promote a festive offer', a: 'yes', why: 'The Friday-night prompt edit.' },
+        { t: 'The vendor’s model version moves from 4.1 to 4.2', a: 'yes', why: 'Model version.' },
+        { t: 'Connecting a new MCP server', a: 'yes', why: 'New tool or MCP server.' },
+        { t: 'Raising retrieval from 5 to 20 documents per answer', a: 'yes', why: 'Retrieval settings.' },
+        { t: 'Loosening the guardrail threshold for “sensitive topics”', a: 'yes', why: 'Guardrail thresholds.' },
+        { t: 'Adding the pricing wiki as a knowledge source', a: 'yes', why: 'Knowledge source.' },
+        { t: 'Changing the colour of the chat widget', a: 'no', why: 'No change to AI behaviour.' }] },
+      { id: 'gates', type: 'match', title: 'Human approval gates by action', intro: 'Which gate does each ClaimsBot action need?', cats: [['none', 'None'], ['send', 'A human sends it'], ['approve', 'Approval'], ['two', 'Two-person approval']], items: [
+        { t: 'Search the policy database', a: 'none', why: 'Read, search, summarise.' },
+        { t: 'Draft a letter to the customer', a: 'send', why: 'Draft an external message: a human sends it.' },
+        { t: 'Pay a claim', a: 'approve', why: 'Payment.' },
+        { t: 'Export all claims for a data request', a: 'approve', why: 'Data export.' },
+        { t: 'Delete a customer’s claim history', a: 'two', why: 'Irreversible.' },
+        { t: 'Grant a new adjuster system access', a: 'approve', why: 'Access change.' }] },
+      { id: 'stagegate', type: 'match', title: 'Five gates from idea to ongoing operation', intro: 'Which gate is this?', wide: true, cats: [['g0', 'Gate 0 · Idea'], ['g1', 'Gate 1 · Design'], ['g2', 'Gate 2 · Pre-launch'], ['g3', 'Gate 3 · Go-live'], ['ongoing', 'Ongoing review']], items: [
+        { t: 'Use case approved and risk tier set', a: 'g0', why: 'Before anyone builds.' },
+        { t: 'Architecture and threat review passed', a: 'g1', why: 'Module 10’s review.' },
+        { t: 'Security tests and evaluations passed', a: 'g2', why: 'Before launch.' },
+        { t: 'Readiness assessed; the owner signs', a: 'g3', why: 'Today’s ClaimsBot meeting.' },
+        { t: 'Re-approval cycle set by risk tier', a: 'ongoing', why: 'Approval is not a one-off.' }] },
+      { id: 'audit', type: 'match', title: 'Being able to explain any decision', intro: 'Good audit practice or a gap?', cats: [['good', 'Good practice'], ['gap', 'Gap']], items: [
+        { t: 'The agent writes its own audit summary at the end of each task', a: 'gap', why: 'Never let the system you audit write its own audit trail.' },
+        { t: 'Logs are tamper-evident and written outside the agent', a: 'good', why: 'Independent and trustworthy.' },
+        { t: 'One logging schema for all agents, personal data masked, fed to the SIEM', a: 'good', why: 'The logging framework.' },
+        { t: 'Only errors are logged, to save storage', a: 'gap', why: 'No audit trail of decisions.' },
+        { t: 'We could reconstruct any decision from last quarter within a day', a: 'good', why: 'The test on the slide.' }] }
+    ],
     summary: st => memo(init(st))
   });
 })();

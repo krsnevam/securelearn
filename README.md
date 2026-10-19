@@ -6,20 +6,22 @@ Live app: https://claude.ai/artifact/2SNepAFvq2HNnVBXJ5NLfS
 
 ## The ten labs
 
-| Module | Lab | What participants work with |
-|---|---|---|
-| 07 Responsible AI | Score one of your own AI systems | Six-principle scorecard, live radar, regulator challenges, 30-day gap |
-| 08 Runtime | Sort fifteen agent actions by autonomy | Sort board, agent-loop diagram, risk map, policy generator checked against the sort |
-| 09 Architecture | Review the HR Assistant design | Trust-zone diagram, 7 planted flaws among 14 parts, severity and fix per flag |
-| 10 Trust | Map the blast radius of one hijacked agent | Radial permission map, live attack chains, blast-radius score, "job still works" check |
-| 11 Attacks | Watch an injection, then defend against it | Hidden-text memo demo, context-window view, defence simulator, Gandalf log |
-| 12 RAG & MCP | Run the AI tool approval board | Tool manifests, five-check review, risk meter, conditions, rug-pull update round |
-| 13 Productization | Go / no-go for ClaimsBot | Readiness pack, private role briefs, conditions that close gates, risk grid, decision memo |
-| 14 SOC | Find the attack, build the detection | Two-agent log console, timeline, filters, detection-rule workbench, kill-switch trade-off |
-| 15 Governance | Classify eight use cases, brief the board | EU AI Act tiers, internal 4–12 score, portfolio heat map, drafted board report |
-| 16 Capstone | Incident tabletop: the Aria leak | Five branching injects, crisis timeline, CERT-In clock, four-axis score, after-action report |
+Each lab has five tabs: **Do the lab** (the main exercise and a step clock), **Concept drills** (a quick check on every concept slide), **Scenarios** (the deck's live scenarios and leadership discussion, with model answers behind a reveal), **Answers** (hidden until revealed, with facilitator notes) and **Room** (compares every table).
 
-Every lab has a step-by-step clock, suggested answers that stay hidden until revealed, and facilitator notes.
+| Module | Lab | Main exercise |
+|---|---|---|
+| 07 Trust | Trust architecture: who can a hijacked agent become? | Identity propagation switch, radial blast-radius map, live attack chains |
+| 08 Responsible AI | Score one of your own AI systems | Six-principle scorecard, radar, regulator challenges, 30-day gap |
+| 09 Responsive AI | Autonomy, runtime policy and escalation | Sort board, agent-loop diagram, risk map, policy generator |
+| 10 Architecture review | Architecture review workshop | Warm-up flaw hunt; three exercise workbenches with threat registers, eight questions, verdicts and deliverables |
+| 11 Attacks | Watch an injection, then defend against it | Hidden-text demo, context window, defence simulator, Gandalf log |
+| 12 RAG & MCP | Secure retrieval and the tool approval board | RAG pipeline coverage, permission-aware retrieval demo, MCP approval board with a rug-pull round |
+| 13 Productization | Go / no-go for ClaimsBot | Readiness pack, private briefs, conditions, risk grid, decision memo |
+| 14 SOC | Find the attack, build the detection | Log console, timeline, detection workbench, kill-switch trade-off |
+| 15 Governance | Classify eight use cases, brief the board | EU AI Act and internal tiers, heat map, decision rights, board dashboard, board report |
+| 16 Capstone | RAG, MCP and the Aria incident | Exercises, deliverables checklist, branching tabletop, weighted rubric |
+
+The home screen adds the ten leadership questions, the four program outcomes, and a wrap-up with the six takeaways and a 90-day plan. [COVERAGE.md](COVERAGE.md) maps every deck slide to where the app covers it.
 
 ## Running a session
 
@@ -41,11 +43,14 @@ app/
   css/app.css         design tokens (light and dark) and all component styles
   js/core.js          DOM/SVG builders, state, controls, lab clock, result codes, live room
   js/schematics.js    SVG helpers: edges, radar charts, room-result renderers
+  js/scenario-data.js scenarios and leadership discussions, generated from the deck
+  js/drills.js        Concept drills and Scenarios tabs (render, answers, room, summary)
   js/labs/m07–m16.js  one file per lab: data, render, answers, aggregation, summary
   js/main.js          home, lab view, tabs, presenter mode, room collector
 scripts/
   check-syntax.mjs    syntax-checks every script the page loads
-  smoke.mjs           renders every lab and tab in jsdom, clicks every control, checks result codes
+  smoke.mjs           renders every lab and tab in jsdom, clicks every control, checks result codes,
+                      drill answer keys and that all 34 deck scenarios and 9 discussions are present
 ```
 
 There is no build step: the scripts are plain browser JavaScript, loaded in order.

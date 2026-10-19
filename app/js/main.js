@@ -2,6 +2,36 @@
 /* App shell: home with the program map, the lab view with Do / Answers /
    Room tabs, presenter mode, result codes and the room collector. */
 
+/* From the deck's journey, outcomes, takeaways and 90-day plan slides. */
+const LEAD_Q = { m07: 'What does our AI trust, and on what basis?', m08: 'Are our AI principles real, or just posters?', m09: 'Can our AI adjust safely in real time?',
+  m10: 'Would our AI platform pass a pre-production review?', m11: 'How could someone turn our agents against us?', m12: 'Can our knowledge and tool links be poisoned?',
+  m13: 'What must be true before and after an agent goes live?', m14: 'Would we notice an attack, and could we stop it?', m15: 'Can we prove control to boards and regulators?', m16: 'Can we apply all of it under pressure?' };
+const OUTCOMES = [['Govern', 'Set principles, classify AI risk and run approval decisions with confidence.', 'Modules 08, 09, 15'], ['Challenge', 'Ask the questions that expose weak AI architecture before it ships.', 'Modules 07, 10'],
+  ['Defend', 'Understand how agents are attacked and sponsor the right controls.', 'Modules 11, 12, 14'], ['Prove', 'Report AI risk to boards and regulators with evidence, not assurances.', 'Modules 13, 15']];
+const TAKEAWAYS = ['Agents act, so AI risk is now operating risk.', 'Principles need owners, tests and evidence.', 'Trust nothing by default: users, agents, content or tools.',
+  'Untrusted content plus a powerful tool is the core danger.', 'Real controls live in code at the gateway, not in prompts.', 'If the SOC cannot see it or stop it, it is not ready.'];
+const PLAN = [['know', 'Days 0–30 · Know', ['Complete the AI inventory, vendor AI included', 'Name an owner for every system', 'Score each with the tiering model']],
+  ['control', 'Days 31–60 · Control', ['Launch the AI governance council', 'Make the readiness check a go-live gate', 'Send telemetry from the top three agents to the SOC']],
+  ['prove', 'Days 61–90 · Prove', ['Test a kill switch, timed', 'Run a first AI incident tabletop', 'Present the first quarterly AI risk report']]];
+function planText() {
+  const P = S.plan || {};
+  return ['MY 90-DAY PLAN · ' + (S.table || ''), 'Weakest takeaway: ' + (P.weak != null ? TAKEAWAYS[+P.weak] : 'not chosen'),
+    ...PLAN.map(([k, t, acts]) => t + ': ' + [...acts.filter((_, i) => (P[k] || {})[i]), ...(((P.mine || {})[k] || '').trim() ? [P.mine[k].trim()] : [])].join('; ')),
+    'Questions I can now answer: ' + App.labs.filter(l => (P.ans || {})[l.id]).map(l => 'M' + l.n).join(', ')].join('\n');
+}
+function wrapUp() {
+  const P = S.plan || (S.plan = {}); P.ans = P.ans || {}; P.mine = P.mine || {};
+  return box('wrapup', label('Close · key takeaways and your 90-day plan'),
+    h('h3', null, 'Which of the six takeaways is your organization weakest on?'),
+    seg(TAKEAWAYS.map((t, i) => [String(i), (i + 1) + '. ' + t]), P.weak, v => { if (v == null) delete P.weak; else P.weak = v; }, 'Weakest takeaway', 'multi'),
+    h('h3', null, 'Which of the ten leadership questions can you now answer?'),
+    chips(App.labs.map(l => [l.id, 'M' + l.n + ' · ' + LEAD_Q[l.id]]), P.ans, 'Questions I can answer'),
+    h('h3', null, 'Know, control, prove: your three commitments'),
+    h('div', { class: 'plangrid' }, PLAN.map(([k, t, acts]) => { const set = P[k] || (P[k] = {});
+      return h('div', { class: 'plancol' }, h('b', null, t), chips(acts.map((a, i) => [String(i), a]), set, t),
+        field(P.mine[k], v => { P.mine[k] = v; }, { line: 1, id: 'plan-' + k, ph: 'My own commitment' })); })),
+    h('pre', { class: 'memo-out' }, planText()), h('div', { class: 'btnrow' }, copyButton(planText, 'Copy my 90-day plan')));
+}
 function statusOf(id) {
   const st = S.labs[id]; const lab = App.byId[id];
   if (!st || !Object.keys(st).length) return ['Not started', ''];
@@ -42,28 +72,37 @@ function home() {
     h('div', { class: 'grid' }, App.labs.map(l => { const [t, k] = statusOf(l.id);
       return h('a', { class: 'card', href: '#' + l.id },
         h('div', { class: 'row' }, h('span', { class: 'modnum' }, 'M' + l.n), h('span', { class: 'meta' }, l.mod), h('span', { class: 'status ' + k }, t)),
-        h('h3', null, l.title), h('span', { class: 'meta' }, l.format + ' · ' + l.min + ' min'));
+        h('h3', null, l.title), h('p', { class: 'leadq' }, LEAD_Q[l.id]), h('span', { class: 'meta' }, l.format + ' · ' + l.min + ' min'),
+        h('span', { class: 'meta' }, scenariosFor(l).length + ' scenarios · ' + sum((l.drills || []).map(d => d.items.length)) + ' drill items'));
     })),
     h('div', { class: 'tips' }, [['Take a role', 'People argue harder from a role than as themselves.'], ['Watch the clock', 'Time pressure shows how people really decide.'], ['Compare tables', 'Where tables disagree, there is a lesson.'], ['Use your own systems', 'Share only what you are allowed to; anonymise freely.']]
       .map(([b, t]) => h('div', { class: 'tip' }, h('b', null, b), h('span', null, t)))),
+    h('div', { class: 'outcomes' }, OUTCOMES.map(([v, t, m]) => h('div', { class: 'tip' }, h('b', null, v), h('span', null, t), h('span', { class: 'small' }, m)))),
+    wrapUp(),
     box('facil', label('For facilitators'),
       h('ol', { class: 'plain numbered' },
         h('li', null, 'Project this app on the main screen. Use ', h('b', null, 'Present'), ' inside a lab for larger text.'),
         h('li', null, 'Each table works on a phone and taps ', h('b', null, 'Share with the room'), ' at the end of the lab. That gives a result code to paste into the room chat.'),
         h('li', null, 'On the projected screen, open the lab’s ', h('b', null, 'Room'), ' tab and paste all the codes at once. The room view compares every table.'),
+        h('li', null, 'Every lab also has a Concept drills tab (a quick check on each concept slide) and a Scenarios tab with the module’s live scenarios and leadership discussion, each with the facilitator’s model answer behind a reveal.'),
         h('li', null, 'Reveal answers only after tables have compared. Facilitator notes are at the bottom of each Answers tab.')))
   ];
 }
 
+function fullSummary(lab) {
+  const st = L(lab.id);
+  let main = ''; try { main = lab.summary(st); } catch (e) { main = ''; }
+  return ['Module ' + lab.n + ' · ' + lab.title + ' · ' + (S.table || 'Unnamed table'), main, ...drillSummary(lab, st), ...scenarioSummary(lab, st)].filter(Boolean).join('\n');
+}
 function sharePanel(lab) {
   const st = S.labs[lab.id];
   if (!st || !Object.keys(st).length) return null;
   let code = ''; try { code = makeCode(lab.id); } catch (e) { code = ''; }
-  let text = ''; try { text = lab.summary(st); } catch (e) { text = ''; }
+  let text = ''; try { text = fullSummary(lab); } catch (e) { text = ''; }
   return box('share', label('Share with the room'),
     h('p', { class: 'sub' }, 'Copy your result code and paste it into the room chat. The facilitator pastes all codes into the Room tab to compare tables.'),
     h('div', { class: 'codeline' }, h('code', null, code.length > 64 ? code.slice(0, 60) + '…' : code), h('span', { class: 'small' }, (S.table || 'Unnamed table'))),
-    h('div', { class: 'btnrow' }, copyButton(() => makeCode(lab.id), 'Copy result code'), text ? copyButton(() => lab.summary(L(lab.id)), 'Copy a plain-text summary') : null),
+    h('div', { class: 'btnrow' }, copyButton(() => makeCode(lab.id), 'Copy result code'), text ? copyButton(() => fullSummary(lab), 'Copy a plain-text summary') : null),
     S.table ? null : h('p', { class: 'flagline' }, 'Set your table name on the home screen so the room knows whose result this is.'));
 }
 
@@ -94,6 +133,7 @@ function roomPane(lab) {
     })());
   if (!docs.length) return [collector, box('', h('h3', null, live ? 'Waiting for tables' : 'No results yet'), h('p', { class: 'sub' }, live ? 'Results appear as tables work. Project this tab on the main screen.' : 'Once codes are added, the room view compares every table here.'))].filter(Boolean);
   let blocks = []; try { blocks = lab.agg(docs); } catch (e) { blocks = []; }
+  try { blocks = blocks.concat(drillAgg(lab, docs), scenarioAgg(lab, docs).filter(b => b.items.length)); } catch (e) { /* keep the lab's own blocks */ }
   return [collector,
     h('div', { class: 'roomhead' }, h('b', { class: 'n-tables' }, docs.length + ' table' + (docs.length === 1 ? '' : 's')), h('div', { class: 'roles' }, docs.map(d => h('span', { class: 'role' }, d._table)))),
     blocks.map(b => renderBlock(b, docs.length))].filter(Boolean);
@@ -101,7 +141,8 @@ function roomPane(lab) {
 
 function labView(lab) {
   const st = L(lab.id); const tab = S.tab[lab.id] || 'do'; const rev = !!S.revealed[lab.id];
-  const tabs = [['do', 'Do the lab'], ['ans', 'Answers'], ['room', 'Room']];
+  const nd = sum((lab.drills || []).map(d => d.items.length)), ns = scenariosFor(lab).length;
+  const tabs = [['do', 'Do the lab'], ['drills', 'Concept drills' + (nd ? ' · ' + nd : '')], ['scen', 'Scenarios' + (ns ? ' · ' + ns : '')], ['ans', 'Answers'], ['room', 'Room']];
   let body;
   if (tab === 'do') body = [clockPanel(lab), lab.render(st), sharePanel(lab),
     h('div', { class: 'btnrow end' }, confirmTwice('reset-' + lab.id, 'Clear this lab’s answers', () => { delete S.labs[lab.id]; delete S.revealed[lab.id]; }, 'warn'))];
@@ -110,6 +151,8 @@ function labView(lab) {
       h('div', { class: 'btnrow' }, confirmTwice('hide-' + lab.id, 'Hide answers again', () => { delete S.revealed[lab.id]; }))]
     : [box('locked', h('h3', null, 'Answers are hidden'), h('p', { class: 'sub' }, 'Reveal them after your table has decided and the room has compared. Seeing them first spoils the debate.'),
       confirmTwice('rev-' + lab.id, 'Reveal suggested answers', () => { S.revealed[lab.id] = true; }, 'primary'))];
+  else if (tab === 'drills') body = [drillsPane(lab), sharePanel(lab)];
+  else if (tab === 'scen') body = [scenariosPane(lab), sharePanel(lab)];
   else body = roomPane(lab);
   const idx = App.labs.indexOf(lab), prev = App.labs[idx - 1], next = App.labs[idx + 1];
   return [
@@ -117,7 +160,7 @@ function labView(lab) {
       h('div', { class: 'crumbs' }, h('a', { class: 'back', href: '#' }, '← All labs'), h('span', { class: 'spacer' }),
         h('button', { type: 'button', class: 'btn small', 'aria-pressed': String(!!S.present), onclick: () => { S.present = !S.present; commit(); } }, S.present ? 'Exit present mode' : 'Present')),
       h('span', { class: 'eyebrow' }, 'Module ' + lab.n + ' · ' + lab.mod + ' · ' + lab.format + ' · ' + lab.min + ' min'),
-      h('h1', null, lab.title), h('p', { class: 'task' }, lab.task),
+      h('h1', null, lab.title), h('p', { class: 'leadq big' }, 'The leadership question: ' + LEAD_Q[lab.id]), h('p', { class: 'task' }, lab.task),
       h('div', { class: 'roles' }, lab.roles.map(r => h('span', { class: 'role' }, r)))),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([k, t]) => h('button', { type: 'button', class: 'tab', role: 'tab', 'aria-selected': String(tab === k),
       onclick: () => { S.tab[lab.id] = k; commit(); if (k === 'room') watchRoom(lab.id); } }, t, k === 'ans' && rev ? ' ·' : ''))),
