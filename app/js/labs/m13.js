@@ -92,24 +92,29 @@
       init(st); const g = gates(st); const [vt, vtone] = verdict(st); const b = BRIEFS.find(x => x[0] === st.role);
       const after = k => k === 'sec' ? g.sec : k === 'resp' ? g.resp : null;
       return [
+        stepHead('m13', 0),
         box('', label('Readiness pack'), h('div', { class: 'scroll' }, h('table', null,
           h('tr', null, h('th', null, 'Area'), h('th', null, 'Must be true'), h('th', null, 'Ready?'), h('th', null, 'With your conditions')),
           PACK.map(([k, a, m, y, ev]) => h('tr', null, h('td', null, h('b', null, a)), h('td', null, m, h('div', { class: 'small' }, ev)), h('td', { class: y ? 'yes' : 'no' }, y ? 'Yes' : 'No'),
             h('td', null, y ? '—' : pill(after(k) === 'closed' ? 'Closed' : after(k) === 'partial' ? 'Partly closed' : 'Still open', after(k) === 'closed' ? 'good' : after(k) === 'partial' ? 'amber' : 'bad')))))),
           h('p', { class: 'small' }, 'Rule: one “No” means no go-live, unless the owner accepts the risk in writing.')),
+        stepHead('m13', 1),
         box('', label('Your private brief'), h('p', { class: 'sub' }, 'Pick your role on your own phone. Do not show your brief to the others.'),
           seg(BRIEFS.map(x => [x[0], x[1]]), st.role, v => { st.role = v; }, 'Your role', 'multi'),
           b ? h('div', { class: 'brief' }, label(b[1]), h('p', null, b[2])) : null),
+        stepHead('m13', 2),
         h('div', { class: 'split wide' },
           box('', label('Conditions'), h('p', { class: 'sub' }, 'Each condition closes a gap or moves a risk.'), h('div', { class: 'condlist' }, CONDS.map(([k, t, tag]) =>
             h('button', { type: 'button', class: 'condbtn', 'aria-pressed': String(!!st.c[k]), onclick: () => { if (st.c[k]) delete st.c[k]; else st.c[k] = true; commit(); } },
               h('span', { class: 'sw2' }), h('span', null, t), h('span', { class: 'small' }, ({ sec: 'Closes the security gap', 'sec-part': 'Limits the security gap', resp: 'Closes the response gap', legal: 'Answers legal', scope: 'Limits blast radius', mon: 'Strengthens monitoring', accept: 'Satisfies the rule in writing' })[tag]))))),
           box('', label('Risk grid'), h('p', { class: 'sub' }, 'Grey: before. Blue: after your conditions. Amber: unchanged.'), riskGrid(st),
             h('ul', { class: 'plain small' }, RISKS.map(r => h('li', null, h('b', null, r.id.slice(1) + '. '), r.name))))),
+        stepHead('m13', 3),
         box('dark', label('The decision'), seg(GNG, st.dec, v => { st.dec = v; }, 'Decision'),
           field(st.signer, v => { st.signer = v; }, { line: 1, id: 'm13-signer', ph: 'Who accepts the residual risk in writing?' }),
           field(st.note, v => { st.note = v; }, { id: 'm13-note', ph: st.dec === 'nogo' ? 'What must change before we meet again?' : 'Anything else the record should show' }),
           h('div', { class: 'verdict ' + vtone }, vt)),
+        stepHead('m13', 4),
         box('', label('Decision memo'), h('pre', { class: 'memo-out' }, memo(st)), h('div', { class: 'btnrow' }, copyButton(() => memo(st), 'Copy the memo')))
       ];
     },

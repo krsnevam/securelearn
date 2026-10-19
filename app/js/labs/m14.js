@@ -94,19 +94,24 @@
       });
       return [
         box('dark', label('Console'), stats(stat(marked.length, 'Lines marked'), stat(st.entry != null ? 'Line ' + (+st.entry + 1) : '—', 'Entry point'), stat(cov.total, 'Alerts from your rules'), stat(ks ? 'L' + ks.k : '—', 'Kill switch'))),
+        stepHead('m14', 0),
         timeline(st, rev),
         h('div', { class: 'filters' }, h('span', { class: 'small' }, 'Agent'), chips([['SupportBot', 'SupportBot'], ['FinanceBot', 'FinanceBot']], st.fa, 'Filter by agent'),
           h('span', { class: 'small' }, 'Action'), chips(Object.entries(TYPES), st.ft, 'Filter by action')),
         h('div', { class: 'log', role: 'group', 'aria-label': 'Agent log' }, lines.filter(Boolean).length ? lines : h('p', { class: 'sub', style: 'padding:12px' }, 'No lines match these filters.')),
+        stepHead('m14', 1),
         box('', h('h3', null, 'Where did the attack start?'), marked.length ? seg(marked.map(i => [String(i), 'Line ' + (i + 1)]), st.entry, v => { st.entry = v; }, 'Entry point', 'multi') : h('p', { class: 'sub' }, 'Mark the suspicious lines first.')),
+        stepHead('m14', 2),
         box('', label('Detection workbench'), h('p', { class: 'sub' }, 'Switch rules on. The console rings every line a rule would alert on. Aim to catch the attack with as few false alarms as possible.'),
           h('div', { class: 'rules' }, RULES.map(r => { const rs = ruleStats(r.id); return h('button', { type: 'button', class: 'rulebtn', 'aria-pressed': String(!!st.rules[r.id]), onclick: () => { st.rules[r.id] = !st.rules[r.id]; commit(); } },
             h('span', { class: 'sw2' }), h('b', null, r.name), h('span', { class: 'small' }, rs.hits.length + ' alert' + (rs.hits.length === 1 ? '' : 's') + ' on this log')); })),
           stats(stat(cov.total, 'Alerts'), stat(rev ? cov.caught + ' / 3' : '?', 'Attack lines caught'), stat(rev ? cov.fp : '?', 'False alarms')),
           rev ? null : h('p', { class: 'small' }, 'Precision is shown after the reveal, so you judge the rules on their merits first.')),
+        stepHead('m14', 3),
         box('dark', label('Kill switch'), seg(KILL.map(k => [k.k, k.name]), st.ks, v => { st.ks = v; }, 'Kill-switch level', 'multi'),
           ks ? [h('div', { class: 'tradeoff' }, h('span', null, 'Containment'), meter(ks.contain, 'good', 'Containment'), h('span', null, 'Business disruption'), meter(ks.disrupt, 'bad', 'Disruption')), h('p', { class: 'sub' }, 'Authorised by: ' + ks.who)] : null,
           field(st.why, v => { st.why = v; }, { id: 'm14-why', ph: 'Why this level, in one line' })),
+        stepHead('m14', 4),
         box('', label('Incident ticket'), h('pre', { class: 'memo-out' }, ticket(st)), h('div', { class: 'btnrow' }, copyButton(() => ticket(st), 'Copy the ticket')))
       ];
     },

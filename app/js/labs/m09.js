@@ -109,11 +109,14 @@
       const match = both.filter(c => policyPile(c, pol) === st.c[c.id]).length;
       return [
         box('dark', label('Progress'), stats(stat(sorted + ' / 15', 'Sorted'), ...PILES.map(([k, t]) => stat(count(Object.values(st.c))[k] || 0, t))), meter(sorted / 15, 'accent', 'Cards sorted')),
+        stepHead('m09', 0),
         loopDiagram(st),
         h('div', { class: 'board' }, lane('none', 'Unsorted', 'Tap a pile on each card'), PILES.map(([k, t, sub]) => lane(k, t, sub))),
+        stepHead('m09', 1),
         h('div', { class: 'split wide' },
           box('', label('Risk map'), h('p', { class: 'sub' }, 'Numbers match the cards. Colour shows your pile; grey rings are unsorted. The top-right corner is the danger zone.'), riskMap(st), legend([['in', 'In the loop'], ['on', 'On the loop'], ['auto', 'Autonomous']])),
           box('', label('Consistency check'), warn.length ? warn.map(([c, w, tone]) => h('div', { class: 'warnrow' }, pill(w, tone), h('span', null, c.t))) : h('p', { class: 'sub' }, sorted ? 'No obvious inconsistencies. Check the pairs anyway.' : 'Sort some cards to check them.'))),
+        stepHead('m09', 2),
         box('policy', label('Write it as a policy'), h('p', { class: 'sub' }, 'Choose the rules. The generator applies them to all fifteen cards and compares the result with your sort.'),
           h('div', { class: 'polrow' }, h('span', null, 'Money above this needs approval'), seg(MONEY, pol.money, v => { pol.money = v || '50000'; }, 'Money threshold')),
           h('div', { class: 'polrow' }, h('span', null, 'Rules that force approval'), chips([['irrev', 'Irreversible actions'], ['many', 'Actions that reach many people']], pol, 'Approval rules')),

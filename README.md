@@ -6,7 +6,7 @@ Live app: https://claude.ai/artifact/2SNepAFvq2HNnVBXJ5NLfS
 
 ## The ten labs
 
-Each lab has five tabs: **Do the lab** (the main exercise and a step clock), **Concept drills** (a quick check on every concept slide), **Scenarios** (the deck's live scenarios and leadership discussion, with model answers behind a reveal), **Answers** (hidden until revealed, with facilitator notes) and **Room** (compares every table).
+Each lab has five tabs: **1 · Work task** (a mission card, then numbered steps, each labelled Decide, Simulate, Write or Read, ending with **Check my work**), **2 · Quick quiz** (instant right/wrong feedback with the reason), **3 · Case studies** (the deck’s live scenarios and leadership discussion, each with an expert answer), **Expert answers** (opened by Check my work, with facilitator notes) and **Room** (compares every table).
 
 | Module | Lab | Main exercise |
 |---|---|---|
@@ -44,7 +44,8 @@ app/
   js/core.js          DOM/SVG builders, state, controls, lab clock, result codes, live room
   js/schematics.js    SVG helpers: edges, radar charts, room-result renderers
   js/scenario-data.js scenarios and leadership discussions, generated from the deck
-  js/drills.js        Concept drills and Scenarios tabs (render, answers, room, summary)
+  js/drills.js        Quick quiz and Case studies tabs (render, answers, room, summary)
+  js/flows.js         guided steps per lab and the five kinds of action (Decide, Simulate, Quiz, Write, Read)
   js/labs/m07–m16.js  one file per lab: data, render, answers, aggregation, summary
   js/main.js          home, lab view, tabs, presenter mode, room collector
 scripts/

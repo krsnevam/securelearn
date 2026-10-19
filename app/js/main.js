@@ -54,6 +54,16 @@ function programMap() {
   return svgWrap(W, H, 'Program map of Modules 07 to 16', 560, g);
 }
 
+function howItWorks() {
+  return box('how', label('How these labs work'),
+    h('p', { class: 'howlead' }, 'Each lab is a piece of real leadership work, not a test. You make the calls your job would ask of you, see the consequences, then compare with an expert answer.'),
+    h('ol', { class: 'howsteps' },
+      h('li', null, h('b', null, 'Work task. '), 'Follow the numbered steps. Every step says what kind of action it is.'),
+      h('li', null, h('b', null, 'Check my work. '), 'Scores your choices and opens the expert answers.'),
+      h('li', null, h('b', null, 'Quick quiz. '), 'Short questions on the module’s concepts, with instant feedback.'),
+      h('li', null, h('b', null, 'Case studies. '), 'Real incidents to discuss as a table; write your answer, then compare with the expert’s.')),
+    h('div', { class: 'kindgrid' }, Object.entries(KINDS).map(([k, v]) => h('div', { class: 'kindrow' }, kindBadge(k), h('span', null, v.hint)))));
+}
 function home() {
   const done = App.labs.filter(l => statusOf(l.id)[1] === 'done').length;
   const minutes = sum(App.labs.map(l => l.min));
@@ -64,6 +74,7 @@ function home() {
       h('span', { class: 'eyebrow' }, 'Agentic AI Security & Governance · Modules 07–16'),
       h('h1', null, 'Ten labs where leaders make the calls'),
       h('p', null, 'Each lab puts your table in role, against the clock, on realistic material: architecture diagrams, permission maps, agent logs, tool manifests and a live incident. No technical background needed.')),
+    howItWorks(),
     h('div', { class: 'homegrid' },
       h('div', { class: 'tablebox' }, h('label', { for: 'tbl' }, 'Your table name'), tbl,
         h('p', { class: 'small' }, 'Use the same name on every phone at your table. Answers stay on this device until you share a result code.')),
@@ -84,11 +95,21 @@ function home() {
         h('li', null, 'Project this app on the main screen. Use ', h('b', null, 'Present'), ' inside a lab for larger text.'),
         h('li', null, 'Each table works on a phone and taps ', h('b', null, 'Share with the room'), ' at the end of the lab. That gives a result code to paste into the room chat.'),
         h('li', null, 'On the projected screen, open the lab’s ', h('b', null, 'Room'), ' tab and paste all the codes at once. The room view compares every table.'),
-        h('li', null, 'Every lab also has a Concept drills tab (a quick check on each concept slide) and a Scenarios tab with the module’s live scenarios and leadership discussion, each with the facilitator’s model answer behind a reveal.'),
-        h('li', null, 'Reveal answers only after tables have compared. Facilitator notes are at the bottom of each Answers tab.')))
+        h('li', null, 'Every lab has three parts: 1 · Work task (numbered steps, each labelled Decide, Simulate, Write or Read), 2 · Quick quiz (instant feedback) and 3 · Case studies (the module’s live scenarios and leadership discussion, each with an expert answer).'),
+        h('li', null, 'Ask tables to tap Check my work only after the room has compared. Facilitator notes are at the bottom of each Expert answers tab.')))
   ];
 }
 
+function checkWork(lab) {
+  S.revealed[lab.id] = true; S.tab[lab.id] = 'ans'; commit();
+  const t = document.querySelector('.tabs'); if (t && t.scrollIntoView) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function checkPanel(lab) {
+  const rev = !!S.revealed[lab.id];
+  return h('div', { class: 'checkpanel' }, h('div', null, h('h3', null, rev ? 'Your work has been checked' : 'Done with the work task?'),
+    h('p', { class: 'sub' }, rev ? 'Expert answers are open, and the diagrams above now mark what you got right and what you missed.' : 'Check my work scores your choices and opens the expert answers. You can keep changing your answers afterwards.')),
+    h('button', { type: 'button', class: 'btn primary big', onclick: () => checkWork(lab) }, rev ? 'See expert answers' : 'Check my work'));
+}
 function fullSummary(lab) {
   const st = L(lab.id);
   let main = ''; try { main = lab.summary(st); } catch (e) { main = ''; }
@@ -142,15 +163,15 @@ function roomPane(lab) {
 function labView(lab) {
   const st = L(lab.id); const tab = S.tab[lab.id] || 'do'; const rev = !!S.revealed[lab.id];
   const nd = sum((lab.drills || []).map(d => d.items.length)), ns = scenariosFor(lab).length;
-  const tabs = [['do', 'Do the lab'], ['drills', 'Concept drills' + (nd ? ' · ' + nd : '')], ['scen', 'Scenarios' + (ns ? ' · ' + ns : '')], ['ans', 'Answers'], ['room', 'Room']];
+  const tabs = [['do', '1 · Work task'], ['drills', '2 · Quick quiz' + (nd ? ' (' + nd + ')' : '')], ['scen', '3 · Case studies' + (ns ? ' (' + ns + ')' : '')], ['ans', rev ? 'Expert answers ✓' : 'Expert answers'], ['room', 'Room']];
   let body;
-  if (tab === 'do') body = [clockPanel(lab), lab.render(st), sharePanel(lab),
+  if (tab === 'do') body = [missionCard(lab), clockPanel(lab), lab.render(st), checkPanel(lab), sharePanel(lab),
     h('div', { class: 'btnrow end' }, confirmTwice('reset-' + lab.id, 'Clear this lab’s answers', () => { delete S.labs[lab.id]; delete S.revealed[lab.id]; }, 'warn'))];
   else if (tab === 'ans') body = rev
     ? [lab.answers(st), details('Facilitator notes', false, h('ul', { class: 'plain' }, lab.guide.map(g => h('li', null, g)))),
       h('div', { class: 'btnrow' }, confirmTwice('hide-' + lab.id, 'Hide answers again', () => { delete S.revealed[lab.id]; }))]
-    : [box('locked', h('h3', null, 'Answers are hidden'), h('p', { class: 'sub' }, 'Reveal them after your table has decided and the room has compared. Seeing them first spoils the debate.'),
-      confirmTwice('rev-' + lab.id, 'Reveal suggested answers', () => { S.revealed[lab.id] = true; }, 'primary'))];
+    : [box('locked', h('h3', null, 'Finish the work task first'), h('p', { class: 'sub' }, 'Expert answers open when your table taps Check my work. In a facilitated session, wait until tables have compared in the Room: seeing answers first spoils the debate.'),
+      h('button', { type: 'button', class: 'btn primary', onclick: () => checkWork(lab) }, 'Check my work'))];
   else if (tab === 'drills') body = [drillsPane(lab), sharePanel(lab)];
   else if (tab === 'scen') body = [scenariosPane(lab), sharePanel(lab)];
   else body = roomPane(lab);

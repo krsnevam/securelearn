@@ -61,11 +61,13 @@
     const leaks = who === 'junior' && visible.some(([, a]) => a === 'hr');
     const coveredN = STAGES.filter(([k]) => RCTL.some(c => st.rc[c[0]] && c[3].includes(k))).length;
     return [
+      stepHead('m12', 0),
       box('', label('Part 1 · RAG security'), h('h3', null, 'Every stage of the RAG pipeline can be attacked'),
         h('p', { class: 'sub' }, 'Choose controls for the company knowledge assistant. Each stage turns green when a control covers it.'),
         ragPipeline(st.rc),
         h('div', { class: 'condlist' }, RCTL.map(([k, t, d]) => h('button', { type: 'button', class: 'condbtn', 'aria-pressed': String(!!st.rc[k]), onclick: () => { st.rc[k] = !st.rc[k]; commit(); } }, h('span', { class: 'sw2' }), h('b', null, t), h('span', { class: 'small' }, d)))),
         stats(stat(coveredN + ' / 5', 'Stages covered'), stat(Object.values(st.rc).filter(Boolean).length, 'Controls chosen'))),
+      stepHead('m12', 1),
       box('', label('Data leakage demo'), h('h3', null, '“What are the salary bands for directors?”'),
         h('div', { class: 'split' }, h('div', null, h('p', { class: 'small' }, 'Asked by'), seg([['junior', 'A junior employee'], ['hr', 'The HR director']], who, v => { st.who = v || 'junior'; }, 'Asked by')),
           h('div', null, h('p', { class: 'small' }, 'Retrieval design'), seg([['off', 'Indexed with no permissions'], ['on', 'Permission-aware retrieval']], perm ? 'on' : 'off', v => { st.permOn = v === 'on'; }, 'Retrieval design'))),
@@ -86,7 +88,7 @@
       const allDecided = TOOLS.every(t => st.d[t.id]);
       return [
         ragPart(st),
-        h('h3', { class: 'sectionhead' }, 'Part 2 · The MCP tool approval board'),
+        stepHead('m12', 2),
         TOOLS.map(t => {
           const ck = st.ck[t.id] || (st.ck[t.id] = {}); const r = risk(st, t); const cond = st.cond[t.id] || (st.cond[t.id] = {});
           return box('tool', h('div', { class: 'rowhead' }, h('h3', null, t.name), pill('v' + t.ver, t.ver === 'latest' ? 'amber' : '')),
@@ -99,6 +101,7 @@
             st.d[t.id] === 'reject' ? field(st.why[t.id], v => { st.why[t.id] = v; }, { id: 'm12-why-' + t.id, ph: 'Reason for rejecting, as you would tell the sponsor' }) : null,
             st.d[t.id] === 'approve' && r.fails ? h('p', { class: 'flagline' }, 'Approved with ' + r.fails + ' failed check' + (r.fails > 1 ? 's' : '') + '. The board chair should say why that is acceptable.') : null);
         }),
+        stepHead('m12', 3),
         allDecided ? box('dark rug', label('One month later'), h('h3', null, 'Calendar Helper sends an automatic update'),
           st.d.t1 === 'reject' ? h('p', null, 'You rejected Calendar Helper, so the update never reaches you.') : [
             h('p', { class: 'sub' }, 'Version ' + UPDATE.from + ' → ' + UPDATE.to + '. The vendor says: “Performance improvements.”'),

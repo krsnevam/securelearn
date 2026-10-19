@@ -88,6 +88,7 @@
     render(st) {
       init(st); const R = rows(st); const blind = R.filter(r => r.eu === 'minimal' && (r.it === 'High' || r.it === 'Medium'));
       return [
+        stepHead('m15', 0),
         CASES.map((c, i) => { const r = R[i]; const f = st.f[c.id];
           return box('case', h('div', { class: 'rowhead' }, h('h3', null, (i + 1) + '. ' + c.t), r.it ? pill('Internal: ' + r.it + (r.sc != null ? ' · ' + r.sc + '/12' : ''), toneOf(r.it)) : null),
             h('p', { class: 'small' }, 'EU AI Act tier'), seg(TIERS, st.t[c.id], v => { if (v) st.t[c.id] = v; else delete st.t[c.id]; }, 'EU AI Act tier'),
@@ -95,13 +96,16 @@
               h('div', { class: 'factors' }, FACTORS.map(([fn, lv], fi) => h('div', null, h('p', { class: 'small' }, fn),
                 seg(lv.map((x, j) => [String(j + 1), (j + 1) + ' · ' + x]), f[fi] != null ? String(f[fi]) : undefined, v => { if (v) f[fi] = +v; else delete f[fi]; }, fn, 'multi'))))),
             st.t[c.id] === 'high' && r.sc != null && r.sc < 10 ? h('p', { class: 'small' }, 'Override applied: anything the Act lists as high-risk is High internally, whatever the score.') : null); }),
+        stepHead('m15', 1),
         h('div', { class: 'split wide' },
           box('', label('Portfolio heat map'), h('p', { class: 'sub' }, 'Position by autonomy and impact; size by data sensitivity; colour by internal tier. Dark is prohibited.'), heat(st)),
           box('dark', label('Portfolio'),
             stats(...TIERS.map(([k, t]) => stat(R.filter(r => r.eu === k).length, t))),
             stats(...['High', 'Medium', 'Low'].map(t => stat(R.filter(r => r.it === t).length, 'Internal ' + t.toLowerCase(), toneOf(t)))),
             h('h3', null, 'The Act will not catch these'), blind.length ? h('ul', { class: 'plain' }, blind.map(r => h('li', null, r.c.t))) : h('p', { class: 'sub' }, 'Classify and score to find use cases the Act misses.'))),
+        stepHead('m15', 2),
         governancePart(st),
+        stepHead('m15', 3),
         box('', label('Board report'), h('p', { class: 'sub' }, 'The first lines are drafted from your classification. Add the rest.'),
           [['risks', 'Our top three AI risks'], ['decide', 'Decisions we need from the board'], ['ask', 'Our one ask: budget, people or a policy']].map(([k, p]) => field(st.rep[k], v => { st.rep[k] = v; }, { id: 'm15-' + k, ph: p })),
           h('pre', { class: 'memo-out' }, report(st)), h('div', { class: 'btnrow' }, copyButton(() => report(st), 'Copy the report')))

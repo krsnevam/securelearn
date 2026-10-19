@@ -110,12 +110,14 @@
     const ex = EXS.find(x => x.id === (st.ex || 'copilot')); const w = wbState(st, ex);
     const on = ex.threats.filter(t => (w.t[t.id] || {}).on);
     return [
+      stepHead('m10', 1),
       box('dark', label('Workshop · You are the advisory team'), h('h3', null, 'Is this platform ready for production?'),
         h('p', { class: 'sub' }, 'Three exercises, three deliverables. Pick an exercise; each architecture is reviewed with the five-step method and the eight questions.'),
         seg(EXS.map(x => [x.id, 'Exercise ' + x.n + ' · ' + x.name, x.min + ' min']), ex.id, v => { st.ex = v || 'copilot'; }, 'Exercise', 'multi')),
       box('', label('Exercise ' + ex.n + ' · Architecture'), h('h3', null, ex.name), h('p', null, ex.desc),
         h('div', { class: 'roles' }, ex.parts.map(p => h('span', { class: 'role' }, p))),
         h('p', { class: 'small' }, 'Every crossing between these parts needs three things: verified identity, validated content and a log entry.')),
+      stepHead('m10', 2),
       box('', label('Threat model & risk register'), h('p', { class: 'sub' }, 'Mark each threat that applies, choose the control, name an owner and rate the residual risk the business would accept.'),
         ex.threats.map(t => { const r = w.t[t.id] || (w.t[t.id] = {});
           return h('div', { class: 'threat' + (r.on ? ' on' : '') },
@@ -126,8 +128,11 @@
               h('div', { class: 'split' }, field(r.owner, v => { r.owner = v; }, { line: 1, id: 'wb-' + t.id + '-owner', ph: 'Named owner' + (rev ? ' (suggested: ' + t.owner + ')' : '') }),
                 h('div', null, h('p', { class: 'small' }, 'Residual risk'), seg(RES, r.res, v => { if (v) r.res = v; else delete r.res; }, 'Residual risk')))] : null); }),
         stats(stat(on.length + ' / ' + ex.threats.length, 'Threats marked'), stat(on.filter(t => (w.t[t.id] || {}).owner).length, 'With a named owner'))),
+      stepHead('m10', 3),
       box('', label('The leader’s eight questions'), QUESTIONS.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, (i + 1) + '. '), q), field(w.q[i], v => { w.q[i] = v; }, { line: 1, id: 'wb-' + ex.id + '-q' + i, ph: 'Answer for ' + ex.name })))),
+      stepHead('m10', 4),
       box('dark', label('Your verdict'), VERDICT.map(c => h('div', { class: 'polrow' }, h('span', null, c), seg(VOPT, w.v[c], v => { if (v) w.v[c] = v; else delete w.v[c]; }, c)))),
+      stepHead('m10', 5),
       box('', label('Deliverables'), h('pre', { class: 'memo-out' }, deliverables(st)), h('div', { class: 'btnrow' }, copyButton(() => deliverables(st), 'Copy all three deliverables')))
     ];
   }
@@ -157,6 +162,7 @@
       init(st); const rev = !!S.revealed.m10;
       const flagged = TAPPABLE.filter(k => st.f[k]);
       return [
+        stepHead('m10', 0),
         h('p', { class: 'small' }, 'Tap a box or a labelled flow to flag it. Wide diagram: scroll sideways on a phone, or use the list below.'),
         diagram(st, rev),
         box('dark', label('Review status'), stats(stat(flagged.length, 'Flagged'), stat(flagged.filter(k => st.sev[k] === 'high').length, 'Rated high'), stat(flagged.filter(k => st.fix[k]).length + ' / ' + flagged.length, 'With a fix')), meter(Math.min(1, flagged.length / 7), 'accent', 'Flags against the seven planted')),
