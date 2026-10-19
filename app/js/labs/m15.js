@@ -49,11 +49,41 @@
       st.rep.risks ? 'Top risks: ' + st.rep.risks : '', st.rep.decide ? 'Decisions needed from the board: ' + st.rep.decide : '', st.rep.ask ? 'Our ask: ' + st.rep.ask : ''].filter(x => x !== '').join('\n');
   }
 
+
+  /* ---------- decision rights and the board dashboard ---------- */
+  const DEC4 = [['approve', 'Approve'], ['cond', 'Approve with conditions'], ['defer', 'Defer'], ['reject', 'Reject or retire']];
+  const deciderOf = (eu, it) => eu === 'prohib' ? 'Nobody: prohibited' : it === 'High' ? 'Model approval board' : it === 'Medium' ? 'Governance council' : it === 'Low' ? 'System owner' : 'Classify first';
+  const SUGGEST = { u1: 'cond', u2: 'cond', u3: 'approve', u4: 'cond', u5: 'cond', u6: 'reject', u7: 'cond', u8: 'cond' };
+  const BOARD = [
+    ['inv', '78%', 'Known AI systems in the inventory', 'invest', 'Below 90% means shadow AI you cannot govern: fund discovery.'],
+    ['hra', '9 / 12', 'High-risk systems with a current assessment', 'invest', 'Three high-risk systems run unassessed: set a date or pause them.'],
+    ['crit', '4 · 63 days', 'Open critical findings, and the oldest one’s age', 'stop', 'A critical finding open for two months breaks most risk appetites: fix or stop.'],
+    ['inc', '3 · 0 high', 'AI incidents this quarter, by severity', 'accept', 'Low severity and handled: accept, and watch the trend.'],
+    ['mttc', '42 min', 'Median time to contain an AI incident', 'invest', 'Leaking agents need minutes, not most of an hour: invest in level 1 automation.'],
+    ['bom', '35%', 'Vendor AI with an AI bill of materials', 'invest', 'Make AI-BOM a contract requirement at renewal.']];
+  const BD = [['accept', 'Accept'], ['invest', 'Invest'], ['stop', 'Stop']];
+  function governancePart(st) {
+    st.dd = st.dd || {}; st.bd = st.bd || {}; st.th = st.th || {};
+    const R = rows(st);
+    return [
+      box('', label('Leadership decision framework'), h('h3', null, 'Four decisions, clear rights to make them'),
+        h('p', { class: 'sub' }, 'Decide each use case. Who may decide follows its tier: low by the system owner, medium by the governance council, high by the model approval board, prohibited never.'),
+        CASES.map((c, i) => h('div', { class: 'decrow' }, h('div', null, h('b', null, (i + 1) + '. ' + c.t), h('p', { class: 'small' }, 'Decided by: ' + deciderOf(R[i].eu, R[i].it))),
+          seg(DEC4, st.dd[c.id], v => { if (v) st.dd[c.id] = v; else delete st.dd[c.id]; }, 'Decision for ' + c.t, 'multi'),
+          R[i].eu === 'prohib' && st.dd[c.id] && st.dd[c.id] !== 'reject' ? h('p', { class: 'flagline' }, 'A prohibited use cannot be approved by anyone.') : null))),
+      box('', label('Board dashboard · fictional bank, Q3'), h('h3', null, 'Six numbers for the board’s AI risk report'),
+        h('p', { class: 'sub' }, 'Give each number a threshold that triggers a decision, then make the call: accept, invest or stop.'),
+        h('div', { class: 'boardgrid' }, BOARD.map(([k, v, t]) => h('div', { class: 'kpi' }, h('b', null, v), h('span', null, t),
+          field(st.th[k], x => { st.th[k] = x; }, { line: 1, id: 'm15-th-' + k, ph: 'Threshold, e.g. “below 90% → invest”' }),
+          seg(BD, st.bd[k], x => { if (x) st.bd[k] = x; else delete st.bd[k]; }, 'Decision for ' + t)))))
+    ];
+  }
+
   registerLab({
-    id: 'm15', n: '15', mod: 'Governance', title: 'Classify eight use cases, then brief the board', format: 'Card sort and writing', min: 45,
+    id: 'm15', n: '15', mod: 'Governance', title: 'Classify eight use cases, then brief the board', format: 'Classification, board decisions and drills', min: 60,
     roles: ['Risk lead', 'Legal counsel', 'Business owner'],
     task: 'Put each use case in its EU AI Act tier, then score it on the internal four-factor model. The heat map and portfolio update as you go. Finish with a one-page board report drafted from your classification.',
-    steps: [[20, 'Classify and score the eight use cases'], [5, 'Read the heat map: where do the Act and you disagree?'], [15, 'Finish the board report'], [5, 'Two tables read theirs aloud']],
+    steps: [[15, 'Classify and score the eight use cases'], [5, 'Read the heat map: where do the Act and you disagree?'], [10, 'Decide each use case; set board thresholds'], [10, 'Finish the board report'], [15, 'Drills: operating model, standards, dates, assurance, maturity'], [5, 'Two tables read theirs aloud']],
     guide: ['This is an illustrative internal model; confirm EU AI Act details with legal counsel.', 'Items 5 and 7 are where tables disagree: the Act does not list them, but they act alone on people or money.', 'Push tables to say “stop” on item 6 in the board report, not “review”.'],
     render(st) {
       init(st); const R = rows(st); const blind = R.filter(r => r.eu === 'minimal' && (r.it === 'High' || r.it === 'Medium'));
@@ -63,7 +93,7 @@
             h('p', { class: 'small' }, 'EU AI Act tier'), seg(TIERS, st.t[c.id], v => { if (v) st.t[c.id] = v; else delete st.t[c.id]; }, 'EU AI Act tier'),
             details(r.sc == null ? 'Score it on the internal model' : 'Internal score ' + r.sc + ' / 12', Object.keys(f).length > 0 && r.sc == null,
               h('div', { class: 'factors' }, FACTORS.map(([fn, lv], fi) => h('div', null, h('p', { class: 'small' }, fn),
-                seg(lv.map((x, j) => [String(j + 1), (j + 1) + ' · ' + x]), f[fi] != null ? String(f[fi]) : undefined, v => { if (v) f[fi] = +v; else delete f[fi]; }, fn, 'wrap'))))),
+                seg(lv.map((x, j) => [String(j + 1), (j + 1) + ' · ' + x]), f[fi] != null ? String(f[fi]) : undefined, v => { if (v) f[fi] = +v; else delete f[fi]; }, fn, 'multi'))))),
             st.t[c.id] === 'high' && r.sc != null && r.sc < 10 ? h('p', { class: 'small' }, 'Override applied: anything the Act lists as high-risk is High internally, whatever the score.') : null); }),
         h('div', { class: 'split wide' },
           box('', label('Portfolio heat map'), h('p', { class: 'sub' }, 'Position by autonomy and impact; size by data sensitivity; colour by internal tier. Dark is prohibited.'), heat(st)),
@@ -71,6 +101,7 @@
             stats(...TIERS.map(([k, t]) => stat(R.filter(r => r.eu === k).length, t))),
             stats(...['High', 'Medium', 'Low'].map(t => stat(R.filter(r => r.it === t).length, 'Internal ' + t.toLowerCase(), toneOf(t)))),
             h('h3', null, 'The Act will not catch these'), blind.length ? h('ul', { class: 'plain' }, blind.map(r => h('li', null, r.c.t))) : h('p', { class: 'sub' }, 'Classify and score to find use cases the Act misses.'))),
+        governancePart(st),
         box('', label('Board report'), h('p', { class: 'sub' }, 'The first lines are drafted from your classification. Add the rest.'),
           [['risks', 'Our top three AI risks'], ['decide', 'Decisions we need from the board'], ['ask', 'Our one ask: budget, people or a policy']].map(([k, p]) => field(st.rep[k], v => { st.rep[k] = v; }, { id: 'm15-' + k, ph: p })),
           h('pre', { class: 'memo-out' }, report(st)), h('div', { class: 'btnrow' }, copyButton(() => report(st), 'Copy the report')))
@@ -84,6 +115,9 @@
         answer('The key lesson', 'The Act’s tier and your internal risk are different questions. The Act sets the legal floor; your internal model decides the controls.'),
         h('div', { class: 'scroll' }, h('table', null, h('tr', null, h('th', null, 'Use case'), h('th', null, 'EU AI Act'), h('th', null, 'Yours'), h('th', null, 'Suggested internal'), h('th', null, 'Why')),
           CASES.map(c => { const sc = sum(c.f); return h('tr', { class: st.t[c.id] && st.t[c.id] !== c.eu ? 'mismatch' : '' }, h('td', null, c.t), h('td', null, nameOf(TIERS, c.eu)), h('td', null, st.t[c.id] ? nameOf(TIERS, st.t[c.id]) : '—'), h('td', null, internal(sc, c.eu) + ' · ' + sc + '/12'), h('td', null, c.why)); }))),
+        h('div', { class: 'scroll' }, h('table', null, h('tr', null, h('th', null, 'Board number'), h('th', null, 'Suggested call'), h('th', null, 'Yours'), h('th', null, 'Why')),
+          BOARD.map(([k, v, t, a, w]) => h('tr', { class: (st.bd || {})[k] && st.bd[k] !== a ? 'mismatch' : '' }, h('td', null, v + ' · ' + t), h('td', null, nameOf(BD, a)), h('td', null, nameOf(BD, (st.bd || {})[k])), h('td', null, w))))),
+        answer('Decisions on the eight use cases', CASES.map((c, i) => (i + 1) + ': ' + nameOf(DEC4, SUGGEST[c.id])).join(' · ') + '. Governance is rarely “no”: most uses are “yes, with these conditions”. Item 6 is the exception.'),
         answer('Confirm with counsel', 'This key is a teaching summary. Obligations and timelines under the Act are phased; check current guidance before relying on it.')
       ];
     },
@@ -92,6 +126,41 @@
         { type: 'texts', title: 'Board asks', items: docs.filter(d => d.rep && d.rep.ask).map(d => [d._table, d.rep.ask]) }];
     },
     done: st => !!st.t && Object.keys(st.t).length === 8,
+    drills: [
+      { id: 'euact', type: 'match', title: 'EU AI Act: true or false?', cats: [['true', 'True'], ['false', 'False']], items: [
+        { t: 'Fines can reach €35 million or 7% of global turnover', a: 'true', why: 'For the most serious breaches.' },
+        { t: 'The Act does not apply to Indian firms', a: 'false', why: 'It applies to non-EU firms whose AI is used in the EU.' },
+        { t: 'Chatbots must disclose that they are AI', a: 'true', why: 'Limited risk carries transparency duties.' },
+        { t: 'Spam filters and games carry new duties', a: 'false', why: 'Minimal risk: no new duties.' },
+        { t: 'The Digital Omnibus delay paused the prohibitions too', a: 'false', why: 'Prohibitions and GPAI duties stayed in force.' }] },
+      { id: 'opmodel', type: 'match', title: 'Who decides what, at three levels', intro: 'Which level owns this?', cats: [['board', 'Board & executive'], ['council', 'AI governance council'], ['owners', 'System owners & teams'], ['audit', 'Independent assurance']], items: [
+        { t: 'Set the AI risk appetite', a: 'board', why: 'Sets appetite, approves policy, reviews quarterly.' },
+        { t: 'Act as the model approval board for high-risk uses', a: 'council', why: 'Risk, legal, security, data and business.' },
+        { t: 'Monitor the claims agent day to day', a: 'owners', why: 'First-line accountability.' },
+        { t: 'Test whether the controls at all three levels actually work', a: 'audit', why: 'Internal audit.' },
+        { t: 'Approve the AI policy', a: 'board', why: 'Board-level.' },
+        { t: 'Run the agent and fix its findings', a: 'owners', why: 'Build, run and monitor.' }] },
+      { id: 'standards', type: 'match', title: 'How law, standards and frameworks fit together', intro: 'Which instrument answers this question?', wide: true, cats: [['euact', 'EU AI Act'], ['iso42001', 'ISO/IEC 42001'], ['iso23894', 'ISO/IEC 23894'], ['nist', 'NIST AI RMF'], ['dpdp', 'India DPDP Act']], items: [
+        { t: 'What must we do, and by when? (binding in the EU)', a: 'euact', why: 'Regulation.' },
+        { t: 'How do we run and prove it? (certifiable)', a: 'iso42001', why: 'Build once on ISO 42001, then map to each regulation.' },
+        { t: 'How do we assess AI risk?', a: 'iso23894', why: 'Risk guidance.' },
+        { t: 'What should we govern and measure?', a: 'nist', why: 'Voluntary framework.' },
+        { t: 'How must personal data be handled in India?', a: 'dpdp', why: 'Data law, duties phased in by May 2027.' }] },
+      { id: 'eudates', type: 'match', title: 'EU AI Act: obligations phased to 2028', intro: 'When does each obligation apply? (High-risk dates as moved by the 2026 Digital Omnibus.)', wide: true, cats: [['2025feb', '2 Feb 2025'], ['2025aug', '2 Aug 2025'], ['2027dec', '2 Dec 2027'], ['2028aug', '2 Aug 2028']], items: [
+        { t: 'Prohibitions and AI literacy', a: '2025feb', why: 'Already in force.' },
+        { t: 'General-purpose AI model duties', a: '2025aug', why: 'Already in force.' },
+        { t: 'High-risk uses in Annex III, such as hiring and credit', a: '2027dec', why: 'Moved from August 2026.' },
+        { t: 'High-risk AI in regulated products', a: '2028aug', why: 'The last phase.' }] },
+      { id: 'assure', type: 'match', title: 'From controls on paper to evidence on demand', intro: 'Which layer is this?', cats: [['framework', 'Control framework'], ['assurance', 'Assurance model'], ['audit', 'Auditability']], items: [
+        { t: 'Each control has one owner and maps to NIST AI RMF and ISO 42001', a: 'framework', why: 'Define the controls.' },
+        { t: 'Internal audit tests a sample of controls each quarter', a: 'assurance', why: 'Check they work.' },
+        { t: 'Model cards, approvals and risk acceptances ready to hand over', a: 'audit', why: 'Prove it on request.' },
+        { t: 'System owners self-assess, then the risk function reviews', a: 'assurance', why: 'Lines of assurance.' },
+        { t: 'Logs and incident records kept for the retention period', a: 'audit', why: 'Evidence.' }] },
+      { id: 'maturity', type: 'rate', radar: true, title: 'AI control maturity: where are we today?', intro: 'Score your own organization in each domain. 1 Ad hoc · 2 Defined · 3 Managed · 4 Measured · 5 Optimised.', cats: [['1', '1 · Ad hoc'], ['2', '2 · Defined'], ['3', '3 · Managed'], ['4', '4 · Measured'], ['5', '5 · Optimised']], items: [
+        { t: 'Governance', short: 'Governance' }, { t: 'Inventory', short: 'Inventory' }, { t: 'Architecture & trust', short: 'Architecture' },
+        { t: 'Secure delivery', short: 'Delivery' }, { t: 'Monitoring & response', short: 'Monitoring' }, { t: 'Compliance', short: 'Compliance' }] }
+    ],
     summary: st => report(init(st))
   });
 })();

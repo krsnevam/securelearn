@@ -80,15 +80,46 @@
     paint(); cbTimer = setInterval(paint, 250);
   }
 
+
+  /* ---------- capstone structure: exercises, deliverables, rubric ---------- */
+  const EXER = [
+    { id: 'rag', n: 1, name: 'Secure RAG assessment', mods: 'Modules 10, 12', w: 30, task: 'Assess the Secure Enterprise RAG Platform against the six controls and find the leakage path.', lab: 'm12',
+      deliver: 'RAG Security Assessment Report', items: ['Architecture review summary', 'Trust boundary analysis', 'Attack surface assessment', 'Risk assessment matrix', 'Control recommendations', 'Monitoring and detection strategy', 'Governance recommendations', 'Executive summary'] },
+    { id: 'mcp', n: 2, name: 'MCP security review', mods: 'Modules 07, 12, 13', w: 30, task: 'Review the MCP-Enabled Risk Advisory Assistant’s servers, permissions and identity flow.', lab: 'm10',
+      deliver: 'Secure MCP Architecture Blueprint', items: ['MCP architecture diagram', 'Trust architecture diagram', 'Attack surface assessment', 'Authorisation framework', 'Isolation strategy', 'Monitoring architecture', 'Governance framework', 'Executive recommendations'] },
+    { id: 'soc', n: 3, name: 'Incident simulation', mods: 'Modules 14, 15', w: 40, task: 'The live tabletop below: an AI agent leaks data. Detect, contain and report, against the clock.', lab: null,
+      deliver: 'SOC Investigation Report + Executive Risk Briefing', items: ['Incident timeline and attack analysis', 'Detection findings and root cause', 'Containment and recovery actions', 'Lessons learned', 'Business impact and risk', 'Strategic roadmap'] }];
+  const RUBRIC = [['rag', 'Enterprise RAG security assessment', 30, 'Architecture understanding, trust boundaries, risks found, sound controls'], ['mcp', 'MCP security architecture review', 30, 'Review quality, trust and authorisation analysis, secure design'],
+    ['soc', 'SOC investigation & incident response', 25, 'Detection, analysis quality, response and containment'], ['gov', 'Executive governance & reporting', 15, 'Governance assessment, risk communication, clarity']];
+  function rubricScore(st) { const r = st.rub || {}; const scored = RUBRIC.filter(([k]) => r[k]); if (!scored.length) return null; return Math.round(sum(RUBRIC.map(([k, , w]) => (r[k] ? (+r[k] / 5) * w : 0)))); }
+  function capstonePart(st) {
+    st.dl = st.dl || {}; st.rub = st.rub || {};
+    return [
+      box('dark', label('Capstone · three scenarios, three leadership decisions'),
+        h('div', { class: 'exgrid' }, EXER.map(e => h('div', { class: 'excard' }, h('span', { class: 'label' }, 'Exercise ' + e.n + ' · ' + e.mods), h('b', null, e.name), h('p', { class: 'small' }, e.task),
+          h('p', { class: 'small' }, 'Deliverable: ' + e.deliver + ' · ' + (e.id === 'soc' ? '25% + 15%' : e.w + '%')),
+          e.lab ? h('a', { href: '#' + e.lab, class: 'small' }, 'Use the Module ' + e.lab.slice(1) + ' lab as your workbench →') : null)))),
+      box('', label('Deliverables checklist'), EXER.map(e => { const set = st.dl[e.id] || (st.dl[e.id] = {}); const done = e.items.filter((_, i) => set[i]).length;
+        return h('div', { class: 'dlgroup' }, h('div', { class: 'rowhead' }, h('b', null, e.deliver), pill(done + ' / ' + e.items.length, done === e.items.length ? 'good' : '')),
+          chips(e.items.map((t, i) => [String(i), t]), set, e.deliver)); })),
+      box('', label('Assessment rubric · self-score'), h('p', { class: 'sub' }, 'Teams are scored on the decisions they make and defend, not on technical depth. Score your team 1 to 5 on each criterion.'),
+        RUBRIC.map(([k, t, w, d]) => h('div', { class: 'decrow' }, h('div', null, h('b', null, t + ' · ' + w + '%'), h('p', { class: 'small' }, d)),
+          seg([['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5']], st.rub[k], v => { if (v) st.rub[k] = v; else delete st.rub[k]; }, t))),
+        stats(stat(rubricScore(st) == null ? '—' : rubricScore(st) + '%', 'Weighted self-score')))
+    ];
+  }
+
   registerLab({
-    id: 'm16', n: '16', mod: 'Capstone', title: 'Incident tabletop: the Aria leak', format: 'Simulation', min: 90,
+    id: 'm16', n: '16', mod: 'Capstone', title: 'Capstone: RAG, MCP and the Aria incident', format: 'Three exercises, cases and rubric', min: 300,
     roles: CREW.map(c => c[1]),
-    task: 'Your table is Meridian’s crisis team. Reveal one inject every 10 minutes, choose what you do, record who owns it and see what happens next. Decisions cannot be undone. The regulatory clock is running.',
-    steps: [[10, 'Take roles; read the profile and architecture'], [50, 'Five injects, one every 10 minutes'], [15, 'Write the client and regulator notices'], [15, 'Debrief: what would have prevented each step?']],
+    task: 'Three capstone exercises across five hours: a secure RAG assessment, an MCP security review and a live incident tabletop, plus three capstone cases in the Scenarios tab. In the tabletop your table is Meridian’s crisis team: reveal one inject every 10 minutes, choose what you do, record who owns it and see what happens next. The regulatory clock is running.',
+    steps: [[70, 'Exercise 1: Secure RAG assessment and report'], [70, 'Exercise 2: MCP security review and blueprint'], [10, 'Exercise 3: take roles; read the profile'], [50, 'Five injects, one every 10 minutes'], [15, 'Write the client and regulator notices'], [15, 'Debrief'], [60, 'Capstone cases A–C, rubric and executive briefing'], [10, 'Self-score against the rubric']],
     guide: ['Hold to the clock even when tables protest. Revealing an inject also jumps the lab clock to that inject.', 'At inject 4, phone or walk up to each table’s comms lead and ask for a comment on the record. The rest of the table cannot help for 60 seconds.', 'For Indian participants: CERT-In directions require certain incidents to be reported within six hours, and the DPDP framework has its own breach duties. Confirm current obligations with legal counsel.'],
     render(st) {
       init(st); const sc = scores(st); const cur = st.at >= 0 ? toMin(INJ[st.at].clock) : START; const left = DEADLINE - cur;
       return [
+        capstonePart(st),
+        h('h3', { class: 'sectionhead' }, 'Exercise 3 · Live incident tabletop'),
         box('', label('Company profile · fictional'), h('h3', null, 'Meridian Wealth Advisors'),
           h('p', null, '1,200 staff and 400 advisers in Mumbai and Bengaluru. Aria reads client documents, drafts portfolio summaries and can email clients directly. It answers from a knowledge base shared with three other teams’ assistants.'),
           architecture(), h('div', { class: 'roles' }, CREW.map(([, r]) => h('span', { class: 'role' }, r)))),
@@ -100,14 +131,14 @@
             h('div', { class: 'opts' }, inj.opts.map(o => h('button', { type: 'button', class: 'optbtn', 'aria-pressed': String(st.ch[i] === o.k), disabled: chosen && chosen.k !== o.k ? true : null,
               onclick: () => { if (st.ch[i] == null) { st.ch[i] = o.k; commit(); } } }, h('span', { class: 'ok' }, o.k.toUpperCase()), h('span', null, o.t)))),
             chosen ? h('div', { class: 'consq' }, label('What happens'), h('p', null, chosen.fx)) : h('p', { class: 'small' }, 'Choose one. You cannot change it afterwards.'),
-            h('p', { class: 'small' }, 'Owner'), seg(CREW, st.o[i], v => { if (v) st.o[i] = v; else delete st.o[i]; }, 'Owner', 'wrap'),
+            h('p', { class: 'small' }, 'Owner'), seg(CREW, st.o[i], v => { if (v) st.o[i] = v; else delete st.o[i]; }, 'Owner', 'multi'),
             field(st.d[i], v => { st.d[i] = v; }, { id: 'm16-d' + i, ph: 'Notes for the record' })),
           inj.curve ? box('curve', pill('Curveball', 'bad'), h('p', null, 'The facilitator is phoning your comms head now for a comment on the record. Nobody else at the table may help for 60 seconds.'),
             h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn', onclick: startCurveball }, 'Start the 60 seconds'), h('b', { id: 'm16-cb', class: 'cb' }, '1:00'))) : null];
         }),
         st.at < INJ.length - 1
           ? box('dark', h('p', null, st.at < 0 ? 'When the facilitator says go, reveal the first inject.' : st.ch[st.at] == null ? 'Choose your response to inject ' + (st.at + 1) + ' first.' : 'Reveal the next inject when the facilitator says so.'),
-            h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn primary', disabled: st.at >= 0 && st.ch[st.at] == null ? true : null, onclick: () => { st.at++; startTimer('m16', 10 + st.at * 10); } }, st.at < 0 ? 'Reveal inject 1' : 'Reveal inject ' + (st.at + 2))))
+            h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn primary', disabled: st.at >= 0 && st.ch[st.at] == null ? true : null, onclick: () => { st.at++; startTimer('m16', 150 + st.at * 10); } }, st.at < 0 ? 'Reveal inject 1' : 'Reveal inject ' + (st.at + 2))))
           : [box('dark', label('Your crisis score'), h('div', { class: 'radarbox' }, radar(DIMS, [sc.vals], 3, { target: 3, label: 'Crisis score' })),
             stats(...DIMS.map((d, i) => stat(sc.vals[i].toFixed(1), d)), stat(sc.dis + ' / 9', 'Disruption'))),
             box('', label('After the injects'),
@@ -120,12 +151,13 @@
     answers() {
       return [
         h('div', { class: 'scroll' }, h('table', null, h('tr', null, h('th', null, 'Inject'), h('th', null, 'Strongest response'), h('th', null, 'What would have prevented it')),
-          [['1', 'Level 1: disable the email tool', 'Approval for email to new external addresses (Module 08)'],
+          [['1', 'Level 1: disable the email tool', 'Approval for email to new external addresses (Module 09)'],
             ['2', 'Preserve everything; treat as indirect injection', 'Treat uploaded documents as untrusted content (Module 11)'],
             ['3', 'Snapshot, then purge and re-index', 'Review documents before they enter a shared index (Module 12)'],
             ['4', 'Named spokesperson with a holding statement', 'A pre-agreed holding statement and one spokesperson'],
             ['5', 'Report within the window; prepare breach notices', 'A runbook with notification timelines agreed in advance (Module 15)']].map(r => h('tr', null, r.map(c => h('td', null, c)))))),
         answer('Containment against disruption', 'Level 3 and 4 contain fully but cost the business. Level 1 contains the leak with little disruption because the dangerous capability was one tool. That is the case for small, precise kill switches.'),
+        answer('Capstone cases', 'Cases A to C are in the Scenarios tab with model answers. Case A: freeze prices at the last known-good values and stop the pricing agent. Case B: hold only the affected payment and verify through a contact on file. Case C: acknowledge, stop the agent, preserve logs, and remember you are accountable for what your agents do.'),
         answer('Score with the rubric', 'Use the capstone rubric in the deck alongside the radar: speed of containment, evidence preserved, clarity of ownership and accuracy of the notices.')
       ];
     },
