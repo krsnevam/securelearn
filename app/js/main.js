@@ -71,7 +71,8 @@ function home() {
   tbl.value = S.table; tbl.addEventListener('input', () => { S.table = tbl.value; persist(); paintChrome(); });
   return [
     h('section', { class: 'hero' },
-      h('span', { class: 'eyebrow' }, 'Agentic AI Security & Governance · Modules 07–16'),
+      h('a', { class: 'back', href: '#' }, '← Back to the story mode'),
+      h('span', { class: 'eyebrow' }, 'Facilitator workbench · Modules 07–16'),
       h('h1', null, 'Ten labs where leaders make the calls'),
       h('p', null, 'Each lab puts your table in role, against the clock, on realistic material: architecture diagrams, permission maps, agent logs, tool manifests and a live incident. No technical background needed.')),
     howItWorks(),
@@ -178,7 +179,7 @@ function labView(lab) {
   const idx = App.labs.indexOf(lab), prev = App.labs[idx - 1], next = App.labs[idx + 1];
   return [
     h('section', { class: 'labhead' },
-      h('div', { class: 'crumbs' }, h('a', { class: 'back', href: '#' }, '← All labs'), h('span', { class: 'spacer' }),
+      h('div', { class: 'crumbs' }, h('a', { class: 'back', href: '#labs' }, '← All labs'), h('span', { class: 'spacer' }),
         h('button', { type: 'button', class: 'btn small', 'aria-pressed': String(!!S.present), onclick: () => { S.present = !S.present; commit(); } }, S.present ? 'Exit present mode' : 'Present')),
       h('span', { class: 'eyebrow' }, 'Module ' + lab.n + ' · ' + lab.mod + ' · ' + lab.format + ' · ' + lab.min + ' min'),
       h('h1', null, lab.title), h('p', { class: 'leadq big' }, 'The leadership question: ' + LEAD_Q[lab.id]), h('p', { class: 'task' }, lab.task),
@@ -192,6 +193,9 @@ function labView(lab) {
 
 let lastView = '';
 App.render = function () {
+  const route = location.hash.slice(1);
+  if (route === '' || /^e\d\d$/.test(route)) { document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route); return; }
+  document.body.classList.remove('story');
   const app = document.getElementById('app'); const id = currentLabId(); const y = window.scrollY;
   const active = document.activeElement && document.activeElement.id;
   let view;
@@ -209,8 +213,8 @@ function paintChrome() {
   document.body.classList.toggle('present', !!S.present && !!currentLabId());
 }
 
-document.getElementById('brand').addEventListener('click', () => { location.hash = ''; });
-document.getElementById('tablechip').addEventListener('click', () => { location.hash = ''; setTimeout(() => { const i = document.getElementById('tbl'); if (i) i.focus(); }, 60); });
+document.getElementById('brand').addEventListener('click', () => { location.hash = 'labs'; });
+document.getElementById('tablechip').addEventListener('click', () => { location.hash = 'labs'; setTimeout(() => { const i = document.getElementById('tbl'); if (i) i.focus(); }, 60); });
 window.addEventListener('hashchange', () => { App.render(); const id = currentLabId(); if (id && S.tab[id] === 'room') watchRoom(id); });
 setInterval(tick, 500);
 App.render();

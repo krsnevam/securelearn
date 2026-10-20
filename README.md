@@ -4,6 +4,10 @@ Hands-on labs for Modules 07–16 of the **Agentic AI Security & Governance** pr
 
 Live app: https://claude.ai/artifact/2SNepAFvq2HNnVBXJ5NLfS
 
+## Story mode (the home screen)
+
+**Agents at Meridian** is a ten-episode story, one per module. You are Meridian's new Head of AI Risk. Each episode is a sequence of single screens, with no scrolling. In each screen a character speaks, you make one decision, tap items on an animated diagram, sort cards one at a time, flip switches, or talk to a stakeholder live. Every choice shows its consequence and moves three meters: Safety, Trust and Speed. Each episode ends with stars and its key lessons. The detailed labs below are the facilitator's deep-dive workbench at `#labs`.
+
 ## The ten labs
 
 Each lab has five tabs: **1 · Work task** (a mission card, then numbered steps, each labelled Decide, Simulate, Write or Read, ending with **Check my work**), **2 · Quick quiz** (instant right/wrong feedback with the reason), **3 · Case studies** (the deck’s live scenarios and leadership discussion, each with an expert answer), **Expert answers** (opened by Check my work, with facilitator notes) and **Room** (compares every table).
@@ -49,6 +53,8 @@ app/
   js/drills.js        Quick quiz and Case studies tabs (render, answers, room, summary)
   js/flows.js         guided steps per lab and the kinds of action (Decide, Simulate, Quiz, Write, Read, Live AI)
   js/coach.js         live AI via the sample capability: case-study coach feedback and stakeholder role-plays
+  js/story-data.js    the story season: ten episodes of scenes
+  js/story.js         story engine: one-screen scenes, animation, meters, routing ('#' and '#e07'…)
   js/labs/m07–m16.js  one file per lab: data, render, answers, aggregation, summary
   js/main.js          home, lab view, tabs, presenter mode, room collector
 scripts/
