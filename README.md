@@ -21,6 +21,8 @@ Each lab has five tabs: **1 · Work task** (a mission card, then numbered steps,
 | 15 Governance | Classify eight use cases, brief the board | EU AI Act and internal tiers, heat map, decision rights, board dashboard, board report |
 | 16 Capstone | RAG, MCP and the Aria incident | Exercises, deliverables checklist, branching tabletop, weighted rubric |
 
+**Live AI** (when opened in Claude while signed in): every case study has an AI coach that gives the table feedback against the expert answer, and Modules 12, 13, 15 and 16 include a live role-play with a stakeholder (a sponsor, the business owner, the Audit Committee chair, a journalist) followed by a coached debrief. It uses each viewer's own Claude account; without it the labs work as before.
+
 The home screen adds the ten leadership questions, the four program outcomes, and a wrap-up with the six takeaways and a 90-day plan. [COVERAGE.md](COVERAGE.md) maps every deck slide to where the app covers it.
 
 ## Running a session
@@ -45,7 +47,8 @@ app/
   js/schematics.js    SVG helpers: edges, radar charts, room-result renderers
   js/scenario-data.js scenarios and leadership discussions, generated from the deck
   js/drills.js        Quick quiz and Case studies tabs (render, answers, room, summary)
-  js/flows.js         guided steps per lab and the five kinds of action (Decide, Simulate, Quiz, Write, Read)
+  js/flows.js         guided steps per lab and the kinds of action (Decide, Simulate, Quiz, Write, Read, Live AI)
+  js/coach.js         live AI via the sample capability: case-study coach feedback and stakeholder role-plays
   js/labs/m07–m16.js  one file per lab: data, render, answers, aggregation, summary
   js/main.js          home, lab view, tabs, presenter mode, room collector
 scripts/

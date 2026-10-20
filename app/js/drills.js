@@ -66,6 +66,7 @@ function scenarioCard(lab, st, sc) {
     h('div', { class: 'callbox' }, label('Your call · ' + sc.minutes + ' min'),
       sc.q.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, (i + 1) + '. '), q), field(ans[i], v => { ans[i] = v; }, { id: 'sc-' + lab.id + '-' + sc.id + '-' + i, ph: 'Your table’s answer' })))),
     sc.source ? h('p', { class: 'small' }, sc.source) : null,
+    coachFeedbackBlock(lab, st, sc),
     rev ? h('div', { class: 'answer' }, h('b', null, 'Expert answer'), h('p', null, sc.notes)) :
       h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn', onclick: () => { S.revealed[key] = true; commit(); } }, 'Compare with the expert answer')));
 }
