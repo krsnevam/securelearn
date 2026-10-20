@@ -15,11 +15,12 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, Coach };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, Coach, EPISODES };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
 const go = hash => { window.location.hash = hash; App.render(); };
+window.HTMLElement.prototype.scrollIntoView = function () {};
 const fail = m => { console.error('FAIL ' + m); process.exitCode = 1; };
 
 if (App.labs.length !== 10) fail('expected 10 labs, got ' + App.labs.length);
@@ -102,7 +103,26 @@ for (const lab of App.labs) {
   console.log('live AI (stand-in): ' + calls + ' calls ok');
   C.fn = null; C.state = 'off';
 }
-go(''); if (!doc.querySelector('.stop')) fail('home program map missing');
+go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map missing');
+// story mode: play every episode start to finish
+go(''); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 episodes');
+const click = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+for (const ep of window.__T.EPISODES) {
+  go(ep.id); let guard = 0;
+  while (guard++ < 60) {
+    const st = S.story[ep.id]; const sc = ep.scenes[st.i];
+    if (sc.type === 'recap') break;
+    if (sc.type === 'choice' && st.picks[st.i] == null) click(doc.querySelector('#app .card-opt'));
+    if (sc.type === 'spots' && !(st.spots[st.i] || {}).checked) { click(doc.querySelector('#app .spot')); click([...doc.querySelectorAll('#app .stagebot button')].find(b => b.textContent === 'Check')); }
+    if (sc.type === 'sort') { let n = 0; while (doc.querySelector('#app .bin') && n++ < 20) click(doc.querySelector('#app .bin')); }
+    if (sc.type === 'toggle') click(doc.querySelector('#app .switch'));
+    const next = [...doc.querySelectorAll('#app .stagebot button')].find(b => /Continue|Begin/.test(b.textContent));
+    if (!next || next.disabled) { fail(ep.id + ' stuck on scene ' + st.i + ' (' + sc.type + ')'); break; }
+    click(next);
+  }
+  if (!doc.querySelector('#app .sc-recap') || !S.story[ep.id].finished) fail(ep.id + ' did not reach the recap');
+}
+console.log('story: ' + window.__T.EPISODES.length + ' episodes played to the end');
 const scen = window.__T.SCENARIOS;
 const nScen = Object.values(scen).reduce((n, l) => n + l.length, 0);
 if (nScen !== 34) fail('expected 34 deck scenarios, got ' + nScen);
