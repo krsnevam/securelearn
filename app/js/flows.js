@@ -13,7 +13,8 @@ const KINDS = {
   simulate: { label: 'Simulate', hint: 'Change it and watch what happens. Nothing is graded.' },
   quiz: { label: 'Quiz', hint: 'Pick an answer. You see straight away whether it is right, and why.' },
   write: { label: 'Write', hint: 'Discuss as a table, then type your answer.' },
-  read: { label: 'Read', hint: 'Take in the material. No clicks needed.' }
+  read: { label: 'Read', hint: 'Take in the material. No clicks needed.' },
+  live: { label: 'Live AI', hint: 'A live AI responds to what you write. It uses your Claude account; you are asked once.' }
 };
 
 const FLOWS = {

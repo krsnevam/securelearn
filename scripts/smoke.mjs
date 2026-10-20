@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, Coach };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -81,6 +81,26 @@ for (const lab of App.labs) {
   try { lab.agg([{ _table: 'empty' }]); } catch (e) { fail(lab.id + ' agg on empty doc threw ' + e.message); }
   const done = lab.done(S.labs[lab.id]);
   console.log(lab.id.padEnd(4) + ' ok · done=' + done + ' · ' + doc.querySelectorAll('#app *').length + ' nodes');
+}
+// live AI with a stand-in model: role-play turn, debrief and coach feedback
+{
+  const C = window.__T.Coach; let calls = 0;
+  C.fn = async (input, opts) => { calls++; opts.onText({ text: 'Reply ' + calls, delta: 'Reply ' + calls }); return { text: 'Reply ' + calls, truncated: false }; };
+  C.state = 'on';
+  S.tab.m13 = 'do'; go('m13');
+  const ta = doc.getElementById('rp-m13'); if (!ta) fail('m13 role-play input missing');
+  else {
+    ta.value = 'We launch with a person approving every claim until the fix ships.';
+    [...doc.querySelectorAll('#app .roleplay button')].find(b => b.textContent === 'Send').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 30));
+    if (S.labs.m13.rp.turns.length !== 2) fail('role-play did not record the exchange');
+    if (doc.querySelectorAll('#app .bubble').length !== 3) fail('role-play bubbles not rendered');
+  }
+  S.labs.m08.sc = { s1: { 0: 'The vendor and us' } }; S.tab.m08 = 'scen'; go('m08');
+  const fb = [...doc.querySelectorAll('#app .coach button')].find(b => /AI coach/.test(b.textContent));
+  if (!fb) fail('coach button missing'); else { fb.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await new Promise(r => setTimeout(r, 30)); if (!S.labs.m08.cf || !S.labs.m08.cf.s1 || !S.labs.m08.cf.s1.text) fail('coach feedback not stored'); }
+  console.log('live AI (stand-in): ' + calls + ' calls ok');
+  C.fn = null; C.state = 'off';
 }
 go(''); if (!doc.querySelector('.stop')) fail('home program map missing');
 const scen = window.__T.SCENARIOS;

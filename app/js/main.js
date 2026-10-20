@@ -165,7 +165,7 @@ function labView(lab) {
   const nd = sum((lab.drills || []).map(d => d.items.length)), ns = scenariosFor(lab).length;
   const tabs = [['do', '1 · Work task'], ['drills', '2 · Quick quiz' + (nd ? ' (' + nd + ')' : '')], ['scen', '3 · Case studies' + (ns ? ' (' + ns + ')' : '')], ['ans', rev ? 'Expert answers ✓' : 'Expert answers'], ['room', 'Room']];
   let body;
-  if (tab === 'do') body = [missionCard(lab), clockPanel(lab), lab.render(st), checkPanel(lab), sharePanel(lab),
+  if (tab === 'do') body = [missionCard(lab), clockPanel(lab), lab.render(st), rolePlayPanel(lab), checkPanel(lab), sharePanel(lab),
     h('div', { class: 'btnrow end' }, confirmTwice('reset-' + lab.id, 'Clear this lab’s answers', () => { delete S.labs[lab.id]; delete S.revealed[lab.id]; }, 'warn'))];
   else if (tab === 'ans') body = rev
     ? [lab.answers(st), details('Facilitator notes', false, h('ul', { class: 'plain' }, lab.guide.map(g => h('li', null, g)))),
