@@ -58,12 +58,12 @@
     });
     g.push(s('path', { d: 'M ' + (20 + 4 * (bw + gap) + bw / 2) + ' ' + (y + 76) + ' C 860 300, 120 300, ' + (20 + bw / 2) + ' ' + (y + 80), class: 'ed dashed', 'marker-end': 'url(#m08a)' }));
     g.push(s('text', { x: 500, y: 300, class: 'el', 'text-anchor': 'middle' }, 'Adjust: the outcome feeds the next step'));
-    const person = (cx, title, k, cls) => s('g', { class: 'person ' + cls },
+    const person = (cx, title, k, cls, left) => s('g', { class: 'person ' + cls },
       s('circle', { cx, cy: 40, r: 13 }), s('path', { d: 'M ' + (cx - 20) + ' 82 Q ' + cx + ' 48 ' + (cx + 20) + ' 82 Z' }),
-      s('text', { x: cx + 30, y: 50, class: 'pt' }, title), s('text', { x: cx + 30, y: 72, class: 'pn' }, (n[k] || 0) + ' cards'));
+      s('text', { x: left ? cx - 30 : cx + 30, y: 50, class: 'pt', 'text-anchor': left ? 'end' : 'start' }, title), s('text', { x: left ? cx - 30 : cx + 30, y: 72, class: 'pn', 'text-anchor': left ? 'end' : 'start' }, (n[k] || 0) + ' cards'));
     const gx = 20 + 2 * (bw + gap) + bw / 2, ox = 20 + 4 * (bw + gap) + bw / 2;
     g.push(person(gx - 40, 'In the loop: approves here', 'in', 'c1'), s('line', { x1: gx - 40, y1: 86, x2: gx - 40, y2: y - 4, class: 'ed c1s', 'marker-end': 'url(#m08a)' }));
-    g.push(person(ox - 60, 'On the loop: watches', 'on', 'c2'), s('line', { x1: ox - 60, y1: 86, x2: ox - 60, y2: y - 4, class: 'ed c2s dashed', 'marker-end': 'url(#m08a)' }));
+    g.push(person(ox - 60, 'On the loop: watches', 'on', 'c2', true), s('line', { x1: ox - 60, y1: 86, x2: ox - 60, y2: y - 4, class: 'ed c2s dashed', 'marker-end': 'url(#m08a)' }));
     g.push(s('text', { x: 20, y: 40, class: 'pt' }, 'Autonomous'), s('text', { x: 20, y: 62, class: 'pn' }, (n.auto || 0) + ' cards: nobody checks'));
     return svgWrap(W, 320, 'Agent loop with the points where people sit', 640, g);
   }

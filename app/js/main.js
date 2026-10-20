@@ -204,6 +204,8 @@ App.render = function () {
   app.replaceChildren(...[view].flat(Infinity).filter(Boolean));
   if (lastView === (id || '')) window.scrollTo(0, y); else window.scrollTo(0, 0);
   lastView = id || '';
+  const viewKey = (id || 'labs') + ':' + (id ? (S.tab[id] || 'do') : '');
+  if (viewKey !== App.viewKey) { App.viewKey = viewKey; app.classList.remove('fresh'); void app.offsetWidth; app.classList.add('fresh'); clearTimeout(App.freshT); App.freshT = setTimeout(() => app.classList.remove('fresh'), 1200); }
   if (active) { const el = document.getElementById(active); if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) el.focus(); }
   paintChrome(); tick();
 };
