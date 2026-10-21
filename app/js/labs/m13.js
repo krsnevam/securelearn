@@ -83,7 +83,7 @@
   }
 
   registerLab({
-    id: 'm13', n: '13', mod: 'Productization', title: 'Run the go / no-go meeting for ClaimsBot', format: 'Role-play and drills', min: 55,
+    id: 'm13', n: '13', mod: 'Productization & lifecycle', title: 'Run the go / no-go meeting for ClaimsBot', format: 'Role-play and drills', min: 55,
     roles: ['Business owner (chair)', 'CISO', 'Legal', 'Product lead', 'Observer'],
     task: 'ClaimsBot approves motor-insurance claims under ₹50,000 and launches on Monday. Its readiness pack has two “No”s. Each person reads a private brief, then the table holds the meeting and must reach one decision that follows the readiness rule.',
     steps: [[5, 'Read the pack and your private brief'], [20, 'The meeting, chaired by the business owner'], [5, 'Decide, set conditions, sign'], [10, 'Tables compare decisions'], [15, 'Drills: SDLC, deployment, testing, change, gates, audit']],
@@ -134,6 +134,18 @@
     },
     done: st => !!st.dec,
     drills: [
+      { id: 'compval', type: 'match', title: 'Validate before launch, then review on a rhythm', intro: 'Compliance validation (a go-live gate) or an operational security review (after go-live)?', cats: [['pre', 'Before go-live'], ['post', 'After go-live']], items: [
+        { t: 'Risk classification confirmed (EU AI Act, internal tier)', a: 'pre', why: 'Compliance validation.' },
+        { t: 'Privacy: notice, consent, retention, transfers', a: 'pre', why: 'Compliance validation.' },
+        { t: 'Sector rules checked (RBI, SEBI, IRDAI)', a: 'pre', why: 'Compliance validation.' },
+        { t: 'Monthly review of access, tokens and tool permissions', a: 'post', why: 'Would have caught NEXUS’s shared admin account.' },
+        { t: 'Quarterly red-team retest and drift review', a: 'post', why: 'Agents, tools, data and threats keep changing.' },
+        { t: 'Re-validate before releasing any change', a: 'post', why: 'Would have caught the auto-updating PDF parser.' }] },
+      { id: 'gatewarn', type: 'match', title: 'Two ways approval gates fail', intro: 'Sound design, or a gate that is failing?', cats: [['fatigue', 'Approval fatigue'], ['bypass', 'Gate bypass'], ['ok', 'Sound design']], items: [
+        { t: 'A manager approves 300 agent actions a day', a: 'fatigue', why: 'The gate becomes a rubber stamp. Keep gates for high-impact actions.' },
+        { t: 'The agent can call the tool that records approvals', a: 'bypass', why: 'The agent must never approve itself.' },
+        { t: 'Approvers see the source invoice, not the agent’s summary', a: 'ok', why: 'Independent evidence (NEXUS Hour 41).' },
+        { t: 'The approval screen shows text written by the agent', a: 'bypass', why: 'The approver reads the attacker’s story.' }] },
       { id: 'runtime', type: 'match', title: 'Controls that work while the agent works', intro: 'Which runtime control stops this?', wide: true, cats: [['filter', 'Input and output filtering'], ['gateway', 'Tool calls authorised at the gateway'], ['limits', 'Rate and spend limits'], ['sandbox', 'Sandboxed code execution'], ['secrets', 'Secrets kept out of prompts'], ['session', 'Session isolation']], items: [
         { t: 'The bot reveals one customer’s claim to another customer', a: 'session', why: 'Session isolation between users.' },
         { t: 'A user coaxes the admin password out of the system prompt', a: 'secrets', why: 'Credentials belong in a vault.' },
@@ -175,7 +187,7 @@
         { t: 'Grant a new adjuster system access', a: 'approve', why: 'Access change.' }] },
       { id: 'stagegate', type: 'match', title: 'Five gates from idea to ongoing operation', intro: 'Which gate is this?', wide: true, cats: [['g0', 'Gate 0 · Idea'], ['g1', 'Gate 1 · Design'], ['g2', 'Gate 2 · Pre-launch'], ['g3', 'Gate 3 · Go-live'], ['ongoing', 'Ongoing review']], items: [
         { t: 'Use case approved and risk tier set', a: 'g0', why: 'Before anyone builds.' },
-        { t: 'Architecture and threat review passed', a: 'g1', why: 'Module 10’s review.' },
+        { t: 'Architecture and threat review passed', a: 'g1', why: 'Module 09’s review.' },
         { t: 'Security tests and evaluations passed', a: 'g2', why: 'Before launch.' },
         { t: 'Readiness assessed; the owner signs', a: 'g3', why: 'Today’s ClaimsBot meeting.' },
         { t: 'Re-approval cycle set by risk tier', a: 'ongoing', why: 'Approval is not a one-off.' }] },

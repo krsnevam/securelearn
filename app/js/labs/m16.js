@@ -83,9 +83,9 @@
 
   /* ---------- capstone structure: exercises, deliverables, rubric ---------- */
   const EXER = [
-    { id: 'rag', n: 1, name: 'Secure RAG assessment', mods: 'Modules 10, 12', w: 30, task: 'Assess the Secure Enterprise RAG Platform against the six controls and find the leakage path.', lab: 'm12',
+    { id: 'rag', n: 1, name: 'Secure RAG assessment', mods: 'Modules 09, 12', w: 30, task: 'Assess the Secure Enterprise RAG Platform against the six controls and find the leakage path.', lab: 'm12',
       deliver: 'RAG Security Assessment Report', items: ['Architecture review summary', 'Trust boundary analysis', 'Attack surface assessment', 'Risk assessment matrix', 'Control recommendations', 'Monitoring and detection strategy', 'Governance recommendations', 'Executive summary'] },
-    { id: 'mcp', n: 2, name: 'MCP security review', mods: 'Modules 07, 12, 13', w: 30, task: 'Review the MCP-Enabled Risk Advisory Assistant’s servers, permissions and identity flow.', lab: 'm10',
+    { id: 'mcp', n: 2, name: 'MCP security review', mods: 'Modules 10, 12, 13', w: 30, task: 'Review the MCP-Enabled Risk Advisory Assistant’s servers, permissions and identity flow.', lab: 'm09',
       deliver: 'Secure MCP Architecture Blueprint', items: ['MCP architecture diagram', 'Trust architecture diagram', 'Attack surface assessment', 'Authorisation framework', 'Isolation strategy', 'Monitoring architecture', 'Governance framework', 'Executive recommendations'] },
     { id: 'soc', n: 3, name: 'Incident simulation', mods: 'Modules 14, 15', w: 40, task: 'The live tabletop below: an AI agent leaks data. Detect, contain and report, against the clock.', lab: null,
       deliver: 'SOC Investigation Report + Executive Risk Briefing', items: ['Incident timeline and attack analysis', 'Detection findings and root cause', 'Containment and recovery actions', 'Lessons learned', 'Business impact and risk', 'Strategic roadmap'] }];
@@ -102,6 +102,12 @@
       box('', label('Deliverables checklist'), EXER.map(e => { const set = st.dl[e.id] || (st.dl[e.id] = {}); const done = e.items.filter((_, i) => set[i]).length;
         return h('div', { class: 'dlgroup' }, h('div', { class: 'rowhead' }, h('b', null, e.deliver), pill(done + ' / ' + e.items.length, done === e.items.length ? 'good' : '')),
           chips(e.items.map((t, i) => [String(i), t]), set, e.deliver)); })),
+      box('nexusv2', label('Final group assignment · 10 minutes per group'), h('h3', null, 'NEXUS v2 goes back to the board'),
+        h('p', { class: 'sub' }, 'Present Exhibit A beside your v2 architecture. The chair adds one new fact to your NEXUS just before you present. Strong groups answer from their architecture, not from policy.'),
+        h('div', { class: 'dlgroup' }, h('b', null, 'Your presentation'), chips([['0', 'Exhibit A beside your v2 architecture'], ['1', 'How each of the six failures is now prevented or caught'], ['2', 'Residual risks you accept, with owners'], ['3', 'Your decision request to the board']], st.nx || (st.nx = {}), 'Presentation checklist')),
+        details('The chair’s twists (one per group)', false, h('ol', { class: 'plain numbered' },
+          ['The business wants Vendor Pay to handle payments up to ₹1 crore.', 'A new open-source MCP server promises 40% faster document processing.', 'An EU client wants Ask Meridian to screen job applicants.', 'The SOC has no budget for 24x7 cover.', 'The regulator asks for every NEXUS decision from last quarter within 48 hours.'].map(t => h('li', null, t)))),
+        h('p', { class: 'small' }, 'Board: the chair plus two other groups as directors. Three hard questions per group. Verdict: approve, conditions or reject. Scored within executive governance and reporting.')),
       box('', label('Assessment rubric · self-score'), h('p', { class: 'sub' }, 'Teams are scored on the decisions they make and defend, not on technical depth. Score your team 1 to 5 on each criterion.'),
         RUBRIC.map(([k, t, w, d]) => h('div', { class: 'decrow' }, h('div', null, h('b', null, t + ' · ' + w + '%'), h('p', { class: 'small' }, d)),
           seg([['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5']], st.rub[k], v => { if (v) st.rub[k] = v; else delete st.rub[k]; }, t))),
@@ -152,7 +158,7 @@
     answers() {
       return [
         h('div', { class: 'scroll' }, h('table', null, h('tr', null, h('th', null, 'Inject'), h('th', null, 'Strongest response'), h('th', null, 'What would have prevented it')),
-          [['1', 'Level 1: disable the email tool', 'Approval for email to new external addresses (Module 09)'],
+          [['1', 'Level 1: disable the email tool', 'Approval for email to new external addresses (Module 08)'],
             ['2', 'Preserve everything; treat as indirect injection', 'Treat uploaded documents as untrusted content (Module 11)'],
             ['3', 'Snapshot, then purge and re-index', 'Review documents before they enter a shared index (Module 12)'],
             ['4', 'Named spokesperson with a holding statement', 'A pre-agreed holding statement and one spokesperson'],

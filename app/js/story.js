@@ -163,30 +163,60 @@ function sceneLive(ep, sc, st, i) {
     h('div', { class: 'livebar' }, input, h('button', { type: 'button', class: 'btn primary', disabled: Coach.busy[key] ? true : null, onclick: send }, 'Send')),
     h('p', { class: 'tapnote' }, 'Answer at least twice, then continue. ' + (R.turns.filter(t => t.role === 'user').length ? 'Replies so far: ' + R.turns.filter(t => t.role === 'user').length + '.' : '')));
 }
+function sceneTrap(ep) {
+  return h('div', { class: 'sc sc-trap' }, trapView(ep.lab));
+}
+function sceneExhibit(ep, sc) {
+  return h('div', { class: 'sc sc-exhibit' }, h('span', { class: 'kicker' }, sc.kicker), h('h2', null, sc.title),
+    h('div', { class: 'exhibit' }, sc.cols.map(([t, items], c) => h('div', { class: 'excol' + (c === 1 ? ' core' : ''), style: 'animation-delay:' + (0.15 * c) + 's' },
+      h('b', null, t), items.map((x, i) => h('span', { style: 'animation-delay:' + (0.15 * c + 0.08 * i + 0.2) + 's' }, x))))),
+    h('p', { class: 'exfoot' }, sc.foot), h('p', { class: 'tapnote' }, 'The vendor says it is enterprise-grade. Look closely: you will vote in two screens.'));
+}
+function scenePack(ep, sc) {
+  return h('div', { class: 'sc sc-pack' }, h('span', { class: 'kicker' }, sc.kicker), h('h2', null, sc.title),
+    h('div', { class: 'packwrap' }, h('div', { class: 'packlist' }, sc.items.map((x, i) => h('div', { class: 'packitem', style: 'animation-delay:' + (0.18 * i) + 's' }, h('span', { class: 'tick' }, '✓'), x))),
+      h('div', { class: 'stamp', style: 'animation-delay:' + (0.18 * sc.items.length + 0.2) + 's' }, h('span', null, 'Vendor risk rating'), h('b', null, sc.rating), h('small', null, sc.note))));
+}
+function sceneTimeline(ep, sc, st, i) {
+  st.tl = st.tl || {}; const n = st.tl[i] || 0; const all = n >= sc.items.length;
+  return h('div', { class: 'sc sc-timeline' }, h('span', { class: 'kicker alarm' }, 'System fail'), h('h2', null, sc.title + (all ? '' : ': no alarm went off')),
+    h('div', { class: 'tline' }, sc.items.slice(0, n).map((f, k) => h('div', { class: 'tlrow' + (k === n - 1 ? ' fresh' : '') }, h('b', null, 'Hour ' + f.hour), h('span', null, f.t)))),
+    all ? h('div', { class: 'consequence bad' }, h('span', { class: 'verdict bad' }, 'Outcome'), h('p', null, sc.outcome))
+      : h('button', { type: 'button', class: 'btn primary', onclick: () => { st.tl[i] = n + 1; commit(); } }, n ? 'Next: Hour ' + sc.items[n].hour + ' →' : 'Go live: Monday, 9 a.m. →'),
+    !all && n ? h('p', { class: 'tapnote' }, 'Could this have been seen in Exhibit A? Every time, yes.') : null);
+}
+function sceneDebrief(ep, sc) {
+  return h('div', { class: 'sc sc-debrief' }, h('h2', null, sc.title),
+    h('div', { class: 'dbrows' }, sc.rows.map((r, k) => h('div', { class: 'dbrow', style: 'animation-delay:' + (0.12 * k) + 's' }, h('span', { class: 'said' }, r[0]), h('span', { class: 'missed' }, r[1]), h('a', { class: 'fixed', href: '#e' + r[2] }, 'Module ' + r[2])))),
+    h('p', { class: 'bigquote' }, sc.quote[0] + ' ', h('em', null, sc.quote[1])));
+}
 function sceneRecap(ep, st) {
   const m = meters(ep, st), sc = choiceScore(ep, st), n = stars(ep, st);
   const idx = EPISODES.indexOf(ep), next = EPISODES[idx + 1];
   if (!st.finished) { st.finished = true; persist(); }
   return h('div', { class: 'sc sc-recap' }, h('div', { class: 'stars' }, [0, 1, 2].map(k => h('span', { class: 'star' + (k < n ? ' on' : ''), style: 'animation-delay:' + (0.2 + 0.15 * k) + 's' }, '★'))),
-    h('h2', null, 'Episode ' + ep.n + ' complete'), h('p', { class: 'lead' }, sc.good + ' of ' + sc.total + ' decisions were strong moves.'),
+    h('h2', null, ep.id === 'e00' ? 'Now rebuild NEXUS' : 'Episode ' + ep.n + ' complete'), h('p', { class: 'lead' }, sc.good + ' of ' + sc.total + ' decisions were strong moves.' + (ep.lab && trapLocked(ep.lab) ? ' Trap: ' + ({ good: 'dodged.', ok: 'half right.', bad: 'caught you.' })[trapResult(ep.lab)] : '')),
+    ep.id !== 'e00' ? repairStrip(true) : null,
     h('div', { class: 'finalm' }, METERS.map(([k, t]) => h('div', null, h('b', null, m[k]), h('span', null, t)))),
     h('ul', { class: 'lessons' }, ep.scenes[ep.scenes.length - 1].lessons.map((l, k) => h('li', { style: 'animation-delay:' + (0.4 + 0.15 * k) + 's' }, l))),
     h('div', { class: 'btnrow center' },
       next ? h('a', { class: 'btn primary', href: '#' + next.id }, 'Next: ' + next.title + ' →') : h('a', { class: 'btn primary', href: '#' }, 'Back to the season'),
-      h('button', { type: 'button', class: 'btn', onclick: () => { S.story[ep.id] = { i: 0, picks: {}, spots: {}, sorts: {}, tog: {}, live: {} }; Story.typed = {}; commit(); } }, 'Replay'),
-      h('a', { class: 'btn', href: '#' + ep.lab }, 'Deep-dive workbench')));
+      h('button', { type: 'button', class: 'btn', onclick: () => { S.story[ep.id] = { i: 0, picks: {}, spots: {}, sorts: {}, tog: {}, live: {}, tl: {} }; if (ep.lab && S.traps) delete S.traps[ep.lab]; Story.typed = {}; commit(); } }, 'Replay'),
+      ep.lab ? h('a', { class: 'btn', href: '#' + ep.lab }, 'Deep-dive workbench') : null));
 }
 
-function sceneComplete(sc, st, i) {
+function sceneComplete(sc, st, i, ep_) {
   if (sc.type === 'choice') return st.picks[i] != null;
   if (sc.type === 'spots') return !!(st.spots[i] && st.spots[i].checked);
   if (sc.type === 'sort') return !!st.sorts[i] && Object.keys(st.sorts[i].ans).length >= sc.items.length;
   if (sc.type === 'toggle') return !!(st.tog[i] && st.tog[i].touched);
+  if (sc.type === 'trap') return trapLocked(ep_.lab);
+  if (sc.type === 'timeline') return ((st.tl || {})[i] || 0) >= sc.items.length;
   if (sc.type === 'live') { if (Coach.state !== 'on') return true; const R = (S.labs[sc.roleplay] || {}).rp; return !!R && R.turns.filter(t => t.role === 'user').length >= 2; }
   return true;
 }
 function hintFor(sc) {
-  return { choice: 'Pick one to continue', spots: 'Mark your answers, then Check', sort: 'Sort every card to continue', toggle: 'Flip a switch to continue', live: 'Reply twice to continue' }[sc.type] || '';
+  return { choice: 'Pick one to continue', spots: 'Mark your answers, then Check', sort: 'Sort every card to continue', toggle: 'Flip a switch to continue', live: 'Reply twice to continue', trap: 'Lock in your answer to continue', timeline: 'Play the 72 hours to continue' }[sc.type] || '';
 }
 
 /* ---------- episode screen ---------- */
@@ -203,8 +233,13 @@ function renderEpisode(id) {
   else if (sc.type === 'sort') body = sceneSort(ep, sc, st, i);
   else if (sc.type === 'toggle') body = sceneToggle(ep, sc, st, i);
   else if (sc.type === 'live') body = sceneLive(ep, sc, st, i);
+  else if (sc.type === 'trap') body = sceneTrap(ep);
+  else if (sc.type === 'exhibit') body = sceneExhibit(ep, sc);
+  else if (sc.type === 'pack') body = scenePack(ep, sc);
+  else if (sc.type === 'timeline') body = sceneTimeline(ep, sc, st, i);
+  else if (sc.type === 'debrief') body = sceneDebrief(ep, sc);
   else body = sceneRecap(ep, st);
-  const done = sceneComplete(sc, st, i);
+  const done = sceneComplete(sc, st, i, ep);
   const go = d => { Story.dir = d > 0 ? 'f' : 'b'; Story.flash = null; Story.sortFx = null; st.i = i + d; commit(); };
   const isSpotsUnchecked = sc.type === 'spots' && !(st.spots[i] && st.spots[i].checked);
   const fl = Story.flash;
@@ -224,19 +259,29 @@ function renderEpisode(id) {
 }
 
 /* ---------- season home ---------- */
+function repairStrip(compact) {
+  const fixed = NEXUS_FAILS.filter(f => f.fix.every(e => epDone(e))).length;
+  return h('div', { class: 'repair' + (compact ? ' compact' : '') }, h('div', { class: 'repairhead' }, h('b', null, 'NEXUS repair board'), h('span', null, fixed + ' of 6 failures fixed')),
+    h('div', { class: 'repairpills' }, NEXUS_FAILS.map(f => { const ok = f.fix.every(e => epDone(e));
+      return h('a', { class: 'rpill' + (ok ? ' ok' : ''), href: '#' + (f.fix.find(e => !epDone(e)) || f.fix[0]), title: f.t }, h('b', null, 'H' + f.hour), h('span', null, ok ? 'fixed' : 'Mod ' + f.mod)); })));
+}
 function renderSeason() {
-  const next = EPISODES.find(e => !epDone(e.id)) || EPISODES[0];
-  const doneN = EPISODES.filter(e => epDone(e.id)).length;
+  const mods = EPISODES.filter(e => e.id !== 'e00');
+  const opened = epDone('e00');
+  const next = !opened ? EPISODES[0] : (mods.find(e => !epDone(e.id)) || mods[0]);
+  const doneN = mods.filter(e => epDone(e.id)).length;
   Story.last = '';
   return h('div', { class: 'stage season' },
     h('div', { class: 'seasonhead' }, h('span', { class: 'kicker' }, 'Agentic AI Security & Governance · Season 1'), h('h1', null, 'Agents at Meridian'),
-      h('p', { class: 'lead' }, 'You are Meridian’s new Head of AI Risk. Ten episodes, one decision at a time. Every choice moves three meters: Safety, Trust and Speed.'),
-      h('div', { class: 'btnrow' }, h('a', { class: 'btn primary big', href: '#' + next.id }, (doneN ? 'Continue: ' : 'Start: ') + 'Episode ' + next.n + ' →'), h('span', { class: 'small' }, doneN + ' of 10 complete'))),
-    h('div', { class: 'eps' }, EPISODES.map((e, k) => { const st = (S.story || {})[e.id]; const n = st && st.finished ? stars(e, st) : -1;
+      h('p', { class: 'lead' }, opened ? 'NEXUS failed in 72 hours. Rebuild it one module at a time: every episode opens with a trap, and fixes part of NEXUS.' : 'It starts with a vote. Meridian Finance wants to launch Project NEXUS on Friday, and you are the AI Risk Committee.'),
+      h('div', { class: 'btnrow' }, h('a', { class: 'btn primary big', href: '#' + next.id }, (next.id === 'e00' ? 'Start: the opening challenge' : (doneN ? 'Continue: ' : 'Next: ') + 'Episode ' + next.n) + ' →'),
+        h('span', { class: 'small' }, opened ? doneN + ' of 10 episodes complete' : '30 minutes · then ten episodes'))),
+    opened ? repairStrip(false) : h('a', { class: 'nexushero', href: '#e00' }, h('span', { class: 'kicker alarm' }, 'Opening challenge'), h('b', null, 'Approve Project NEXUS'), h('span', null, 'Vote first. Then watch what happens in the first 72 hours.')),
+    h('div', { class: 'eps' }, mods.map((e, k) => { const st = (S.story || {})[e.id]; const n = st && st.finished ? stars(e, st) : -1;
       return h('a', { class: 'ep' + (n >= 0 ? ' done' : '') + (e === next ? ' next' : ''), href: '#' + e.id, style: 'animation-delay:' + (0.04 * k) + 's' },
         h('span', { class: 'epn' }, e.n), h('b', null, e.title), h('span', { class: 'ept' }, e.topic + ' · ' + e.scenes.length + ' scenes'),
         h('span', { class: 'epstars' }, n >= 0 ? [0, 1, 2].map(j => h('i', { class: j < n ? 'on' : '' }, '★')) : '')); })),
-    h('a', { class: 'facil-link', href: '#labs' }, 'Facilitator workbench: full labs, quizzes, case studies and room results →'));
+    h('div', { class: 'seasonfoot' }, opened ? h('a', { href: '#e00' }, 'Replay the opening challenge') : null, h('a', { class: 'facil-link', href: '#labs' }, 'Facilitator workbench: full labs, quizzes, case studies and room results →')));
 }
 
 /* Called by App.render for story routes. */

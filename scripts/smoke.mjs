@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, Coach, EPISODES };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, Coach, EPISODES, TRAPS };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -105,7 +105,7 @@ for (const lab of App.labs) {
 }
 go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map missing');
 // story mode: play every episode start to finish
-go(''); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 episodes');
+go(''); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 module episodes'); if (!doc.querySelector('#app .nexushero')) fail('NEXUS opening missing on home');
 const click = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
 for (const ep of window.__T.EPISODES) {
   go(ep.id); let guard = 0;
@@ -116,13 +116,18 @@ for (const ep of window.__T.EPISODES) {
     if (sc.type === 'spots' && !(st.spots[st.i] || {}).checked) { click(doc.querySelector('#app .spot')); click([...doc.querySelectorAll('#app .stagebot button')].find(b => b.textContent === 'Check')); }
     if (sc.type === 'sort') { let n = 0; while (doc.querySelector('#app .bin') && n++ < 20) click(doc.querySelector('#app .bin')); }
     if (sc.type === 'toggle') click(doc.querySelector('#app .switch'));
+    if (sc.type === 'trap' && !(S.traps && S.traps[ep.lab] && S.traps[ep.lab].locked)) { click(doc.querySelector('#app .trapopt')); click([...doc.querySelectorAll('#app .trap button')].find(b => /Lock in/.test(b.textContent))); }
+    if (sc.type === 'timeline') { let n = 0; let b; while ((b = [...doc.querySelectorAll('#app .sc-timeline button')].find(x => /Hour|Go live/.test(x.textContent))) && n++ < 10) click(b); }
     const next = [...doc.querySelectorAll('#app .stagebot button')].find(b => /Continue|Begin/.test(b.textContent));
     if (!next || next.disabled) { fail(ep.id + ' stuck on scene ' + st.i + ' (' + sc.type + ')'); break; }
     click(next);
   }
   if (!doc.querySelector('#app .sc-recap') || !S.story[ep.id].finished) fail(ep.id + ' did not reach the recap');
 }
-console.log('story: ' + window.__T.EPISODES.length + ' episodes played to the end');
+go(''); if (!doc.querySelector('#app .repair')) fail('repair board missing after the opening');
+if (doc.querySelectorAll('#app .rpill.ok').length !== 6) fail('all six NEXUS failures should show fixed after every episode');
+if (Object.keys(window.__T.TRAPS).length !== 9) fail('expected 9 traps');
+console.log('story: ' + window.__T.EPISODES.length + ' episodes played to the end; repair board 6/6');
 const scen = window.__T.SCENARIOS;
 const nScen = Object.values(scen).reduce((n, l) => n + l.length, 0);
 if (nScen !== 34) fail('expected 34 deck scenarios, got ' + nScen);

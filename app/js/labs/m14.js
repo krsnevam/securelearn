@@ -145,7 +145,8 @@
         { t: 'AI drafts the incident summary for the CISO', a: 'for', why: 'Watch for over-trust and injection via alert data.' },
         { t: 'Detections for prompt attacks and runaway agents', a: 'of', why: 'AI-specific detections.' },
         { t: 'A playbook for AI incidents, including purging poisoned memory', a: 'of', why: 'Playbooks for AI incidents.' },
-        { t: 'AI writes threat-hunting queries', a: 'for', why: 'Analyst productivity.' }] },
+        { t: 'AI writes threat-hunting queries', a: 'for', why: 'Analyst productivity.' },
+        { t: 'A SOC copilot reading attacker-controlled alert data is manipulated by it', a: 'for', why: 'A risk of AI for the SOC (the GrafanaGhost research, 2026). The copilot must also be in the asset inventory.' }] },
       { id: 'telemetry', type: 'match', title: 'What the SOC must see from every agent', intro: 'Which telemetry field shows this?', wide: true, cats: [['inputs', 'Inputs'], ['sources', 'Sources'], ['tools', 'Tool calls'], ['ids', 'Identities'], ['policy', 'Policy decisions'], ['outputs', 'Outputs'], ['usage', 'Usage'], ['errors', 'Errors']], items: [
         { t: 'The résumé uploaded through the careers portal', a: 'inputs', why: 'Prompts and uploaded content.' },
         { t: 'Which documents the assistant retrieved before answering', a: 'sources', why: 'Documents and pages retrieved.' },

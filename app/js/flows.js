@@ -18,20 +18,20 @@ const KINDS = {
 };
 
 const FLOWS = {
-  m07: { produce: 'A smaller blast radius, with every attack chain broken and the agent still able to do its job.', steps: [
+  m10: { produce: 'A smaller blast radius, with every attack chain broken and the agent still able to do its job.', steps: [
     ['simulate', 'Choose how the agent signs in', 'Pick an identity model. The scoreboard above and the map change instantly.'],
     ['decide', 'Mark what the attacker can reach', 'Tap each system on the map that a hijacked agent could reach.'],
     ['decide', 'Keep, reduce or cut each permission', 'Break every red attack chain while “Job still works” stays at Yes. Watch the blast radius fall.'],
     ['write', 'Name the worst chain', 'In one line, the attack your table worries about most.']] },
-  m08: { produce: 'A scorecard for one of your own AI systems, and one gap you will close in 30 days.', steps: [
+  m07: { produce: 'A scorecard for one of your own AI systems, and one gap you will close in 30 days.', steps: [
     ['write', 'Describe the system you will score', 'Name it (anonymise if needed), its owner and who it affects.'],
     ['decide', 'Score each principle 0, 1 or 2', 'For each test pick a score and write the evidence. The radar draws your shape. The regulator may challenge any score.'],
     ['write', 'Commit to one 30-day gap', 'Your weakest principle is shown. Write what you will fix, who and by when.']] },
-  m09: { produce: 'A sort of fifteen agent actions, and a written policy that reproduces it.', steps: [
+  m08: { produce: 'A sort of fifteen agent actions, and a written policy that reproduces it.', steps: [
     ['decide', 'Sort every card into a pile', 'On each card tap In the loop, On the loop or Autonomous. The diagram counts update as you go.'],
     ['simulate', 'Check your sort on the risk map', 'See where your piles land. The consistency check flags risky or over-controlled choices.'],
     ['simulate', 'Turn your instinct into a policy', 'Pick rules. Rows highlighted in the table are where your written policy and your sort disagree: debate those.']] },
-  m10: { produce: 'A threat register, a verdict and three deliverables for each platform.', steps: [
+  m09: { produce: 'A threat register, a verdict and three deliverables for each platform.', steps: [
     ['decide', 'Warm-up: find the seven planted flaws', 'Tap any box or flow you think is a flaw, then rate it and choose a fix below.'],
     ['read', 'Pick an exercise and read the architecture', 'Choose one of the three platforms. Its parts and boundaries are listed.'],
     ['decide', 'Build the threat register', 'Mark each threat that applies, choose a control, name an owner and rate the residual risk.'],
@@ -66,7 +66,7 @@ const FLOWS = {
     ['decide', 'Decide, and set board thresholds', 'Approve, add conditions, defer or reject each use case; then set thresholds for the six board numbers.'],
     ['write', 'Finish the board report', 'The first lines are drafted for you. Add risks, decisions and your ask.']] },
   m16: { produce: 'Three capstone deliverables, a crisis score and an after-action report.', steps: [
-    ['read', 'See the three capstone exercises', 'Exercises 1 and 2 use the Module 12 and Module 10 labs. Tick deliverables as you finish them.'],
+    ['read', 'See the three capstone exercises', 'Exercises 1 and 2 use the Module 12 and Module 09 labs. Tick deliverables as you finish them.'],
     ['decide', 'Run the incident tabletop', 'Reveal one inject at a time. Choose a response (it cannot be undone) and see what happens next.']] }
 };
 

@@ -1,227 +1,169 @@
 'use strict';
-/* Module 10 · Architecture review: a trust-zone diagram of an HR agent
-   with seven planted flaws among fourteen tappable parts. */
+/* Module 10 · Enterprise trust architecture: identity propagation, the blast
+   radius of a hijacked agent, live attack chains, trust scoring and supply chain. */
 (() => {
-  const FIXES = [
-    ['identity', 'Own least-privilege identity'], ['approval', 'Human approval step'], ['allow', 'Allow-list recipients'],
-    ['logs', 'Central, tamper-proof logging'], ['vault', 'Secrets vault, out of the prompt'], ['review', 'Review content before indexing'],
-    ['contract', 'Contract: no retention or training'], ['none', 'Not a flaw']];
-  const SEV = [['low', 'Low'], ['med', 'Medium'], ['high', 'High']];
-  // kind: n = node, e = edge. flaw: the fix that addresses it.
-  const PARTS = {
-    user: { kind: 'n', name: 'Employee', detail: 'Single sign-on · 20 requests a minute', x: 40, y: 260, w: 170, flaw: null, why: 'A good control. The agent knows who is asking and abuse is rate-limited.' },
-    agent: { kind: 'n', core: 1, name: 'HR Assistant', detail: 'System prompt holds hr_admin password', x: 300, y: 250, w: 220, flaw: 'vault', sev: 'high', why: 'Anything in the prompt can be coaxed out by a user or an injected document. Credentials belong in a vault, fetched by the tool, never seen by the model.' },
-    filter: { kind: 'n', name: 'Output filter', detail: 'Blocks salary figures in answers', x: 300, y: 380, w: 220, flaw: null, why: 'A reasonable control, though filters are bypassable. Not a planted flaw.' },
-    cite: { kind: 'n', name: 'Citations', detail: 'Each answer links its policy page', x: 300, y: 480, w: 220, flaw: null, why: 'A good control: employees can check the source.' },
-    hrdb: { kind: 'n', name: 'HR database', detail: 'Shared hr_admin account', x: 575, y: 70, w: 175, flaw: 'identity', sev: 'high', why: 'No identity of its own and far more access than it needs. Give the agent its own least-privilege identity that only reads what the asker may see.' },
-    payroll: { kind: 'n', name: 'Payroll', detail: 'Updates bank details on request', x: 575, y: 175, w: 175, flaw: 'approval', sev: 'high', why: 'A classic fraud target. Needs a human in the loop and a call-back check to the employee.' },
-    wiki: { kind: 'n', name: 'Policy wiki', detail: 'Editable by all staff', x: 575, y: 300, w: 175, flaw: 'review', sev: 'med', why: 'Anyone can plant hidden instructions in the knowledge base. Restrict editing and review changes before they are indexed.' },
-    logs: { kind: 'n', name: 'Logs', detail: 'On the agent’s server, 7 days', x: 575, y: 405, w: 175, flaw: 'logs', sev: 'med', why: 'An attacker can delete them, 7 days is too short for an investigation, and the SOC never sees them.' },
-    email: { kind: 'n', name: 'Email gateway', detail: 'Sends to any address', x: 575, y: 505, w: 175, flaw: 'allow', sev: 'high', why: 'A hijacked agent can send HR data anywhere. Restrict to internal recipients or require approval for external ones.' },
-    model: { kind: 'n', name: 'LLM vendor', detail: 'Keeps prompts 30 days for training', x: 815, y: 120, w: 165, flaw: 'contract', sev: 'med', why: 'Employee HR questions are personal data. The contract must rule out training on your data and limit retention.' },
-    outside: { kind: 'n', static: 1, name: 'Anyone outside', detail: 'Personal email, competitors', x: 815, y: 505, w: 165 },
-    e_chat: { kind: 'e', name: 'Chat channel', detail: 'Employee to agent over SSO', flaw: null, why: 'Fine: authenticated and encrypted.' },
-    e_tls: { kind: 'e', name: 'Model call', detail: 'Prompt and retrieved pages over TLS', flaw: null, why: 'Fine in transit. The issue is what the vendor keeps, not the connection.' },
-    e_index: { kind: 'e', name: 'Nightly index', detail: 'Wiki pages copied into the assistant’s index', flaw: null, why: 'The flow itself is normal; the flaw is that anyone can edit what it copies.' }
-  };
-  const FLAWS = Object.keys(PARTS).filter(k => PARTS[k].flaw);
-  const TAPPABLE = Object.keys(PARTS).filter(k => !PARTS[k].static);
-
-  function init(st) { st.f = st.f || {}; st.sev = st.sev || {}; st.fix = st.fix || {}; return st; }
-  const flip = (st, k) => { st.f[k] = !st.f[k]; if (!st.f[k]) { delete st.sev[k]; delete st.fix[k]; } commit(); };
-
-  function diagram(st, rev) {
-    const g = [arrowDefs('m09a'), arrowDefs('m09b', 'ah bad')];
-    const zone = (x, y, w, hh, t) => s('g', null, s('rect', { x, y, width: w, height: hh, rx: 16, class: 'z' }), s('text', { x: x + 14, y: y + 22, class: 'zl' }, t));
-    g.push(zone(20, 40, 210, 540, 'Employee devices'), zone(250, 40, 530, 540, 'Corporate network'), zone(800, 40, 195, 230, 'Vendor cloud'), zone(800, 420, 195, 160, 'Internet'));
-    const node = k => {
-      const p = PARTS[k], on = !!st.f[k];
-      let cls = 'nd' + (p.core ? ' core' : '') + (on ? ' flag' : '') + (p.static ? ' static' : '');
-      if (rev && !p.static) cls += p.flaw ? (on ? ' found' : ' missed') : (on ? ' wrong' : '');
-      const hh = 70, cx = p.x, cy = p.y;
-      const kids = [s('rect', { x: cx, y: cy, width: p.w, height: hh, rx: 12 }), s('text', { x: cx + 14, y: cy + 28 }, p.name), svgLines(cx + 14, cy + 48, wrapWords(p.detail, Math.floor(p.w / 7)), 'd', 14)];
-      if (rev && p.flaw) kids.push(s('circle', { cx: cx + p.w - 14, cy: cy + 14, r: 10, class: 'badge' }), s('text', { x: cx + p.w - 14, y: cy + 18, class: 'bt', 'text-anchor': 'middle' }, FLAWS.indexOf(k) + 1));
-      else if (on) kids.push(s('text', { x: cx + p.w - 12, y: cy + 20, class: 'flagmark', 'text-anchor': 'end' }, 'FLAG'));
-      return s('g', p.static ? { class: cls } : { class: cls, tabindex: 0, role: 'button', 'aria-pressed': String(on), 'aria-label': p.name + ': ' + p.detail, onclick: () => flip(st, k), onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(st, k); } } }, kids);
-    };
-    const tapEdge = (k, x1, y1, x2, y2, text, lx, ly) => {
-      const on = !!st.f[k];
-      const gg = edge(x1, y1, x2, y2, text, 'tap' + (on ? ' flag' : '') + (rev && on ? ' wrong' : ''), 'm09a', lx, ly);
-      gg.setAttribute('tabindex', '0'); gg.setAttribute('role', 'button'); gg.setAttribute('aria-pressed', String(on)); gg.setAttribute('aria-label', PARTS[k].name + ': ' + PARTS[k].detail);
-      gg.addEventListener('click', () => flip(st, k));
-      gg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(st, k); } });
-      return gg;
-    };
-    Object.keys(PARTS).filter(k => PARTS[k].kind === 'n').forEach(k => g.push(node(k)));
-    // flows (drawn after the nodes so the labels sit on top)
-    g.push(tapEdge('e_chat', 210, 295, 296, 285, 'SSO chat'));
-    const tls = tapEdge('e_tls', 808, 157, 812, 157, 'Prompt + pages · TLS', 897, 222);
-    tls.querySelector('line').replaceWith(s('path', { d: 'M 470 250 L 470 157 L 808 157', class: 'ed', 'marker-end': 'url(#m09a)' }));
-    g.push(tls);
-    g.push(tapEdge('e_index', 575, 335, 524, 300, 'Nightly index', 662, 388));
-    g.push(edge(520, 275, 571, 110, '', '', 'm09a'), edge(520, 285, 571, 210, '', '', 'm09a'), edge(520, 310, 571, 435, '', '', 'm09a'), edge(520, 320, 571, 535, '', '', 'm09a'));
-    g.push(edge(750, 540, 811, 540, 'Any address', 'bad', 'm09b'));
-    g.push(edge(410, 320, 410, 376, '', '', 'm09a'), edge(410, 450, 410, 476, '', '', 'm09a'));
-
-    return svgWrap(1000, 600, 'HR Assistant architecture with trust zones', 760, g);
-  }
-
-
-  /* ---------- workshop: three architectures from the deck ---------- */
-  const QUESTIONS = ['What can this agent do that its user could not?', 'Whose identity does it act under?', 'What untrusted content does it read?', 'Which tools can it call, with what permissions?',
-    'Where is the policy check before each action?', 'What data could leave, and to where?', 'What is logged, and who reviews it?', 'How do we stop it, and who is allowed to?'];
-  const VERDICT = ['Secure', 'Scalable', 'Trustworthy', 'Governable', 'Ready for production'];
-  const VOPT = [['yes', 'Yes'], ['cond', 'With conditions'], ['no', 'No']];
-  const RES = [['low', 'Low'], ['med', 'Medium'], ['high', 'High']];
-  const EXS = [
-    { id: 'copilot', n: 1, name: 'Enterprise AI Security Copilot', min: 40,
-      desc: 'An LLM layer, a RAG layer over past incidents, an MCP integration layer, and links to the SIEM, the SOAR platform and threat-intelligence feeds. The copilot can isolate laptops and servers.',
-      parts: ['SOC analysts', 'Threat-intel websites', 'Copilot (LLM)', 'Incident RAG index', 'MCP layer', 'SIEM', 'SOAR', 'Endpoint tool: isolate', 'Model vendor'],
-      threats: [
-        { id: 'c1', t: 'Hidden instructions on a threat-intel web page', b: 'Web → agent', asi: 'ASI01 Goal hijack', ctl: ['Treat fetched content as data; no tool calls triggered by it', 'Tell the model in its prompt to ignore malicious pages', 'Stop using threat-intel feeds'], ok: 0, owner: 'Head of SecOps', res: 'med' },
-        { id: 'c2', t: 'Wrongful isolation of a production server', b: 'Agent → endpoint tool', asi: 'ASI02 Tool misuse', ctl: ['Let the copilot isolate only outside business hours', 'Human approval for any server isolation', 'Lower the model’s temperature'], ok: 1, owner: 'SOC Manager', res: 'low' },
-        { id: 'c3', t: 'Alert data reaching the model provider', b: 'Platform → vendor', asi: 'ASI04 Supply chain', ctl: ['Trust the vendor’s privacy page', 'Send alerts in summary form without review', 'Enterprise terms with no training on our data; redact secrets'], ok: 2, owner: 'CISO', res: 'low' },
-        { id: 'c4', t: 'Copilot used to read alerts beyond the analyst’s access', b: 'User → agent', asi: 'ASI03 Identity & privilege', ctl: ['Agent acts with the analyst’s own permissions', 'Remind analysts of the acceptable-use policy', 'One shared admin token so nothing breaks'], ok: 0, owner: 'IAM Lead', res: 'low' },
-        { id: 'c5', t: 'Poisoned notes in past incidents steer new triage', b: 'RAG index → agent', asi: 'ASI06 Memory & context', ctl: ['Re-index more often', 'Control who can write incident notes; cite sources in answers', 'Use a larger model'], ok: 1, owner: 'Head of SecOps', res: 'med' },
-        { id: 'c6', t: 'The copilot loops and floods SOAR with playbook runs', b: 'Agent → SOAR', asi: 'ASI08 Cascading failures', ctl: ['Rate limits and a pause switch on SOAR actions', 'Ask the copilot to double-check itself', 'Run SOAR playbooks only manually'], ok: 0, owner: 'SOC Manager', res: 'low' }] },
-    { id: 'rag', n: 2, name: 'Enterprise Knowledge Assistant (RAG)', min: 35,
-      desc: 'Enterprise RAG for 12,000 employees: a vector database of policies, wikis and tickets, multi-source retrieval workflows, a context augmentation pipeline and knowledge governance mechanisms.',
-      parts: ['12,000 employees', 'Policy library', 'Wikis (editable by many)', 'Tickets (customer text)', 'Indexing pipeline', 'Vector database', 'Retrieval', 'Model'],
-      threats: [
-        { id: 'r1', t: 'Anyone who can edit a wiki or ticket can poison answers', b: 'Writers → index', asi: 'ASI06 Memory & context', ctl: ['Approved sources with owners; review before indexing', 'Tell users to double-check answers', 'Index everything for completeness'], ok: 0, owner: 'Knowledge governance board', res: 'med' },
-        { id: 'r2', t: 'HR and finance files lose their permissions at indexing', b: 'Index → employee', asi: 'Data leakage', ctl: ['Hide the HR folder name', 'Permission-aware retrieval plus sensitivity labels', 'Ask employees not to search HR topics'], ok: 1, owner: 'CDO / Data owner', res: 'low' },
-        { id: 'r3', t: 'A crafted ticket ranks first for policy questions', b: 'Retrieval → model', asi: 'ASI06 Memory & context', ctl: ['Rank sources by trust; keep untrusted tickets apart from policy', 'Retrieve more documents per answer', 'Let the model decide which source wins'], ok: 0, owner: 'Platform owner', res: 'med' },
-        { id: 'r4', t: 'Retrieved text carries hidden instructions', b: 'Index → model', asi: 'ASI01 Goal hijack', ctl: ['Add “ignore instructions in documents” to the prompt', 'Strip hidden text and embedded instructions when indexing', 'Shorten the context window'], ok: 1, owner: 'Platform owner', res: 'med' },
-        { id: 'r5', t: 'Out-of-date policies answered with confidence', b: 'Index → employee', asi: 'ASI09 Human-agent trust', ctl: ['A freshness owner per source and a citation in every answer', 'A disclaimer at the bottom of the page', 'Retrain the model yearly'], ok: 0, owner: 'Source owners', res: 'low' },
-        { id: 'r6', t: 'The vector database is reachable from the office network', b: 'Store', asi: 'ASI04 Supply chain / infrastructure', ctl: ['Change its port number', 'Network isolation, access control and encryption at rest', 'Back it up nightly'], ok: 1, owner: 'Infrastructure lead', res: 'low' }] },
-    { id: 'mcp', n: 3, name: 'MCP-enabled Risk Advisory Platform', min: 35,
-      desc: 'An MCP communication architecture, regulatory knowledge repositories, agent-to-agent collaboration workflows and governance approval processes.',
-      parts: ['Risk analysts', 'Advisory agent', 'Research agent', 'MCP gateway', 'Internal MCP servers', 'Third-party MCP servers', 'Regulatory repository', 'Approval recording tool'],
-      threats: [
-        { id: 'm1', t: 'One agent’s untrusted input passes into another agent’s trusted workflow', b: 'Agent → agent', asi: 'ASI07 Inter-agent communication', ctl: ['A context boundary: data passed between agents as data, never as instructions', 'Let agents share their full context for accuracy', 'Run both agents on the same model'], ok: 0, owner: 'Head of AI platform', res: 'med' },
-        { id: 'm2', t: 'MCP servers use one shared service credential for every caller', b: 'Server → systems', asi: 'ASI03 Identity & privilege', ctl: ['Rotate the shared credential monthly', 'Per-agent identities and scoped tokens; act with the user’s rights', 'Store the credential in the prompt'], ok: 1, owner: 'IAM Lead', res: 'low' },
-        { id: 'm3', t: 'The regulatory repository is updated from outside sources without review', b: 'Outside → repository', asi: 'ASI06 Memory & context', ctl: ['Review and approve every source update before ingestion', 'Update it more often', 'Let the research agent fix errors it spots'], ok: 0, owner: 'Head of Compliance', res: 'med' },
-        { id: 'm4', t: 'The agent can call the tool that records approvals', b: 'Agent → approval tool', asi: 'ASI10 Rogue agents', ctl: ['Log the approvals the agent records', 'Human sign-off the agent cannot perform itself', 'Ask the agent to request permission first'], ok: 1, owner: 'Risk Committee chair', res: 'low' },
-        { id: 'm5', t: 'A third-party MCP server changes behaviour after approval', b: 'Vendor → platform', asi: 'ASI04 Supply chain', ctl: ['An approved registry with pinned versions; re-review on change', 'Install the latest version automatically', 'Trust servers with many downloads'], ok: 0, owner: 'MCP registry owner', res: 'low' },
-        { id: 'm6', t: 'A rogue service poses as the research agent', b: 'Agent → agent', asi: 'ASI07 Inter-agent communication', ctl: ['Signed agent identities and an allowlist of peers', 'Give agents friendly names', 'Check that messages are polite'], ok: 0, owner: 'Head of AI platform', res: 'low' }] }
+  const ACT = [['keep', 'Keep'], ['reduce', 'Reduce'], ['cut', 'Cut']];
+  const PERMS = [
+    { id: 'p1', asset: 'Invoices inbox', t: 'Read every email in the invoices inbox', imp: 2, red: ['Treat emails as data; follow no instructions in them', 'Only emails from suppliers on file'], ans: 'keep', why: 'The way in. The job needs it, so keep it and treat every email as untrusted content.' },
+    { id: 'p2', asset: 'Supplier master', t: 'Edit the supplier list, including bank details', imp: 3, red: ['Read-only supplier list', 'Bank changes need a call-back check'], ans: 'cut', why: 'With p3 it redirects payments. Payables only needs to read the list.' },
+    { id: 'p3', asset: 'Payments', t: 'Approve payments up to ₹5 lakh', imp: 3, red: ['Propose only; a person approves', 'Lower the limit to ₹50,000'], ans: 'reduce', why: 'Direct, repeatable fraud. The agent proposes; a person approves.' },
+    { id: 'p4', asset: 'Outbound email', t: 'Send email from finance to any address', imp: 2, red: ['Only suppliers already on file', 'External email needs approval'], ans: 'reduce', why: 'With p5, payroll leaves the building. Limit recipients to suppliers on file.' },
+    { id: 'p5', asset: 'Finance drive', t: 'Read the whole finance drive, including payroll', imp: 3, red: ['Invoices and purchase orders only'], ans: 'cut', why: 'Payables does not need payroll. Scope it to invoices and purchase orders.' },
+    { id: 'p6', asset: 'The internet', t: 'Browse any website', imp: 2, red: ['Allow-listed supplier portals only'], ans: 'cut', why: 'Lets the agent fetch more instructions or post data to an attacker’s site.' },
+    { id: 'p7', asset: 'IT helpdesk', t: 'Open tickets with the IT helpdesk', imp: 2, red: ['Tickets marked as raised by an AI agent'], ans: 'cut', why: 'An attacker can ask IT for a password reset in a trusted internal voice.' },
+    { id: 'p8', asset: 'Credential', t: 'Sign in with a password that never expires', imp: 2, red: ['Short-lived tokens, rotated daily'], ans: 'reduce', why: 'Access survives after someone notices. Use short-lived credentials.' }
   ];
-  function wbState(st, ex) { st.w = st.w || {}; const w = st.w[ex.id] || (st.w[ex.id] = {}); w.t = w.t || {}; w.q = w.q || {}; w.v = w.v || {}; return w; }
-  function workbench(st, rev) {
-    const ex = EXS.find(x => x.id === (st.ex || 'copilot')); const w = wbState(st, ex);
-    const on = ex.threats.filter(t => (w.t[t.id] || {}).on);
-    return [
-      stepHead('m10', 1),
-      box('dark', label('Workshop · You are the advisory team'), h('h3', null, 'Is this platform ready for production?'),
-        h('p', { class: 'sub' }, 'Three exercises, three deliverables. Pick an exercise; each architecture is reviewed with the five-step method and the eight questions.'),
-        seg(EXS.map(x => [x.id, 'Exercise ' + x.n + ' · ' + x.name, x.min + ' min']), ex.id, v => { st.ex = v || 'copilot'; }, 'Exercise', 'multi')),
-      box('', label('Exercise ' + ex.n + ' · Architecture'), h('h3', null, ex.name), h('p', null, ex.desc),
-        h('div', { class: 'roles' }, ex.parts.map(p => h('span', { class: 'role' }, p))),
-        h('p', { class: 'small' }, 'Every crossing between these parts needs three things: verified identity, validated content and a log entry.')),
-      stepHead('m10', 2),
-      box('', label('Threat model & risk register'), h('p', { class: 'sub' }, 'Mark each threat that applies, choose the control, name an owner and rate the residual risk the business would accept.'),
-        ex.threats.map(t => { const r = w.t[t.id] || (w.t[t.id] = {});
-          return h('div', { class: 'threat' + (r.on ? ' on' : '') },
-            h('div', { class: 'rowhead' }, h('b', null, t.t), h('span', { class: 'tag research' }, t.b), rev ? h('span', { class: 'tag composite' }, t.asi) : null,
-              toggle(r.on, r.on ? 'Applies' : 'Mark as applying', () => { r.on = !r.on; }, 'good')),
-            r.on ? [h('p', { class: 'small' }, 'Control'), seg(t.ctl.map((c, i) => [String(i), c]), r.ctl, v => { if (v == null) delete r.ctl; else r.ctl = v; }, 'Control', 'multi'),
-              rev && r.ctl != null ? h('p', { class: +r.ctl === t.ok ? 'goodline' : 'flagline' }, +r.ctl === t.ok ? 'Strong control.' : 'Weaker choice. Stronger: ' + t.ctl[t.ok]) : null,
-              h('div', { class: 'split' }, field(r.owner, v => { r.owner = v; }, { line: 1, id: 'wb-' + t.id + '-owner', ph: 'Named owner' + (rev ? ' (suggested: ' + t.owner + ')' : '') }),
-                h('div', null, h('p', { class: 'small' }, 'Residual risk'), seg(RES, r.res, v => { if (v) r.res = v; else delete r.res; }, 'Residual risk')))] : null); }),
-        stats(stat(on.length + ' / ' + ex.threats.length, 'Threats marked'), stat(on.filter(t => (w.t[t.id] || {}).owner).length, 'With a named owner'))),
-      stepHead('m10', 3),
-      box('', label('The leader’s eight questions'), QUESTIONS.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, (i + 1) + '. '), q), field(w.q[i], v => { w.q[i] = v; }, { line: 1, id: 'wb-' + ex.id + '-q' + i, ph: 'Answer for ' + ex.name })))),
-      stepHead('m10', 4),
-      box('dark', label('Your verdict'), VERDICT.map(c => h('div', { class: 'polrow' }, h('span', null, c), seg(VOPT, w.v[c], v => { if (v) w.v[c] = v; else delete w.v[c]; }, c)))),
-      stepHead('m10', 5),
-      box('', label('Deliverables'), h('pre', { class: 'memo-out' }, deliverables(st)), h('div', { class: 'btnrow' }, copyButton(() => deliverables(st), 'Copy all three deliverables')))
-    ];
-  }
-  function deliverables(st) {
-    const lines = [];
-    EXS.forEach(ex => {
-      const w = (st.w || {})[ex.id]; if (!w) return;
-      const on = ex.threats.filter(t => (w.t[t.id] || {}).on);
-      lines.push('=== Exercise ' + ex.n + ': ' + ex.name + ' ===',
-        '1 · ARCHITECTURE ASSESSMENT REPORT', 'Components: ' + ex.parts.join(', '),
-        'Trust boundaries reviewed: ' + [...new Set(ex.threats.map(t => t.b))].join('; '),
-        ...QUESTIONS.map((q, i) => (w.q[i] || '').trim() ? '  ' + q + ' ' + w.q[i].trim() : '').filter(Boolean),
-        '2 · THREAT MODEL & RISK MATRIX',
-        ...(on.length ? on.map(t => { const r = w.t[t.id]; return '  - ' + t.t + ' [' + t.b + ' · ' + t.asi + '] control: ' + (r.ctl != null ? t.ctl[+r.ctl] : 'not chosen') + ' · owner: ' + (r.owner || 'unassigned') + ' · residual: ' + nameOf(RES, r.res); }) : ['  (no threats marked)']),
-        '3 · SECURITY & GOVERNANCE REVIEW', '  Verdict: ' + VERDICT.map(c => c + ' ' + nameOf(VOPT, w.v[c])).join(' · '), '');
+  const BY = Object.fromEntries(PERMS.map(p => [p.id, p]));
+  // With on-behalf-of identity the agent only has Priya's rights: she cannot edit bank details or read payroll, and delegated tokens expire.
+  const OBO = { p2: 'cut', p5: 'cut', p8: 'reduce' };
+  const ARANK = { keep: 0, reduce: 1, cut: 2 };
+  const CHAINS = [
+    { id: 'A', name: 'Payment redirection', of: ['p2', 'p3'], text: 'Change a supplier’s bank details, then approve a payment to that account.' },
+    { id: 'B', name: 'Payroll leak', of: ['p5', 'p4'], text: 'Read the payroll file and email it to any address.' },
+    { id: 'C', name: 'Remote control', of: ['p1', 'p6'], text: 'Fetch fresh instructions from an attacker’s website and post data back.' },
+    { id: 'D', name: 'Fake invoice paid', of: ['p1', 'p3'], text: 'A fake invoice arrives in the inbox and the agent approves it.' },
+    { id: 'E', name: 'Help-desk takeover', of: ['p7'], text: 'Ask IT to reset the CFO’s password, in an internal voice.' },
+    { id: 'F', name: 'Persistence', of: ['p8'], text: 'The stolen credential keeps working after the incident is found.' }
+  ];
+  const JOB = [['p1', 'read incoming invoices'], ['p3', 'get suppliers paid'], ['p4', 'reply to suppliers']];
+
+  function init(st) { st.r = st.r || {}; st.k = st.k || {}; st.red = st.red || {}; return st; }
+  const act = (st, id) => { const a = st.k[id] || 'keep'; const o = st.idp === 'obo' && OBO[id]; return o && ARANK[o] > ARANK[a] ? o : a; };
+  const weight = (st, id) => { const a = act(st, id); return a === 'cut' ? 0 : a === 'reduce' ? (st.red[id] != null ? 0.3 : 0.6) : 1; };
+  const live = (st, ch) => ch.of.every(id => act(st, id) === 'keep');
+  function radius(st) { const tot = sum(PERMS.map(p => p.imp)); return sum(PERMS.map(p => p.imp * weight(st, p.id))) / tot; }
+  function jobGaps(st) { return JOB.filter(([id]) => act(st, id) === 'cut').map(([, t]) => t); }
+
+  function map(st) {
+    const cx = 500, cy = 300, R = 225, g = [];
+    const pos = PERMS.map((p, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / PERMS.length; return [cx + R * Math.cos(a) * 1.55, cy + R * Math.sin(a)]; });
+    g.push(s('circle', { cx, cy, r: R * 0.55, class: 'ring' }), s('circle', { cx, cy, r: R * 1.0, class: 'ring faint' }));
+    CHAINS.filter(ch => ch.of.length === 2).forEach(ch => {
+      const [a, b] = ch.of.map(id => pos[PERMS.indexOf(BY[id])]);
+      const on = live(st, ch);
+      const qx = ((a[0] + b[0]) / 2 + cx) / 2, qy = ((a[1] + b[1]) / 2 + cy) / 2;
+      g.push(s('path', { d: 'M ' + a[0] + ' ' + a[1] + ' Q ' + qx + ' ' + qy + ' ' + b[0] + ' ' + b[1], class: 'chain' + (on ? ' on' : '') }));
     });
-    return lines.length ? lines.join('\n') : 'Work through an exercise to draft the deliverables.';
+    PERMS.forEach((p, i) => {
+      const [x, y] = pos[i], a = act(st, p.id);
+      g.push(s('line', { x1: cx, y1: cy, x2: x, y2: y, class: 'spoke ' + a + (st.r[p.id] ? ' reach' : '') }));
+    });
+    g.push(s('g', { class: 'nd core' }, s('rect', { x: cx - 95, y: cy - 38, width: 190, height: 76, rx: 14 }), s('text', { x: cx, y: cy - 6, 'text-anchor': 'middle' }, 'Payables agent'), s('text', { x: cx, y: cy + 18, class: 'd', 'text-anchor': 'middle' }, 'Hijacked by one email')));
+    PERMS.forEach((p, i) => {
+      const [x, y] = pos[i], a = act(st, p.id), single = CHAINS.find(ch => ch.of.length === 1 && ch.of[0] === p.id && live(st, ch));
+      g.push(s('g', { class: 'nd asset ' + a + (st.r[p.id] ? ' reach' : ''), tabindex: 0, role: 'button', 'aria-pressed': String(!!st.r[p.id]), 'aria-label': p.asset + ': mark as reachable',
+        onclick: () => { st.r[p.id] = !st.r[p.id]; commit(); }, onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); st.r[p.id] = !st.r[p.id]; commit(); } } },
+        s('rect', { x: x - 88, y: y - 30, width: 176, height: 60, rx: 12 }),
+        s('text', { x: x - 76, y: y - 6 }, (i + 1) + '. ' + p.asset),
+        s('text', { x: x - 76, y: y + 16, class: 'd' }, a === 'keep' ? (st.r[p.id] ? 'Attacker reaches this' : 'Full access') : a === 'reduce' ? 'Reduced' : 'Cut'),
+        single ? s('circle', { cx: x + 76, cy: y - 18, r: 8, class: 'alarm' }) : null));
+    });
+    return svgWrap(1000, 600, 'Blast radius map of the agent’s eight permissions', 720, g);
   }
 
   registerLab({
-    id: 'm10', n: '10', mod: 'Architecture review', title: 'Architecture review workshop', format: 'Workshop: warm-up, 3 exercises, 3 deliverables', min: 130,
-    roles: ['Advisory team lead', 'Architect: defends the design', 'Security reviewer', 'Governance reviewer'],
-    task: 'Warm up by finding seven planted flaws in an HR agent design. Then, as the advisory team, review the three platforms from the brief: the Security Copilot, the Knowledge Assistant and the MCP Risk Advisory Platform. Build the threat register, answer the eight questions, give a verdict and hand over three deliverables.',
-    steps: [[20, 'Warm-up: flag, rate and fix the HR Assistant'], [40, 'Exercise 1: Security Copilot'], [35, 'Exercise 2: Knowledge Assistant (RAG)'], [35, 'Exercise 3: MCP Risk Advisory Platform']],
-    guide: ['Run this after the Copilot review as a fast second pass, or on its own.', 'Make the architect defend every flagged part for 30 seconds. Good reviewers withdraw weak flags.', 'The vendor and the TLS link are where tables argue most. The flaw is retention, not the connection.'],
+    id: 'm10', n: '10', mod: 'Trust', title: 'Trust architecture: who can a hijacked agent become?', format: 'Worksheet and drills', min: 40,
+    roles: ['CFO', 'CISO', 'Head of payables'],
+    task: 'An attacker hides instructions in one invoice email and takes over this accounts-payable agent. Decide whose identity it acts under, mark everything the attacker can reach, then keep, reduce or cut each permission. Shrink the blast radius without stopping the agent doing its job.',
+    steps: [[5, 'Read the permissions in role'], [5, 'Choose the identity model'], [10, 'Mark what the attacker reaches'], [10, 'Cut and reduce; break every chain'], [10, 'Drills: Zero Trust, trust domains, trust scores, supply chain']],
+    guide: ['The trick question: which permissions can the attacker reach? All of them. A hijacked agent has everything the agent has.', 'The head of payables should defend the job: cutting the inbox or payments stops the work. That tension is the point.', 'Compare final blast-radius percentages across tables, then ask the lowest table what the agent can no longer do.'],
     render(st) {
-      init(st); const rev = !!S.revealed.m10;
-      const flagged = TAPPABLE.filter(k => st.f[k]);
+      init(st);
+      const br = radius(st), liveCh = CHAINS.filter(ch => live(st, ch)), gaps = jobGaps(st), reach = PERMS.filter(p => st.r[p.id]).length;
       return [
+        box('dark', label('Accounts-payable agent'),
+          stats(stat(Math.round(br * 100) + '%', 'Blast radius', br > 0.6 ? 'bad' : br > 0.3 ? 'amber' : 'good'), stat(liveCh.length + ' / ' + CHAINS.length, 'Attack chains live', liveCh.length ? 'bad' : 'good'), stat(reach + ' / 8', 'Marked reachable'), stat(gaps.length ? 'No' : 'Yes', 'Job still works', gaps.length ? 'bad' : 'good')),
+          meter(br, br > 0.6 ? 'bad' : br > 0.3 ? 'accent' : 'good', 'Blast radius'),
+          gaps.length ? h('p', { class: 'flagline' }, 'The agent can no longer ' + gaps.join(', ') + '. The business will route around it.') : null),
         stepHead('m10', 0),
-        h('p', { class: 'small' }, 'Tap a box or a labelled flow to flag it. Wide diagram: scroll sideways on a phone, or use the list below.'),
-        diagram(st, rev),
-        box('dark', label('Review status'), stats(stat(flagged.length, 'Flagged'), stat(flagged.filter(k => st.sev[k] === 'high').length, 'Rated high'), stat(flagged.filter(k => st.fix[k]).length + ' / ' + flagged.length, 'With a fix')), meter(Math.min(1, flagged.length / 7), 'accent', 'Flags against the seven planted')),
-        details('All fourteen parts as a list', !flagged.length, h('div', { class: 'partlist' }, TAPPABLE.map(k => h('button', { type: 'button', class: 'partbtn', 'aria-pressed': String(!!st.f[k]), onclick: () => flip(st, k) }, h('b', null, PARTS[k].name), h('span', null, PARTS[k].detail))))),
-        flagged.map(k => box('flagbox', h('div', { class: 'rowhead' }, h('h3', null, PARTS[k].name), h('button', { type: 'button', class: 'linkbtn', onclick: () => flip(st, k) }, 'Unflag')),
-          h('p', { class: 'sub' }, PARTS[k].detail),
-          h('p', { class: 'small' }, 'Severity'), seg(SEV, st.sev[k], v => { if (v) st.sev[k] = v; else delete st.sev[k]; }, 'Severity'),
-          h('p', { class: 'small' }, 'Fix'), seg(FIXES, st.fix[k], v => { if (v) st.fix[k] = v; else delete st.fix[k]; }, 'Fix', 'multi'))),
-        workbench(st, rev)
+        box('identity', label('Identity propagation'), h('h3', null, 'Whose identity does the agent act under?'),
+          h('div', { class: 'idlanes' },
+            h('div', { class: 'idlane' + (st.idp === 'obo' ? ' on' : '') }, h('b', null, 'On behalf of the user'), h('span', null, 'Priya, payables analyst → agent acts as Priya → ERP applies Priya’s permissions')),
+            h('div', { class: 'idlane risky' + (st.idp !== 'obo' ? ' on' : '') }, h('b', null, 'Shared service account'), h('span', null, 'Priya → agent uses one admin account → ERP sees admin rights for everyone'))),
+          seg([['shared', 'Shared service account'], ['obo', 'On behalf of the user, with short-lived tokens']], st.idp || 'shared', v => { st.idp = v || 'shared'; }, 'Agent identity', 'multi'),
+          h('p', { class: 'small' }, st.idp === 'obo' ? 'Priya cannot edit bank details or read payroll, so the hijacked agent cannot either. Delegated tokens expire, and every log line shows Priya and the agent together.' : 'The agent holds more power than any user who talks to it. Anyone who can steer it gets admin rights.')),
+        stepHead('m10', 1),
+        h('p', { class: 'small' }, 'Tap a system on the map to mark it reachable. Red curves are attack chains still live.'),
+        map(st),
+        stepHead('m10', 2),
+        box('', label('Attack chains'), h('div', { class: 'chainlist' }, CHAINS.map(ch => h('div', { class: 'chainrow ' + (live(st, ch) ? 'on' : 'off') },
+          h('span', { class: 'cid' }, ch.id), h('div', null, h('b', null, ch.name + ' '), pill(live(st, ch) ? 'Live' : 'Broken', live(st, ch) ? 'bad' : 'good'), h('p', { class: 'small' }, ch.text + ' Needs: ' + ch.of.map(id => (PERMS.indexOf(BY[id]) + 1)).join(' + '))))))),
+        PERMS.map((p, i) => box('perm', h('div', { class: 'rowhead' }, h('h3', null, (i + 1) + '. ' + p.t),
+          toggle(st.r[p.id], st.r[p.id] ? 'Attacker reaches this' : 'Mark as reachable', () => { st.r[p.id] = !st.r[p.id]; })),
+          seg(ACT, st.k[p.id], v => { if (v) st.k[p.id] = v; else delete st.k[p.id]; if (v !== 'reduce') delete st.red[p.id]; }, 'Keep, reduce or cut'),
+          st.idp === 'obo' && OBO[p.id] && ARANK[OBO[p.id]] > ARANK[st.k[p.id] || 'keep'] ? h('p', { class: 'goodline' }, 'On-behalf-of identity already limits this: effectively ' + nameOf(ACT, OBO[p.id]).toLowerCase() + '.') : null,
+          act(st, p.id) === 'reduce' ? seg(p.red.map((t, j) => [String(j), t]), st.red[p.id], v => { if (v == null) delete st.red[p.id]; else st.red[p.id] = v; }, 'How to reduce', 'multi') : null)),
+        stepHead('m10', 3),
+        box('', h('h3', null, 'The worst chain your table found'), field(st.chain, v => { st.chain = v; }, { id: 'm10-chain', ph: 'In your own words' }))
       ];
     },
     answers(st) {
       init(st);
-      const found = FLAWS.filter(k => st.f[k]).length, wrong = TAPPABLE.filter(k => !PARTS[k].flaw && st.f[k]).length;
-      const fixed = FLAWS.filter(k => st.f[k] && st.fix[k] === PARTS[k].flaw).length;
+      const agree = PERMS.filter(p => act(st, p.id) === p.ans).length;
       return [
-        box('dark', stats(stat(found + ' / 7', 'Flaws found'), stat(fixed + ' / 7', 'Right fix chosen'), stat(wrong, 'False alarms'))),
-        FLAWS.map((k, i) => { const p = PARTS[k]; const mine = st.fix[k];
-          return h('div', { class: 'answer' }, h('b', null, (i + 1) + '. ' + p.name + ': ' + p.detail + ' '), pill(nameOf(SEV, p.sev) + ' severity', p.sev === 'high' ? 'bad' : 'amber'), ' ', st.f[k] ? pill(mine === p.flaw ? 'Right fix' : 'Found', 'good') : pill('Missed', 'bad'),
-            h('p', null, p.why), h('p', { class: 'small' }, 'Fix: ' + nameOf(FIXES, p.flaw))); }),
-        answer('Not planted flaws', TAPPABLE.filter(k => !PARTS[k].flaw).map(k => PARTS[k].name + ': ' + PARTS[k].why).join(' ')),
-        h('h3', { class: 'sectionhead' }, 'Workshop exercises: suggested registers'),
-        EXS.map(ex => box('', h('h3', null, 'Exercise ' + ex.n + ' · ' + ex.name), h('div', { class: 'scroll' }, h('table', null, h('tr', null, h('th', null, 'Threat'), h('th', null, 'Boundary'), h('th', null, 'OWASP'), h('th', null, 'Control'), h('th', null, 'Owner'), h('th', null, 'Residual')),
-          ex.threats.map(t => h('tr', null, h('td', null, t.t), h('td', null, t.b), h('td', null, t.asi), h('td', null, t.ctl[t.ok]), h('td', null, t.owner), h('td', null, nameOf(RES, t.res)))))),
-          h('p', { class: 'small' }, 'Every row ends with a named owner and an accepted residual risk. That is the decision leaders sign.'))),
-        answer('The pattern to remember', 'Three of the seven are identity and permissions, two are data leaving the boundary, two are about evidence and trust in content. That spread is typical of real reviews.')
+        box('dark', stats(stat(Math.round(radius(st) * 100) + '%', 'Your blast radius'), stat(Math.round(radius({ r: {}, k: Object.fromEntries(PERMS.map(p => [p.id, p.ans])), red: Object.fromEntries(PERMS.filter(p => p.ans === 'reduce').map(p => [p.id, '0'])) }) * 100) + '%', 'Suggested design'), stat(agree + ' / 8', 'Match the suggestion'))),
+        answer('Identity propagation first', 'Switching from a shared service account to on-behalf-of identity removes two chains before any permission is touched, because the agent can never hold more power than its user. Delegated tokens should be scoped to the task and short-lived, and logs should show the person and the agent together.'),
+        answer('Every permission is reachable', 'Once the agent is hijacked, the attacker has everything the agent has. Blast radius is set by permissions, not by the agent’s intent.'),
+        h('div', { class: 'scroll' }, h('table', null, h('tr', null, h('th', null, 'Permission'), h('th', null, 'Suggested'), h('th', null, 'Yours'), h('th', null, 'Why')),
+          PERMS.map(p => h('tr', { class: act(st, p.id) !== p.ans ? 'mismatch' : '' }, h('td', null, p.t), h('td', null, nameOf(ACT, p.ans)), h('td', null, nameOf(ACT, act(st, p.id))), h('td', null, p.why))))),
+        answer('The minimum that still does the job', 'Read the inbox as untrusted data; read-only supplier list; propose payments for a person to approve; email only suppliers on file; no payroll, browsing or helpdesk; short-lived credentials. Every chain breaks and the work continues.')
       ];
     },
     agg(docs) {
-      const ws = EXS.map(ex => ({ title: 'Verdict · ' + ex.name, cats: VOPT, rows: VERDICT.map(c => ({ label: c, counts: count(docs.map(d => d.w && d.w[ex.id] && d.w[ex.id].v && d.w[ex.id].v[c])) })) }));
-      const th = EXS.map(ex => ({ title: 'Threats marked · ' + ex.name, cats: [['y', 'Marked'], ['n', 'Not marked']], rows: ex.threats.map(t => ({ label: t.t, counts: count(docs.map(d => d.w && d.w[ex.id] && d.w[ex.id].t && d.w[ex.id].t[t.id] && d.w[ex.id].t[t.id].on ? 'y' : 'n')) })) }));
-      return [...ws, ...th, { title: 'Warm-up · tables that flagged each part', note: 'Starred parts are planted flaws.', cats: [['y', 'Flagged'], ['n', 'Not flagged']],
-        rows: TAPPABLE.map(k => ({ label: (PARTS[k].flaw ? '★ ' : '') + PARTS[k].name, counts: count(docs.map(d => d.f && d.f[k] ? 'y' : 'n')) })) }];
+      const radii = docs.map(d => { const x = Object.assign({ r: {}, k: {}, red: {} }, d); return Math.round(radius(x) * 100); });
+      return [{ type: 'bars', title: 'Final blast radius by table', note: 'Lower is better, as long as the job still works.', items: docs.map((d, i) => [d._table, radii[i], 100, radii[i] + '%']) },
+        { title: 'What tables did with each permission', cats: ACT, rows: PERMS.map(p => ({ label: p.t, counts: count(docs.map(d => (d.k && d.k[p.id]) || 'keep')) })) }];
     },
-    done: st => !!st.w && EXS.every(ex => st.w[ex.id] && Object.keys(st.w[ex.id].v || {}).length === VERDICT.length),
+    done: st => !!st.k && Object.keys(st.k).length >= 6,
     drills: [
-      { id: 'method', type: 'match', title: 'Five steps to review any AI architecture', intro: 'Which step produces this output?', wide: true, cats: [['scope', '1 · Scope'], ['diagram', '2 · Diagram'], ['bound', '3 · Mark boundaries'], ['threats', '4 · Map threats'], ['decide', '5 · Decide']], items: [
-        { t: 'A scope statement naming one use case and its business owner', a: 'scope', why: 'Leaders own step 1.' },
-        { t: 'A drawing of users, agents, models, data and tools', a: 'diagram', why: 'Engineers own steps 2 to 4.' },
-        { t: 'Every point where trust or ownership changes, circled', a: 'bound', why: 'The trust boundary map.' },
-        { t: 'Each crossing tested against the OWASP Agentic Top 10', a: 'threats', why: 'The threat list.' },
-        { t: 'Controls, owners and accepted residual risk in the risk register', a: 'decide', why: 'Leaders own step 5.' }] },
-      { id: 'crossing', type: 'match', title: 'Every crossing needs three things', intro: 'Which of the three does each control provide?', cats: [['identity', 'Verified identity'], ['content', 'Validated content'], ['log', 'A log entry']], items: [
-        { t: 'The agent presents a signed token naming the user it acts for', a: 'identity', why: 'Who is crossing.' },
-        { t: 'Hidden text is stripped from web pages before the agent reads them', a: 'content', why: 'What is crossing.' },
-        { t: 'The gateway records every tool call with its arguments', a: 'log', why: 'Evidence of the crossing.' },
-        { t: 'MCP servers are allowlisted and version-pinned', a: 'identity', why: 'The tool is who it says it is.' },
-        { t: 'Lead-form fields are marked as data, never instructions', a: 'content', why: 'ForcedLeak failed here.' }] },
-      { id: 'deliver', type: 'match', title: 'Three deliverables an advisory team hands over', intro: 'Which deliverable does each item belong in?', cats: [['report', 'Architecture assessment report'], ['threat', 'Threat model & risk matrix'], ['gov', 'Security & governance review']], items: [
-        { t: 'Trust boundary analysis', a: 'report', why: 'Part of the assessment report.' },
-        { t: 'Attack surface inventory and threat scenarios', a: 'threat', why: 'Part of the threat model.' },
-        { t: 'Risk ratings and business impact analysis', a: 'threat', why: 'Part of the risk matrix.' },
-        { t: 'Governance maturity and responsible AI findings', a: 'gov', why: 'Part of the governance review.' },
-        { t: 'Strengths, weaknesses and integration findings', a: 'report', why: 'Part of the assessment report.' },
-        { t: 'Executive recommendations', a: 'gov', why: 'Closes the governance review.' }] }
+      { id: 'runtime', type: 'match', title: 'Trust is checked at every boundary, on every step', intro: 'Which trust type does each runtime check protect?', cats: [['context', 'Context'], ['tool', 'Tool'], ['agent', 'Agent'], ['data', 'Data']], items: [
+        { t: 'Tag every input with its source and trust level', a: 'context', why: 'Outside content is data, never instructions.' },
+        { t: 'Verify identity, version and scope before each tool call', a: 'tool', why: 'Pinned tools behind a gateway.' },
+        { t: 'Authenticate agent messages and check delegation scope', a: 'agent', why: 'Signed agent identities, allowlisted peers.' },
+        { t: 'Check classification and freshness at retrieval', a: 'data', why: 'Sensitivity labels, permission-aware retrieval.' }] },
+      { id: 'zt', type: 'match', title: 'Zero Trust, applied to agents', intro: 'Which principle does each control apply?', cats: [['verify', 'Verify explicitly'], ['least', 'Least privilege'], ['breach', 'Assume breach']], items: [
+        { t: 'Every tool call is authenticated and authorised, even inside the network', a: 'verify', why: 'Nothing is trusted because of where it comes from.' },
+        { t: 'The agent gets a token for this one task that expires in 15 minutes', a: 'least', why: 'Just enough access, just in time, for just this task.' },
+        { t: 'Messages from other agents are checked against an allowlist of signed identities', a: 'verify', why: 'Agents are actors too, and must prove who they are.' },
+        { t: 'A hijacked agent can only send email to suppliers already on file', a: 'breach', why: 'Design so a hijacked agent can do only limited, visible damage.' },
+        { t: 'The reporting agent can read the CRM but has no delete permission', a: 'least', why: 'Remove what the job does not need.' },
+        { t: 'Every agent action is logged outside the agent, so damage is visible fast', a: 'breach', why: 'Assume it will be compromised; make sure you would see it.' }] },
+      { id: 'domains', type: 'match', title: 'Six things an AI system must decide to trust', intro: 'Which trust domain does each check belong to?', wide: true, cats: [['identity', 'Identity'], ['context', 'Context'], ['tool', 'Tool'], ['agent', 'Agent'], ['data', 'Data'], ['supply', 'Supply chain']], items: [
+        { t: 'Is this really Priya, or someone using her session?', a: 'identity', why: 'Identity: is this the user or agent it claims to be?' },
+        { t: 'This PDF came from an outside supplier, so its text is data, never instructions', a: 'context', why: 'Context: can we trust where this content came from?' },
+        { t: 'The MCP server is the approved version, unchanged since review', a: 'tool', why: 'Tool: is it what it says, and unchanged since approval?' },
+        { t: 'The scheduling agent may not tell the payments agent to pay anyone', a: 'agent', why: 'Agent: is this other agent allowed to instruct ours?' },
+        { t: 'The price list is current and approved for customer-facing answers', a: 'data', why: 'Data: accurate, current and permitted for this use.' },
+        { t: 'We know which open-source library parses the uploaded files', a: 'supply', why: 'Supply chain: where models, plugins and libraries came from.' },
+        { t: 'The model vendor must tell us before upgrading the model version', a: 'supply', why: 'A silent model upgrade changes behaviour you approved.' },
+        { t: 'HR files keep their access permissions when they are indexed', a: 'data', why: 'Data trust includes permission to use it for this asker.' }] },
+      { id: 'score', type: 'match', title: 'Trust is scored on every action', intro: 'Set the trust level for each runtime event. High: complete autonomously. Medium: extra verification. Low: read-only; human approval to act.', cats: [['high', 'High'], ['medium', 'Medium'], ['low', 'Low']], items: [
+        { t: 'Known user, managed laptop, approved tool, normal working hours', a: 'high', why: 'All signals normal.' },
+        { t: 'First-ever use of a newly added MCP tool, at 23:40', a: 'medium', why: 'New tool plus unusual hour: verify before acting.' },
+        { t: 'An inbound email contains “ignore your previous instructions”', a: 'low', why: 'An injection pattern drops trust to read-only.' },
+        { t: 'A request to export 50,000 customer rows', a: 'medium', why: 'Large data request: extra verification.' },
+        { t: 'An unregistered agent asks ours to release a payment', a: 'low', why: 'Unknown agent: no action without a human.' },
+        { t: 'A routine summary of the user’s own documents', a: 'high', why: 'Low impact, known source.' }] },
+      { id: 'vendor', type: 'match', title: 'Evidence that beats the vendor’s word', intro: 'Before customer data flows to an AI vendor, which of these is independent evidence?', cats: [['strong', 'Independent evidence'], ['weak', 'Vendor’s word only']], items: [
+        { t: 'A current ISO 27001 certificate or SOC 2 report', a: 'strong', why: 'Audited by a third party.' },
+        { t: '“Our model is bias-tested and secure”', a: 'weak', why: 'A claim without results is not evidence.' },
+        { t: 'A recent penetration-test summary, plus the fixes', a: 'strong', why: 'Shows testing happened and findings were closed.' },
+        { t: 'A right-to-audit clause in the contract', a: 'strong', why: 'Lets you check, not just trust.' },
+        { t: 'A slide saying admin access is protected', a: 'weak', why: 'McHire’s admin login was 123456.' },
+        { t: 'An AI bill of materials listing models, data, plugins and libraries', a: 'strong', why: 'Lets you track supply-chain risk and changes.' },
+        { t: 'A sales promise to notify you “promptly” of breaches', a: 'weak', why: 'Put a deadline in the contract.' }] },
+      { id: 'tokens', type: 'match', title: 'Integration tokens after the Drift breach', intro: 'Good practice or risky?', cats: [['good', 'Good practice'], ['risky', 'Risky']], items: [
+        { t: 'Each AI integration token has a named business owner', a: 'good', why: 'Someone must justify every key.' },
+        { t: 'Tokens never expire so integrations do not break', a: 'risky', why: 'Stolen tokens keep working for years.' },
+        { t: 'A timed drill to revoke one vendor’s tokens within an hour', a: 'good', why: 'Test it before you need it.' },
+        { t: 'Full read-write CRM access “in case we need it later”', a: 'risky', why: 'Scope to what the integration needs now.' },
+        { t: 'Alerts on unusual bulk data pulls by integrations', a: 'good', why: 'That is how the Drift theft looked.' },
+        { t: 'Agents deployed with the cloud platform’s default service account', a: 'risky', why: 'Defaults inherited broad rights in the Vertex AI research.' }] }
     ],
     summary(st) {
       init(st);
-      return [deliverables(st), 'Warm-up: HR Assistant', ...TAPPABLE.filter(k => st.f[k]).map(k => '- ' + PARTS[k].name + ' (' + PARTS[k].detail + '): ' + nameOf(SEV, st.sev[k]) + ' · fix: ' + nameOf(FIXES, st.fix[k]))].join('\n');
+      return ['Blast radius: ' + Math.round(radius(st) * 100) + '% · live chains: ' + (CHAINS.filter(c => live(st, c)).map(c => c.name).join(', ') || 'none'),
+        ...PERMS.map(p => '- ' + p.t + ': ' + nameOf(ACT, act(st, p.id)) + (st.red[p.id] != null ? ' (' + p.red[+st.red[p.id]] + ')' : ''))].join('\n');
     }
   });
 })();

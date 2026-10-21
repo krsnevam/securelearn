@@ -1,60 +1,7 @@
 'use strict';
-/* Scenarios and leadership discussions from the program deck, one list per module (generated from the deck's slides and facilitator notes). */
+/* Scenarios and leadership discussions from the program deck (generated from the deck's slides and facilitator notes). */
 const SCENARIOS = {
  "m07": [
-  {
-   "id": "s1",
-   "tag": "Real case · Aug 2025",
-   "title": "Stolen keys from a chat widget",
-   "whatLabel": "What happened",
-   "what": "Attackers stole the access tokens used by Salesloft’s Drift AI chat integration. With them, they pulled data from the Salesforce systems of hundreds of companies, including several major security vendors.",
-   "situationLabel": "Your situation",
-   "situation": "Over the past year, teams have connected more than 30 AI tools to email, CRM and file storage. Nobody holds a full list of their tokens.",
-   "minutes": 15,
-   "q": [
-    "Who owns the inventory of AI integrations and their tokens?",
-    "Could we revoke one vendor’s tokens within an hour?",
-    "What scope and expiry rules apply from now on?"
-   ],
-   "source": "Source: Google Threat Intelligence Group advisory (UNC6395) and vendor disclosures, August–September 2025",
-   "notes": "Concept tested: supply chain trust and token misuse. The attacker never touched the victims' own systems directly; they used a trusted integration's keys. Model answer. 1) Security owns the inventory, but each integration needs a business owner who justifies it. Most organizations can find these tokens in their SaaS admin consoles (connected apps). 2) Test it: run a revocation drill for one vendor and time it. 3) Least scope (read only what is needed), short expiry with refresh, IP restrictions where possible, and alerts on unusual bulk data pulls by integrations. Leadership point: every \"connect your CRM\" button on an AI tool creates a long-lived key to your data held by someone else."
-  },
-  {
-   "id": "s2",
-   "tag": "Real case · Jun 2025",
-   "title": "The password was 123456",
-   "whatLabel": "What happened",
-   "what": "Security researchers logged into the admin side of McHire, McDonald’s AI hiring chatbot run by Paradox.ai, using “123456” as username and password. They could reach records of up to 64 million applicants. The vendor fixed it quickly once told.",
-   "situationLabel": "Your situation",
-   "situation": "Procurement is about to sign an AI chatbot vendor that will hold your customers’ personal data.",
-   "minutes": 15,
-   "q": [
-    "Which five questions do we ask before any data flows?",
-    "What evidence beats the vendor’s word?",
-    "Who signs off vendor AI risk, and how often?"
-   ],
-   "source": "Source: disclosure by researchers Ian Carroll and Sam Curry, June–July 2025; Paradox.ai statement",
-   "notes": "Concept tested: trust in AI vendors and their supply chain. The AI itself was not the weak point; basic security around it was. Model answer. 1) Where is our data stored and for how long? Who at the vendor can access it, and how is admin access protected (MFA, no default accounts)? Is our data used to train models? What certifications and recent penetration tests exist? How fast will they notify us of a breach? 2) Independent evidence: a current ISO 27001 or SOC 2 report, a recent penetration test summary, a right-to-audit clause, and a short technical review by your own team. 3) The governance council's vendor process, re-checked yearly and on any major product change. India angle: under the DPDP Act the company that decides why data is collected (the data fiduciary) stays responsible for what its processors do."
-  },
-  {
-   "id": "s3",
-   "tag": "Research finding · Mar 2026",
-   "title": "The double agent in the cloud",
-   "whatLabel": "What happened",
-   "what": "Palo Alto Networks’ Unit 42 showed that an agent deployed on Google’s Vertex AI inherited broad default permissions from a platform service account. The researchers used them to extract credentials and reach restricted resources. Google revised its guidance.",
-   "situationLabel": "Your situation",
-   "situation": "To hit a quarter-end launch, your team is deploying ten agents on a major cloud platform with default settings.",
-   "minutes": 15,
-   "q": [
-    "Who reviews the permissions an agent gets by default?",
-    "What is the blast radius if one agent is hijacked?",
-    "Delay the launch to fix identities, or not?"
-   ],
-   "source": "Source: Unit 42 research, March–April 2026, summarised in the OWASP GenAI Exploit Round-up, Q1 2026",
-   "notes": "Concept tested: least privilege and identity for agents. Model answer. 1) Cloud security, as part of the design gate; \"default\" is a decision someone made for you. 2) With inherited broad permissions, potentially every resource that service account can reach, which may extend beyond the project. 3) A short delay is usually right: give each agent its own identity with only the permissions it needs. If the business insists on the date, launch the lowest-risk agents first with restricted identities and hold the rest. Leadership point: cloud providers share responsibility, but configuration is yours. This links to the \"assume breach\" principle of Zero Trust."
-  }
- ],
- "m08": [
   {
    "id": "s1",
    "tag": "Real case · May 2025",
@@ -107,7 +54,7 @@ const SCENARIOS = {
    "notes": "Composite scenario; the figures are fictional. Principle tested: fairness and explainability; the key concept is proxy discrimination, where neutral-looking data such as PIN code or phone model stands in for protected characteristics. Model answer. 1) Do not simply switch off: route affected districts to manual underwriting while the model is investigated, so customers are not harmed either way. 2) Fairness (outcomes not measured by region), explainability (cannot explain a decline), accountability (no owner watching outcomes). 3) Be factual: acknowledge the disparity, explain the interim manual review, commit to an independent fairness review, and offer declined applicants a re-assessment. RBI's FREE-AI report (August 2025) sets out principles and recommendations for regulated entities, including board-approved AI policies; check the latest supervisory expectations with compliance."
   }
  ],
- "m09": [
+ "m08": [
   {
    "id": "s1",
    "tag": "Real case · Aug 2025",
@@ -177,7 +124,7 @@ const SCENARIOS = {
    "notes": "Concept tested: self-correcting systems and real-time feedback loops. Model answer. 1) Both: pin or roll back the previous model version, and immediately add a mandatory allergy cross-check against the medication record before signature. Re-review summaries issued in the last two weeks for patients with recorded allergies. 2) An automated daily evaluation set (known cases where the right answer is known), plus a field-level check comparing structured data such as allergies with the generated text, with alerts on any drop. 3) Advance notice of model changes, the right to pin versions, and shared evaluation results. Leadership point: \"signed by a doctor\" is weak oversight if doctors sign 60 summaries a shift; design the check, do not assume it."
   }
  ],
- "m10": [
+ "m09": [
   {
    "id": "s1",
    "tag": "Research finding · Sep 2025",
@@ -228,6 +175,59 @@ const SCENARIOS = {
    ],
    "source": "Composite scenario for the architecture review workshop; figures are illustrative",
    "notes": "Concept tested: the eight review questions from earlier in this module. Answer key, at least seven flaws: (1) customer uploads are untrusted and can carry hidden text instructions; (2) a shared admin account gives the agent far more power than a claims handler; (3) the fraud rule lives in the prompt, not in code; (4) payouts up to ₹1.5 lakh with no human threshold; (5) error-only logs mean no audit trail of decisions; (6) no rate limit on payouts per hour or per policy; (7) no tested kill switch. Strong answer on question 3: go with conditions. Launch in \"recommend\" mode with a human approving payouts above a low threshold, a dedicated agent identity, full decision logging, and payout rate limits; move to autonomy after 30 days of measured accuracy. Leadership point: a public launch date is not a control."
+  }
+ ],
+ "m10": [
+  {
+   "id": "s1",
+   "tag": "Real case · Aug 2025",
+   "title": "Stolen keys from a chat widget",
+   "whatLabel": "What happened",
+   "what": "Attackers stole the access tokens used by Salesloft’s Drift AI chat integration. With them, they pulled data from the Salesforce systems of hundreds of companies, including several major security vendors.",
+   "situationLabel": "Your situation",
+   "situation": "Over the past year, teams have connected more than 30 AI tools to email, CRM and file storage. Nobody holds a full list of their tokens.",
+   "minutes": 15,
+   "q": [
+    "Who owns the inventory of AI integrations and their tokens?",
+    "Could we revoke one vendor’s tokens within an hour?",
+    "What scope and expiry rules apply from now on?"
+   ],
+   "source": "Source: Google Threat Intelligence Group advisory (UNC6395) and vendor disclosures, August–September 2025",
+   "notes": "Concept tested: supply chain trust and token misuse. The attacker never touched the victims' own systems directly; they used a trusted integration's keys. Model answer. 1) Security owns the inventory, but each integration needs a business owner who justifies it. Most organizations can find these tokens in their SaaS admin consoles (connected apps). 2) Test it: run a revocation drill for one vendor and time it. 3) Least scope (read only what is needed), short expiry with refresh, IP restrictions where possible, and alerts on unusual bulk data pulls by integrations. Leadership point: every \"connect your CRM\" button on an AI tool creates a long-lived key to your data held by someone else."
+  },
+  {
+   "id": "s2",
+   "tag": "Real case · Jun 2025",
+   "title": "The password was 123456",
+   "whatLabel": "What happened",
+   "what": "Security researchers logged into the admin side of McHire, McDonald’s AI hiring chatbot run by Paradox.ai, using “123456” as username and password. They could reach records of up to 64 million applicants. The vendor fixed it quickly once told.",
+   "situationLabel": "Your situation",
+   "situation": "Procurement is about to sign an AI chatbot vendor that will hold your customers’ personal data.",
+   "minutes": 15,
+   "q": [
+    "Which five questions do we ask before any data flows?",
+    "What evidence beats the vendor’s word?",
+    "Who signs off vendor AI risk, and how often?"
+   ],
+   "source": "Source: disclosure by researchers Ian Carroll and Sam Curry, June–July 2025; Paradox.ai statement",
+   "notes": "Concept tested: trust in AI vendors and their supply chain. The AI itself was not the weak point; basic security around it was. Model answer. 1) Where is our data stored and for how long? Who at the vendor can access it, and how is admin access protected (MFA, no default accounts)? Is our data used to train models? What certifications and recent penetration tests exist? How fast will they notify us of a breach? 2) Independent evidence: a current ISO 27001 or SOC 2 report, a recent penetration test summary, a right-to-audit clause, and a short technical review by your own team. 3) The governance council's vendor process, re-checked yearly and on any major product change. India angle: under the DPDP Act the company that decides why data is collected (the data fiduciary) stays responsible for what its processors do."
+  },
+  {
+   "id": "s3",
+   "tag": "Research finding · Mar 2026",
+   "title": "The double agent in the cloud",
+   "whatLabel": "What happened",
+   "what": "Palo Alto Networks’ Unit 42 showed that an agent deployed on Google’s Vertex AI inherited broad default permissions from a platform service account. The researchers used them to extract credentials and reach restricted resources. Google revised its guidance.",
+   "situationLabel": "Your situation",
+   "situation": "To hit a quarter-end launch, your team is deploying ten agents on a major cloud platform with default settings.",
+   "minutes": 15,
+   "q": [
+    "Who reviews the permissions an agent gets by default?",
+    "What is the blast radius if one agent is hijacked?",
+    "Delay the launch to fix identities, or not?"
+   ],
+   "source": "Source: Unit 42 research, March–April 2026, summarised in the OWASP GenAI Exploit Round-up, Q1 2026",
+   "notes": "Concept tested: least privilege and identity for agents. Model answer. 1) Cloud security, as part of the design gate; \"default\" is a decision someone made for you. 2) With inherited broad permissions, potentially every resource that service account can reach, which may extend beyond the project. 3) A short delay is usually right: give each agent its own identity with only the permissions it needs. If the business insists on the date, launch the lowest-risk agents first with restricted identities and hold the rest. Leadership point: cloud providers share responsibility, but configuration is yours. This links to the \"assume breach\" principle of Zero Trust."
   }
  ],
  "m11": [
@@ -578,8 +578,8 @@ const SCENARIOS = {
     "Which control failed: agent, process or people?",
     "What must change before the next run?"
    ],
-   "source": "Draws on Modules 7, 11 and 13 · composite scenario inspired by the Arup deepfake case; figures are illustrative",
-   "notes": "Capstone case B integrates agent impersonation and deepfakes (Module 11), trust architecture (Module 7) and production readiness (Module 13). Inject at minute 10: the real supplier cannot be reached because it is a public holiday in their state. Inject at minute 20: a second supplier email arrives with the same new bank details. Strong answers: hold only the affected payment and release the rest, so other suppliers are not harmed; verify through a contact already on file, never one from the email or call; the failure is in process design, because the agent was allowed to act on bank-change requests at all. Before the next run: bank changes removed from the agent's tools, call-back to numbers on file, dual approval, and a cooling-off period for first payments to new accounts. Also report to the bank and file a cyber-crime complaint if it is confirmed as fraud."
+   "source": "Draws on Modules 10, 11 and 13 · composite scenario inspired by the Arup deepfake case; figures are illustrative",
+   "notes": "Capstone case B integrates agent impersonation and deepfakes (Module 11), trust architecture (Module 10) and production readiness (Module 13). Inject at minute 10: the real supplier cannot be reached because it is a public holiday in their state. Inject at minute 20: a second supplier email arrives with the same new bank details. Strong answers: hold only the affected payment and release the rest, so other suppliers are not harmed; verify through a contact already on file, never one from the email or call; the failure is in process design, because the agent was allowed to act on bank-change requests at all. Before the next run: bank changes removed from the agent's tools, call-back to numbers on file, dual approval, and a cooling-off period for first payments to new accounts. Also report to the bank and file a cyber-crime complaint if it is confirmed as fraud."
   },
   {
    "id": "c3",
@@ -595,22 +595,13 @@ const SCENARIOS = {
     "Do we notify regulators, and under which rules?",
     "What must change before this agent runs again?"
    ],
-   "source": "Draws on Modules 9, 14 and 15 · composite scenario inspired by AI-lab agent incidents disclosed in 2026",
-   "notes": "Capstone case C integrates runtime oversight (Module 9), telemetry and independent logging (Module 14) and governance and disclosure (Module 15). It mirrors the 2026 disclosures in which AI-lab agents exceeded their sandboxes and one omitted an action from its own report. Inject at minute 12: logs show the agent used credentials found in a public code repository. Strong answers: on the first call, acknowledge, thank them, commit to a joint investigation and to deleting the data, and do not speculate; stop the agent (level 3) and preserve logs; legal assesses obligations, which may include CERT-In reporting within six hours of noticing the incident, contractual notice to the partner, and data protection duties if personal data was involved; before rerunning: network egress allowlists, no use of found credentials, independent gateway logging, and a named owner reviewing behaviour. Key leadership point: you are accountable for what your agents do, even when nobody told them to."
+   "source": "Draws on Modules 8, 14 and 15 · composite scenario inspired by AI-lab agent incidents disclosed in 2026",
+   "notes": "Capstone case C integrates runtime oversight (Module 8), telemetry and independent logging (Module 14) and governance and disclosure (Module 15). It mirrors the 2026 disclosures in which AI-lab agents exceeded their sandboxes and one omitted an action from its own report. Inject at minute 12: logs show the agent used credentials found in a public code repository. Strong answers: on the first call, acknowledge, thank them, commit to a joint investigation and to deleting the data, and do not speculate; stop the agent (level 3) and preserve logs; legal assesses obligations, which may include CERT-In reporting within six hours of noticing the incident, contractual notice to the partner, and data protection duties if personal data was involved; before rerunning: network egress allowlists, no use of found credentials, independent gateway logging, and a named owner reviewing behaviour. Key leadership point: you are accountable for what your agents do, even when nobody told them to."
   }
  ]
 };
 const DISCUSSIONS = {
  "m07": {
-  "q": "If an attacker steered one of our agents, what could they reach?",
-  "items": [
-   "Which of our agents run on shared service accounts?",
-   "Which third-party tools have never been vetted?",
-   "Could we revoke an agent’s access within minutes?"
-  ],
-  "notes": "This framing, the blast radius of a hijacked agent, is the best single test of trust architecture. If the honest answer is \"most of our systems\", identity propagation and least privilege are the priority."
- },
- "m08": {
   "q": "Which of our AI systems would we struggle to explain to a regulator tomorrow?",
   "items": [
    "Who owns that system today, by name?",
@@ -619,7 +610,7 @@ const DISCUSSIONS = {
   ],
   "notes": "Give tables 10 minutes. Ask each table to pick one real system from their organization. Collect the 30-day gaps on a flipchart; they become personal commitments revisited in the 90-day plan at the end of the program."
  },
- "m09": {
+ "m08": {
   "q": "If an agent went wrong at 2 a.m., who would step in, and how fast?",
   "items": [
    "Which of our AI decisions must always need approval?",
@@ -628,7 +619,7 @@ const DISCUSSIONS = {
   ],
   "notes": "Most organizations discover here that AI escalation has no owner outside business hours. Push for a concrete answer to question three: minutes, hours or days. That number drives how much autonomy is acceptable."
  },
- "m10": {
+ "m09": {
   "q": "Which AI system in our organization has never had an architecture review?",
   "items": [
    "Who would be qualified to run that review?",
@@ -636,6 +627,15 @@ const DISCUSSIONS = {
    "Should a failed review block go-live?"
   ],
   "notes": "Vendor AI features often bypass architecture review entirely because they arrive as a setting in an existing product. Steer the discussion toward making review a gate, not a recommendation."
+ },
+ "m10": {
+  "q": "If an attacker steered one of our agents, what could they reach?",
+  "items": [
+   "Which of our agents run on shared service accounts?",
+   "Which third-party tools have never been vetted?",
+   "Could we revoke an agent’s access within minutes?"
+  ],
+  "notes": "This framing, the blast radius of a hijacked agent, is the best single test of trust architecture. If the honest answer is \"most of our systems\", identity propagation and least privilege are the priority."
  },
  "m11": {
   "q": "Which of our agents reads outside content, and what can it do next?",
