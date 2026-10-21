@@ -8,6 +8,10 @@ Live app: https://claude.ai/artifact/2SNepAFvq2HNnVBXJ5NLfS
 
 **Agents at Meridian** opens with the deck's challenge, *Approve Project NEXUS*: you vote on a launch, watch it fail hour by hour, then rebuild NEXUS through ten episodes, one per module. Every episode starts with a fail-first trap and its reveal, and a repair board on the home screen turns NEXUS's six failures green as you go. You are Meridian's new Head of AI Risk. Each episode is a sequence of single screens, with no scrolling. In each screen a character speaks, you make one decision, tap items on an animated diagram, sort cards one at a time, flip switches, or talk to a stakeholder live. Every choice shows its consequence and moves three meters: Safety, Trust and Speed. Each episode ends with stars and its key lessons. The detailed labs below are the facilitator's deep-dive workbench at `#labs`.
 
+## Core RAG Lab (`#rag`)
+
+**Build Ask Meridian** is the hands-on core of Modules 09 and 12. Participants design a knowledge assistant's pipeline under a 13-point budget, choosing the approach (RAG, fine-tuning or pasting everything) and an option at each of eight stages: sources, ingestion, vector store, access, retrieval, generation, output and updates. Their design then runs through a day in production: nine events, from ordinary questions to a stale policy, a stale permission after a role change, a poisoned wiki, hidden instructions in a vendor PDF, a keyword-stuffed ticket, a secret in a runbook, an exposed vector store and an auto-updating parser. Each event animates through the pipeline and is stopped, weakened or succeeds. The incident report counts incidents, records exposed, wrong answers and direct loss, names the control, owner and module for each, and compares the design with an expert one. Participants redesign and replay; their run history shows the improvement. The simulation is deterministic, so tables with the same design see the same result.
+
 ## The ten labs
 
 Each lab opens with the module's fail-first trap, then has five tabs: **1 · Work task** (a mission card, then numbered steps, each labelled Decide, Simulate, Write or Read, ending with **Check my work**), **2 · Quick quiz** (instant right/wrong feedback with the reason), **3 · Case studies** (the deck’s live scenarios and leadership discussion, each with an expert answer), **Expert answers** (opened by Check my work, with facilitator notes) and **Room** (compares every table).
@@ -56,6 +60,7 @@ app/
   js/trap-data.js     fail-first traps and reveals, generated from the deck
   js/trap.js          the trap and reveal component, shared by the story and the labs
   js/story-data.js    the story season: the NEXUS opening, ten episodes, the NEXUS failure timeline
+  js/rag.js           the core RAG Lab: pipeline design, production run, incident report
   js/story.js         story engine: one-screen scenes, animation, meters, routing ('#' and '#e07'…)
   js/labs/m07–m16.js  one file per lab: data, render, answers, aggregation, summary
   js/main.js          home, lab view, tabs, presenter mode, room collector

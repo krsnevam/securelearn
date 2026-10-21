@@ -104,6 +104,23 @@ for (const lab of App.labs) {
   C.fn = null; C.state = 'off';
 }
 go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map missing');
+// RAG Lab: a naive design then the expert design
+{
+  const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  go('rag'); clk(doc.querySelector('#app .stagebot .btn.primary'));
+  const pickAll = idx => { for (let st = 0; st < 9; st++) { S.rag.focus = st; App.render(); const cards = doc.querySelectorAll('#app .ragstage .card-opt'); clk(cards[Math.min(idx(st), cards.length - 1)]); } };
+  pickAll(() => 0);
+  const run = () => { clk([...doc.querySelectorAll('#app .stagebot button')].find(b => /Go live/.test(b.textContent))); let n = 0; while (S.rag.phase === 'run' && n++ < 20) clk([...doc.querySelectorAll('#app .stagebot button')].find(b => /Next event|Incident report/.test(b.textContent))); };
+  run();
+  if (S.rag.phase !== 'report') fail('RAG naive run did not reach the report');
+  const naive = S.rag.runs[0].bad;
+  clk([...doc.querySelectorAll('#app .stagebot button')].find(b => /Redesign/.test(b.textContent)));
+  const EXPERT = { approach: 'rag', sources: 'tickets', ingest: 'sanitize', store: 'private', access: 'query', rank: 'trust', gen: 'data', output: 'dlp', updates: 'pinned' };
+  Object.assign(S.rag.d, EXPERT); App.render(); run();
+  const expert = S.rag.runs[1].bad;
+  if (!(naive >= 6 && expert === 0)) fail('RAG outcomes unexpected: naive ' + naive + ' incidents, expert ' + expert);
+  console.log('rag lab: naive design ' + naive + ' incidents, expert design ' + expert);
+}
 // story mode: play every episode start to finish
 go(''); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 module episodes'); if (!doc.querySelector('#app .nexushero')) fail('NEXUS opening missing on home');
 const click = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
