@@ -55,7 +55,7 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | The leader's eight questions | Lab: eight questions for each exercise |
 | Exercise 1: Security Copilot | Lab: workbench, exercise 1 |
 | Sample answer (threat, boundary, control, owner, residual) | Lab: risk register; Answers: suggested registers |
-| Exercise 2: Knowledge Assistant (RAG) | Lab: workbench, exercise 2 |
+| Exercise 2: Knowledge Assistant (RAG) | Lab: workbench, exercise 2; **Core RAG Lab** (`#rag`): design the pipeline, run a day of attacks, incident report, rebuild |
 | Exercise 3: MCP Risk Advisory Platform | Lab: workbench, exercise 3 |
 | Three deliverables | Lab: deliverables generator; Drill "Three deliverables" |
 | Scenarios: ForcedLeak, calendar invite, five-flaw claims agent | Scen. ×3 |
@@ -82,7 +82,7 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Leadership discussion | Disc. |
 | **Module 12 · RAG & MCP** | |
 | Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
-| RAG pipeline attacks | Lab: pipeline coverage diagram; Drill "Which RAG stage is attacked?" |
+| RAG pipeline attacks | **Core RAG Lab** (`#rag`): nine production events across ingest, store, retrieve, generate and output; Lab: pipeline coverage diagram; Drill "Which RAG stage is attacked?" |
 | Data leakage | Lab: permission-aware retrieval demo |
 | Six RAG controls | Lab: pipeline control picker |
 | MCP attack vectors | Lab: approval board and rug-pull round; Drill "Every MCP connection is a door" |

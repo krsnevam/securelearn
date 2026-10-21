@@ -911,3 +911,56 @@ input[type=text]:focus, textarea:focus { border-color: var(--accent); outline: n
 .stage.season { grid-template-rows: auto auto 1fr auto; }
 
 .scenewrap > .sc { margin-block: auto; }
+
+/* ================= RAG Lab ================= */
+.raghero, .raglink { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 18px; text-decoration: none; color: var(--ink); background: linear-gradient(120deg, rgba(141,182,242,.22), rgba(169,139,245,.16)); border: 1px solid rgba(141,182,242,.55); transition: transform .15s; }
+.raghero:hover, .raglink:hover { transform: translateY(-2px); }
+.raghero b, .raglink b { font-family: var(--f-display); font-size: 21px; } .raghero span:last-child, .raglink span { color: var(--muted); font-size: 14px; }
+.stage.season { grid-template-rows: auto auto auto 1fr auto; }
+.ragphase { display: flex; gap: 4px; } .ragphase span { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; color: var(--muted); }
+.ragphase span.on { background: #F2B544; color: #16234A; }
+@media (max-width: 560px) { .ragphase span:not(.on) { display: none; } }
+.ragsteps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 640px) { .ragsteps { grid-template-columns: 1fr 1fr; } }
+.ragsteps > div { background: rgba(255,255,255,.05); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; animation: fadeUp .5s both; }
+.ragsteps b { font: 700 22px var(--f-mono); color: #F2B544; } .ragsteps span { font-weight: 700; } .ragsteps small { color: var(--muted); }
+.ragtop { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.budget { display: flex; align-items: center; gap: 10px; min-width: 220px; font-size: 13px; } .budget span { color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; font-size: 11px; }
+.budget.over b { color: #FF8A8A; animation: shake .4s; }
+.ragpipe { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 760px) { .ragpipe { grid-template-columns: repeat(9, 92px); overflow-x: auto; padding-bottom: 4px; } }
+.ragnode { position: relative; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; text-align: left; background: rgba(255,255,255,.04); border: 2px solid var(--line); border-radius: 12px; padding: 8px; color: var(--ink); cursor: pointer; min-width: 0; transition: transform .12s, border-color .15s; }
+.ragnode:not(:last-child)::after { content: ""; position: absolute; right: -8px; top: 50%; width: 8px; height: 2px; background: rgba(141,182,242,.5); }
+.ragnode .rn { font: 700 11px var(--f-mono); color: var(--muted); } .ragnode b { font-size: 12.5px; } .ragnode small { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ragnode.set { border-color: rgba(141,182,242,.6); } .ragnode.focus { border-color: #F2B544; box-shadow: 0 0 0 3px rgba(242,181,68,.25); transform: translateY(-2px); }
+.ragstage { display: flex; flex-direction: column; gap: 10px; animation: fadeUp .35s both; }
+.ragstage h3 { font-family: var(--f-display); font-size: clamp(19px, 3.2vw, 24px); font-weight: 600; }
+.card-opt.picked { border-color: #F2B544; background: rgba(242,181,68,.14); animation: tapPop .25s; }
+.optrow { display: flex; justify-content: space-between; align-items: center; }
+.cost { font: 700 12px var(--f-mono); border-radius: 999px; padding: 3px 9px; background: rgba(242,181,68,.2); color: #F2B544; } .cost.free { background: rgba(255,255,255,.08); color: var(--muted); }
+.tally { display: flex; gap: 8px; font: 700 13px var(--f-mono); } .tally span { border-radius: 999px; padding: 4px 10px; background: rgba(255,255,255,.06); }
+.t-good { color: #5FD08F; } .t-warn { color: #F2B544; } .t-bad { color: #FF8A8A; }
+.ragflow { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 18px 0 8px; }
+.flownode { border-radius: 12px; padding: 12px 8px; text-align: center; background: rgba(255,255,255,.05); border: 2px solid var(--line); font-size: 13px; }
+.flownode.pass { animation: passGlow .5s both; }
+.flownode.block { animation: nodeState .5s both; --c: #5FD08F; }
+.flownode.weak { animation: nodeState .5s both; --c: #F2B544; }
+.flownode.hit { animation: nodeState .5s both, shake .5s 2s; --c: #FF8A8A; }
+.flownode.idle { opacity: .4; }
+@keyframes passGlow { 0% { border-color: var(--line); } 50% { border-color: #8DB6F2; background: rgba(141,182,242,.18); } 100% { border-color: rgba(141,182,242,.5); } }
+@keyframes nodeState { 0% { border-color: var(--line); } 100% { border-color: var(--c); background: color-mix(in srgb, var(--c) 18%, transparent); } }
+.packet { position: absolute; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: #8DB6F2; box-shadow: 0 0 12px #8DB6F2; animation: travel 1.8s cubic-bezier(.4,0,.2,1) forwards; }
+.packet.bad { background: #FF8A8A; box-shadow: 0 0 14px #FF8A8A; } .packet.good { background: #5FD08F; box-shadow: 0 0 14px #5FD08F; } .packet.warn { background: #F2B544; box-shadow: 0 0 14px #F2B544; }
+@keyframes travel { from { left: 0%; } to { left: calc((var(--stop) + .5) * 20% - 7px); } }
+.eventcard { background: rgba(255,255,255,.05); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; animation: deal .5s both; }
+.evhead { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; } .evhead .small { color: var(--muted); }
+.evask { font-family: var(--f-display); font-size: clamp(18px, 3vw, 23px); line-height: 1.35; }
+.sc-rag .consequence b { font-size: 17px; }
+.reprows { display: flex; flex-direction: column; gap: 5px; }
+.reprow { display: grid; grid-template-columns: 24px 1fr; gap: 2px 10px; background: rgba(255,255,255,.04); border-radius: 10px; padding: 8px 12px; animation: fadeUp .4s both; }
+.reprow small { grid-column: 2; color: var(--muted); font-size: 12.5px; }
+.reprow .ri { font-weight: 800; } .reprow.good .ri { color: #5FD08F; } .reprow.warn .ri { color: #F2B544; } .reprow.bad .ri { color: #FF8A8A; }
+.reprow.bad { border-left: 3px solid #FF8A8A; }
+.stars.small { font-size: 28px; gap: 4px; }
+.sc-rag .finalm { flex-wrap: wrap; justify-content: flex-start; } .sc-rag .finalm b { font-size: 26px; }
+.runs { color: #8DB6F2 !important; }

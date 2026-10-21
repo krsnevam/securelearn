@@ -202,6 +202,7 @@ function sceneRecap(ep, st) {
     h('div', { class: 'btnrow center' },
       next ? h('a', { class: 'btn primary', href: '#' + next.id }, 'Next: ' + next.title + ' →') : h('a', { class: 'btn primary', href: '#' }, 'Back to the season'),
       h('button', { type: 'button', class: 'btn', onclick: () => { S.story[ep.id] = { i: 0, picks: {}, spots: {}, sorts: {}, tog: {}, live: {}, tl: {} }; if (ep.lab && S.traps) delete S.traps[ep.lab]; Story.typed = {}; commit(); } }, 'Replay'),
+      ep.id === 'e09' || ep.id === 'e12' ? h('a', { class: 'btn', href: '#rag' }, 'Open the RAG Lab') : null,
       ep.lab ? h('a', { class: 'btn', href: '#' + ep.lab }, 'Deep-dive workbench') : null));
 }
 
@@ -276,6 +277,7 @@ function renderSeason() {
       h('p', { class: 'lead' }, opened ? 'NEXUS failed in 72 hours. Rebuild it one module at a time: every episode opens with a trap, and fixes part of NEXUS.' : 'It starts with a vote. Meridian Finance wants to launch Project NEXUS on Friday, and you are the AI Risk Committee.'),
       h('div', { class: 'btnrow' }, h('a', { class: 'btn primary big', href: '#' + next.id }, (next.id === 'e00' ? 'Start: the opening challenge' : (doneN ? 'Continue: ' : 'Next: ') + 'Episode ' + next.n) + ' →'),
         h('span', { class: 'small' }, opened ? doneN + ' of 10 episodes complete' : '30 minutes · then ten episodes'))),
+    h('a', { class: 'raghero', href: '#rag' }, h('span', { class: 'kicker' }, 'Core lab · Modules 09 and 12'), h('b', null, 'Build Ask Meridian: a RAG pipeline under attack'), h('span', null, (S.rag && S.rag.runs && S.rag.runs.length ? 'Runs so far: ' + S.rag.runs.length + '. Last: ' + S.rag.runs[S.rag.runs.length - 1].bad + ' incidents.' : 'Design it, run a day in production, see what breaks, rebuild.'))),
     opened ? repairStrip(false) : h('a', { class: 'nexushero', href: '#e00' }, h('span', { class: 'kicker alarm' }, 'Opening challenge'), h('b', null, 'Approve Project NEXUS'), h('span', null, 'Vote first. Then watch what happens in the first 72 hours.')),
     h('div', { class: 'eps' }, mods.map((e, k) => { const st = (S.story || {})[e.id]; const n = st && st.finished ? stars(e, st) : -1;
       return h('a', { class: 'ep' + (n >= 0 ? ' done' : '') + (e === next ? ' next' : ''), href: '#' + e.id, style: 'animation-delay:' + (0.04 * k) + 's' },
@@ -287,7 +289,7 @@ function renderSeason() {
 /* Called by App.render for story routes. */
 function renderStoryRoute(hash) {
   const app = document.getElementById('app');
-  app.replaceChildren(/^e\d\d$/.test(hash) && EP[hash] ? renderEpisode(hash) : renderSeason());
+  app.replaceChildren(hash === 'rag' ? renderRag() : /^e\d\d$/.test(hash) && EP[hash] ? renderEpisode(hash) : renderSeason());
   // typewriter for speech
   const el = app.querySelector('[data-typed]');
   if (el) {
