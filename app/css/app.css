@@ -964,3 +964,8 @@ input[type=text]:focus, textarea:focus { border-color: var(--accent); outline: n
 .stars.small { font-size: 28px; gap: 4px; }
 .sc-rag .finalm { flex-wrap: wrap; justify-content: flex-start; } .sc-rag .finalm b { font-size: 26px; }
 .runs { color: #8DB6F2 !important; }
+
+/* The season home scrolls as a normal page; episodes and the RAG Lab stay one screen. */
+.stage.season { display: flex; flex-direction: column; gap: 14px; height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
+.stage.season .eps { overflow: visible; flex: none; grid-auto-rows: minmax(110px, auto); }
+.stage.season > * { flex: none; }
