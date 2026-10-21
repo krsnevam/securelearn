@@ -13,20 +13,20 @@ The scenario and discussion text, including the facilitators' model answers, is 
 
 | Deck slide | Covered in |
 |---|---|
+| **Opening challenge · Project NEXUS** | |
+| Brief: you are the AI Risk Committee | Story: episode 00 intro |
+| Exhibit A: the NEXUS architecture | Story: episode 00 exhibit |
+| Exhibit B: the governance pack | Story: episode 00 governance pack |
+| Five committees and the vote | Story: episode 00 vote (A, B or C) |
+| System fail: the first 72 hours | Story: episode 00 hour-by-hour timeline |
+| Debrief: every box ticked, the architecture failed | Story: episode 00 debrief, linking each failure to its module |
+| Rebuild NEXUS, one layer per module | Home: NEXUS repair board (six failures turn green as modules are completed) |
 | Journey: ten leadership questions | Home cards and each lab header; Home wrap-up ("which can you now answer?") |
 | Why this matters | Home hero; takeaway 1 |
 | Outcomes: Govern, Challenge, Defend, Prove | Home outcomes row |
-| 34 live scenarios, one rhythm | Scenarios tab in every lab (31 scenarios + 3 capstone cases) |
-| **Module 07 · Trust architecture** | |
-| Zero Trust applied to agents | Drill "Zero Trust, applied to agents" |
-| Six things an AI system must decide to trust | Drill "Six things an AI system must decide to trust" |
-| Trust boundaries & runtime trust validation | Drill "Trust is checked at every boundary" |
-| Identity propagation | Lab: identity switch (shared account vs on-behalf-of), which changes the blast radius |
-| Trust scoring | Drill "Trust is scored on every action" |
-| Supply chain trust, AI-BOM | Drills "Evidence that beats the vendor's word" and "Integration tokens" |
-| Scenarios: Drift tokens, McHire, Vertex AI | Scen. ×3 |
-| Leadership discussion | Disc.; Lab: blast-radius map |
-| **Module 08 · Responsible AI** | |
+| 34 live scenarios, one rhythm | Scenarios tab in every lab (31 scenarios + 3 capstone cases); fail-first traps for Modules 07–15 |
+| **Module 07 · Responsible AI** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
 | Six principles with tests | Lab: scorecard with radar and regulator challenges |
 | Bias enters at four points | Drills "Bias enters at four points" and "The PIN-code problem" |
 | Human oversight: match autonomy to impact | Drill "Match autonomy to impact" |
@@ -36,7 +36,8 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Implementation in four moves | Drill "From principles to practice" |
 | Scenarios: Workday, Deloitte, PIN-code bank | Scen. ×3 |
 | Leadership discussion | Disc.; Lab: 30-day gap |
-| **Module 09 · Responsive AI** | |
+| **Module 08 · Responsive AI** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
 | Responsive AI concepts | Drill "Responsive AI adapts to context" |
 | Real-time feedback loops | Lab: agent-loop diagram |
 | Runtime policy enforcement | Lab: policy generator; Drills "Rules the agent cannot talk its way past" and "Enforce in code at the gateway" |
@@ -46,7 +47,8 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Six-layer responsive architecture | Drill "Six layers" |
 | Scenarios: Taco Bell, OpenClaw, airline vouchers, silent upgrade | Scen. ×4 |
 | Leadership discussion | Disc. |
-| **Module 10 · Architecture review workshop** | |
+| **Module 09 · Architecture review workshop** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
 | Workshop brief and verdict criteria | Lab: workbench verdict (secure, scalable, trustworthy, governable, ready) |
 | Reference architecture, trust boundaries | Lab: warm-up trust-zone diagram; Drill "Every crossing needs three things" |
 | Five-step review method | Drill "Five steps to review any AI architecture" |
@@ -58,7 +60,18 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Three deliverables | Lab: deliverables generator; Drill "Three deliverables" |
 | Scenarios: ForcedLeak, calendar invite, five-flaw claims agent | Scen. ×3 |
 | Leadership discussion | Disc. |
+| **Module 10 · Trust architecture** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
+| Zero Trust applied to agents | Drill "Zero Trust, applied to agents" |
+| Six things an AI system must decide to trust | Drill "Six things an AI system must decide to trust" |
+| Trust boundaries & runtime trust validation | Drill "Trust is checked at every boundary" |
+| Identity propagation | Lab: identity switch (shared account vs on-behalf-of), which changes the blast radius |
+| Trust scoring | Drill "Trust is scored on every action" |
+| Supply chain trust, AI-BOM | Drills "Evidence that beats the vendor's word" and "Integration tokens" |
+| Scenarios: Drift tokens, McHire, Vertex AI | Scen. ×3 |
+| Leadership discussion | Disc.; Lab: blast-radius map |
 | **Module 11 · Attack surface** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
 | Attack surface expansion | Drill "An agent takes instructions from everything it reads" |
 | Prompt injection & jailbreaks | Lab: memo demo, context window, defence simulator, Gandalf; Drill "Direct or indirect" |
 | Tool abuse, escalation, runaway | Drill "When agents act" |
@@ -68,6 +81,7 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Scenarios: Amazon Q, web traps, attacker agents, deepfake CFO | Scen. ×4 |
 | Leadership discussion | Disc. |
 | **Module 12 · RAG & MCP** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
 | RAG pipeline attacks | Lab: pipeline coverage diagram; Drill "Which RAG stage is attacked?" |
 | Data leakage | Lab: permission-aware retrieval demo |
 | Six RAG controls | Lab: pipeline control picker |
@@ -77,17 +91,21 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Scenarios: postmark-mcp, GitHub MCP, Supabase MCP, "Ask HR" | Scen. ×4 |
 | Leadership discussion | Disc. |
 | **Module 13 · Productization** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
 | Secure AI SDLC | Drill "Security built into every stage" |
 | Deployment architecture | Drill "Cloud, hybrid or private" |
 | Security testing & model validation | Drill "Test AI the way attackers will use it" |
 | Release & change management | Drill "A prompt edit is a production change" |
 | Runtime controls & human approval gates | Drills "Controls that work while the agent works" and "Human approval gates by action" |
 | Monitoring, audit trails & logging | Drill "Being able to explain any decision" |
+| Compliance validation & operational security reviews | Drill "Validate before launch, then review on a rhythm"; Story: episode 13 sort |
+| Approval fatigue and gate bypass (speaker notes) | Drill "Two ways approval gates fail" |
 | Governance checkpoints (gates 0–3) | Drill "Five gates" |
 | Production readiness assessment | Lab: go/no-go meeting, readiness pack, conditions, risk grid, memo |
 | Scenarios: CBA voice bot, s1ngularity, Friday prompt edit | Scen. ×3 |
 | Leadership discussion | Disc. |
 | **Module 14 · SOC** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
 | AI in SOC environments | Drill "The SOC now uses AI, and must also defend it" |
 | AI telemetry | Drill "What the SOC must see" |
 | Monitoring pipeline (gateway, SIEM, SOAR) | Drill "From agent activity to SOC action" |
@@ -97,6 +115,7 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Scenarios: HR copilot 02:14, LLMjacking, runaway POs, unreported actions | Scen. ×4 |
 | Leadership discussion | Disc.; Lab: incident ticket |
 | **Module 15 · Governance** | |
+| Fail-first trap and reveal | Story: episode trap screen; Workbench: trap card at the top of the Work task |
 | Governance operating model | Drill "Who decides what, at three levels" |
 | EU AI Act tiers, dates, fines | Lab: classification; Drills "EU AI Act: obligations phased to 2028" and "true or false" |
 | Control frameworks (EU AI Act, ISO, NIST, DPDP) | Drill "How law, standards and frameworks fit together" |
@@ -108,10 +127,11 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Scenarios: Digital Omnibus, CEO avatar, OpenClaw | Scen. ×3 |
 | Leadership discussion | Disc.; Lab: board report |
 | **Module 16 · Capstone** | |
-| Three exercises | Lab: capstone overview, linking to the Module 10 and 12 workbenches |
+| Three exercises | Lab: capstone overview, linking to the Module 09 and 12 workbenches |
 | Capstone deliverables | Lab: deliverables checklist |
 | Incident simulation | Lab: branching Aria tabletop |
 | Cases A–C | Scen. ×3 |
+| NEXUS v2 board presentation | Lab: presentation checklist and the chair’s five twists; Story: episode 16 board scenes |
 | Assessment rubric | Lab: weighted rubric self-score |
 | **Close** | |
 | Key takeaways | Home wrap-up: weakest takeaway |

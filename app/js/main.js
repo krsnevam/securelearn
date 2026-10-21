@@ -3,10 +3,10 @@
    Room tabs, presenter mode, result codes and the room collector. */
 
 /* From the deck's journey, outcomes, takeaways and 90-day plan slides. */
-const LEAD_Q = { m07: 'What does our AI trust, and on what basis?', m08: 'Are our AI principles real, or just posters?', m09: 'Can our AI adjust safely in real time?',
-  m10: 'Would our AI platform pass a pre-production review?', m11: 'How could someone turn our agents against us?', m12: 'Can our knowledge and tool links be poisoned?',
+const LEAD_Q = { m07: 'Are our AI principles real, or just posters?', m08: 'Can our AI adjust safely in real time?', m09: 'Would our AI platform pass a pre-production review?',
+  m10: 'What does our AI trust, and on what basis?', m11: 'How could someone turn our agents against us?', m12: 'Can our knowledge and tool links be poisoned?',
   m13: 'What must be true before and after an agent goes live?', m14: 'Would we notice an attack, and could we stop it?', m15: 'Can we prove control to boards and regulators?', m16: 'Can we apply all of it under pressure?' };
-const OUTCOMES = [['Govern', 'Set principles, classify AI risk and run approval decisions with confidence.', 'Modules 08, 09, 15'], ['Challenge', 'Ask the questions that expose weak AI architecture before it ships.', 'Modules 07, 10'],
+const OUTCOMES = [['Govern', 'Set principles, classify AI risk and run approval decisions with confidence.', 'Modules 07, 08, 15'], ['Challenge', 'Ask the questions that expose weak AI architecture before it ships.', 'Modules 09, 10'],
   ['Defend', 'Understand how agents are attacked and sponsor the right controls.', 'Modules 11, 12, 14'], ['Prove', 'Report AI risk to boards and regulators with evidence, not assurances.', 'Modules 13, 15']];
 const TAKEAWAYS = ['Agents act, so AI risk is now operating risk.', 'Principles need owners, tests and evidence.', 'Trust nothing by default: users, agents, content or tools.',
   'Untrusted content plus a powerful tool is the core danger.', 'Real controls live in code at the gateway, not in prompts.', 'If the SOC cannot see it or stop it, it is not ready.'];
@@ -166,7 +166,7 @@ function labView(lab) {
   const nd = sum((lab.drills || []).map(d => d.items.length)), ns = scenariosFor(lab).length;
   const tabs = [['do', '1 · Work task'], ['drills', '2 · Quick quiz' + (nd ? ' (' + nd + ')' : '')], ['scen', '3 · Case studies' + (ns ? ' (' + ns + ')' : '')], ['ans', rev ? 'Expert answers ✓' : 'Expert answers'], ['room', 'Room']];
   let body;
-  if (tab === 'do') body = [missionCard(lab), clockPanel(lab), lab.render(st), rolePlayPanel(lab), checkPanel(lab), sharePanel(lab),
+  if (tab === 'do') body = [trapPanel(lab), missionCard(lab), clockPanel(lab), lab.render(st), rolePlayPanel(lab), checkPanel(lab), sharePanel(lab),
     h('div', { class: 'btnrow end' }, confirmTwice('reset-' + lab.id, 'Clear this lab’s answers', () => { delete S.labs[lab.id]; delete S.revealed[lab.id]; }, 'warn'))];
   else if (tab === 'ans') body = rev
     ? [lab.answers(st), details('Facilitator notes', false, h('ul', { class: 'plain' }, lab.guide.map(g => h('li', null, g)))),

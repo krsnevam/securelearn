@@ -6,18 +6,18 @@ Live app: https://claude.ai/artifact/2SNepAFvq2HNnVBXJ5NLfS
 
 ## Story mode (the home screen)
 
-**Agents at Meridian** is a ten-episode story, one per module. You are Meridian's new Head of AI Risk. Each episode is a sequence of single screens, with no scrolling. In each screen a character speaks, you make one decision, tap items on an animated diagram, sort cards one at a time, flip switches, or talk to a stakeholder live. Every choice shows its consequence and moves three meters: Safety, Trust and Speed. Each episode ends with stars and its key lessons. The detailed labs below are the facilitator's deep-dive workbench at `#labs`.
+**Agents at Meridian** opens with the deck's challenge, *Approve Project NEXUS*: you vote on a launch, watch it fail hour by hour, then rebuild NEXUS through ten episodes, one per module. Every episode starts with a fail-first trap and its reveal, and a repair board on the home screen turns NEXUS's six failures green as you go. You are Meridian's new Head of AI Risk. Each episode is a sequence of single screens, with no scrolling. In each screen a character speaks, you make one decision, tap items on an animated diagram, sort cards one at a time, flip switches, or talk to a stakeholder live. Every choice shows its consequence and moves three meters: Safety, Trust and Speed. Each episode ends with stars and its key lessons. The detailed labs below are the facilitator's deep-dive workbench at `#labs`.
 
 ## The ten labs
 
-Each lab has five tabs: **1 · Work task** (a mission card, then numbered steps, each labelled Decide, Simulate, Write or Read, ending with **Check my work**), **2 · Quick quiz** (instant right/wrong feedback with the reason), **3 · Case studies** (the deck’s live scenarios and leadership discussion, each with an expert answer), **Expert answers** (opened by Check my work, with facilitator notes) and **Room** (compares every table).
+Each lab opens with the module's fail-first trap, then has five tabs: **1 · Work task** (a mission card, then numbered steps, each labelled Decide, Simulate, Write or Read, ending with **Check my work**), **2 · Quick quiz** (instant right/wrong feedback with the reason), **3 · Case studies** (the deck’s live scenarios and leadership discussion, each with an expert answer), **Expert answers** (opened by Check my work, with facilitator notes) and **Room** (compares every table).
 
 | Module | Lab | Main exercise |
 |---|---|---|
-| 07 Trust | Trust architecture: who can a hijacked agent become? | Identity propagation switch, radial blast-radius map, live attack chains |
-| 08 Responsible AI | Score one of your own AI systems | Six-principle scorecard, radar, regulator challenges, 30-day gap |
-| 09 Responsive AI | Autonomy, runtime policy and escalation | Sort board, agent-loop diagram, risk map, policy generator |
-| 10 Architecture review | Architecture review workshop | Warm-up flaw hunt; three exercise workbenches with threat registers, eight questions, verdicts and deliverables |
+| 07 Responsible AI | Score one of your own AI systems | Six-principle scorecard, radar, regulator challenges, 30-day gap |
+| 08 Responsive AI | Autonomy, runtime policy and escalation | Sort board, agent-loop diagram, risk map, policy generator |
+| 09 Architecture review | Architecture review workshop | Warm-up flaw hunt; three exercise workbenches with threat registers, eight questions, verdicts and deliverables |
+| 10 Trust | Trust architecture: who can a hijacked agent become? | Identity propagation switch, radial blast-radius map, live attack chains |
 | 11 Attacks | Watch an injection, then defend against it | Hidden-text demo, context window, defence simulator, Gandalf log |
 | 12 RAG & MCP | Secure retrieval and the tool approval board | RAG pipeline coverage, permission-aware retrieval demo, MCP approval board with a rug-pull round |
 | 13 Productization | Go / no-go for ClaimsBot | Readiness pack, private briefs, conditions, risk grid, decision memo |
@@ -53,7 +53,9 @@ app/
   js/drills.js        Quick quiz and Case studies tabs (render, answers, room, summary)
   js/flows.js         guided steps per lab and the kinds of action (Decide, Simulate, Quiz, Write, Read, Live AI)
   js/coach.js         live AI via the sample capability: case-study coach feedback and stakeholder role-plays
-  js/story-data.js    the story season: ten episodes of scenes
+  js/trap-data.js     fail-first traps and reveals, generated from the deck
+  js/trap.js          the trap and reveal component, shared by the story and the labs
+  js/story-data.js    the story season: the NEXUS opening, ten episodes, the NEXUS failure timeline
   js/story.js         story engine: one-screen scenes, animation, meters, routing ('#' and '#e07'…)
   js/labs/m07–m16.js  one file per lab: data, render, answers, aggregation, summary
   js/main.js          home, lab view, tabs, presenter mode, room collector
