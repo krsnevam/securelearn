@@ -40,7 +40,7 @@ function fitSlides() {
   document.querySelectorAll('.slidestage').forEach(st => { const c = st.querySelector('.slidecanvas'); if (c && st.clientWidth) c.style.transform = 'scale(' + (st.clientWidth / 1920) + ')'; });
 }
 window.addEventListener('resize', fitSlides);
-document.addEventListener('fullscreenchange', () => requestAnimationFrame(fitSlides));
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && document.getElementById('deckviewer')) rerender(); requestAnimationFrame(fitSlides); });
 
 function deckIdsFor(labId) { return DECK.order.filter(id => id === labId || id.startsWith(labId + '-')); }
 function deckSectionName(start) { return start === 'cover' ? 'Opening' : start === 'why' ? 'Introduction' : start === 'takeaways' ? 'Close' : /^m\d\d$/.test(start) ? 'M' + start.slice(1) : start; }
@@ -49,7 +49,13 @@ function deckSectionName(start) { return start === 'cover' ? 'Opening' : start =
 function deckViewer(ids, key, opts = {}) {
   S.deck = S.deck || {};
   const at = Math.max(0, Math.min(ids.length - 1, S.deck[key] || 0)), id = ids[at], sl = DECK.slides[id];
-  const goTo = i => { S.deck[key] = Math.max(0, Math.min(ids.length - 1, i)); commit(); };
+  /* In full screen, swap the viewer's contents in place: re-rendering the page would remove the full-screen element and drop out of it. */
+  const goTo = i => {
+    S.deck[key] = Math.max(0, Math.min(ids.length - 1, i));
+    const fs = document.fullscreenElement;
+    if (fs && fs.id === 'deckviewer') { persist(); fs.replaceChildren(...deckViewer(ids, key, opts).childNodes); requestAnimationFrame(fitSlides); }
+    else commit();
+  };
   App.deckNav = { prev: () => goTo(at - 1), next: () => goTo(at + 1) };
   const stage = h('div', { class: 'slidestage', role: 'img', 'aria-label': 'Slide ' + (at + 1) + ' of ' + ids.length + ': ' + sl.t,
     onclick: e => { const r = stage.getBoundingClientRect(); goTo(e.clientX - r.left < r.width / 3 ? at - 1 : at + 1); } }, slideCanvas(id));

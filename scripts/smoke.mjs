@@ -126,6 +126,17 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
     if ((S.deck || {})[lab.id] !== 1) fail(lab.id + ' next slide did not advance: ' + JSON.stringify(S.deck));
     S.tab[lab.id] = 'do';
   }
+  { // in full screen, Next keeps the same viewer element (re-rendering would exit full screen)
+    S.deck.m07 = 0; S.tab.m07 = 'deck'; go('m07');
+    const v = doc.getElementById('deckviewer');
+    Object.defineProperty(doc, 'fullscreenElement', { configurable: true, get: () => v });
+    click([...v.querySelectorAll('.deckbar button')].find(b => b.getAttribute('aria-label') === 'Next slide'));
+    click([...v.querySelectorAll('.deckbar button')].find(b => b.getAttribute('aria-label') === 'Next slide'));
+    if (doc.getElementById('deckviewer') !== v || !v.isConnected) fail('full-screen viewer was replaced on Next');
+    if (S.deck.m07 !== 2 || !/^3 \//.test(v.querySelector('.deckpos b').textContent)) fail('full-screen Next did not advance: ' + S.deck.m07);
+    Object.defineProperty(doc, 'fullscreenElement', { configurable: true, get: () => null });
+    S.tab.m07 = 'do';
+  }
   go('deck-m12'); if (!/RAG/.test(doc.querySelector('#app .deckpos').textContent) && S.deck.all !== window.__T.DECK.order.indexOf('m12')) fail('#deck-m12 did not open at Module 12');
   go('deck'); if (doc.querySelectorAll('#app .deckthumb').length !== window.__T.DECK.order.length) fail('full deck incomplete');
   go(''); if (!doc.querySelector('#app .seasonnav a[href="#labs"]') || !doc.querySelector('#app .seasonnav a[href="#deck"]')) fail('story home lacks workbench or deck links');
