@@ -1152,3 +1152,8 @@ body.story .casescore { background: var(--st-card); color: var(--st-ink); }
 @keyframes lineIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
 @keyframes flashHot { 50% { background: rgba(255,138,138,.35); } }
 @keyframes travel { 0% { left: 4%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: 94%; opacity: 0; } }
+
+/* scrolling without a visible scrollbar on pages, scenes and lists (wide tables keep theirs) */
+html, body, .scenewrap, .stage.season, .eps, .chat, .tabs, .deckstrip { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar, .scenewrap::-webkit-scrollbar, .stage.season::-webkit-scrollbar, .eps::-webkit-scrollbar,
+.chat::-webkit-scrollbar, .tabs::-webkit-scrollbar, .deckstrip::-webkit-scrollbar { display: none; }
