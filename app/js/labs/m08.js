@@ -27,6 +27,7 @@
   const REV = ['Easy to undo', 'Costly to undo', 'Irreversible'], REACH = ['One person', 'A group', 'Many people'];
   const risk = c => c.rev + c.reach + (c.amt >= 100000 ? 2 : c.amt >= 10000 ? 1 : 0) + c.ext;
 
+  const RULES = [['irrev', 'Nothing irreversible without a person'], ['money', 'Money above the threshold needs approval'], ['many', 'Anything that reaches many people needs approval'], ['ext', 'Someone watches what customers can see']];
   function init(st) { st.c = st.c || {}; st.pol = st.pol || { money: '50000', irrev: true, many: true, ext: true, costly: false, base: 'auto' }; return st; }
   function policyPile(c, pol) {
     let p = pol.base || 'auto';
@@ -125,7 +126,8 @@
           stats(stat(both.length ? Math.round(100 * match / both.length) + '%' : '—', 'Policy matches your sort'), stat(both.length - match, 'Cards where they differ')),
           h('div', { class: 'scroll' }, h('table', null, h('tr', null, h('th', null, 'Card'), h('th', null, 'Your sort'), h('th', null, 'Your policy says')),
             CARDS.map(c => { const pp = policyPile(c, pol), mine = st.c[c.id]; return h('tr', { class: mine && mine !== pp ? 'mismatch' : '' }, h('td', null, c.t), h('td', null, mine ? nameOf(PILES, mine) : '—'), h('td', null, nameOf(PILES, pp))); }))),
-          field(st.rule, v => { st.rule = v; }, { id: 'm08-rule', ph: 'The one rule the room should keep, in plain words' }))
+          h('p', { class: 'small' }, 'The one rule the room should keep'),
+          seg(RULES, st.rule, v => { st.rule = v; }, 'The one rule to keep', 'multi'))
       ];
     },
     answers(st) {
@@ -144,7 +146,7 @@
       const rows = CARDS.map((c, i) => ({ label: (i + 1) + '. ' + c.t, counts: count(docs.map(d => d.c && d.c[c.id])) }));
       rows.sort((a, b) => agreement(a.counts) - agreement(b.counts));
       return [{ title: 'Most disputed cards first', note: 'Debate the top of this list.', cats: PILES, rows },
-        { type: 'texts', title: 'Rules tables want to keep', items: docs.filter(d => d.rule).map(d => [d._table, d.rule]) }];
+        { title: 'The rule tables want to keep', cats: [['n', 'Tables']], rows: RULES.map(([k, t]) => ({ label: t, counts: { n: docs.filter(d => d.rule === k).length } })) }];
     },
     done: st => st.c && Object.keys(st.c).length === 15,
     drills: [
@@ -196,7 +198,7 @@
     ],
     summary(st) {
       init(st);
-      return ['Autonomy sort', ...PILES.map(([k, t]) => t + ': ' + CARDS.filter(c => st.c[c.id] === k).map(c => c.t).join('; ')), st.rule ? 'Rule: ' + st.rule : ''].filter(Boolean).join('\n');
+      return ['Autonomy sort', ...PILES.map(([k, t]) => t + ': ' + CARDS.filter(c => st.c[c.id] === k).map(c => c.t).join('; ')), st.rule ? 'Rule: ' + ((RULES.find(x => x[0] === st.rule) || [0, st.rule])[1]) : ''].filter(Boolean).join('\n');
     }
   });
 })();

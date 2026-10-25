@@ -1,0 +1,27 @@
+<section id="m10-s1" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 10 · Scenario 1 of 3</p>
+<p style="font-size:24px;font-weight:600;color:#F5F6F9;background:#16234A;border-radius:999px;padding:8px 24px;white-space:nowrap">Real case · Aug 2025</p>
+</div>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">Stolen keys from a chat widget</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:3;display:flex;flex-direction:column;gap:20px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5E6A80">What happened</p>
+<p style="font-size:28px;line-height:1.45;color:#16234A">Attackers stole the access tokens used by Salesloft’s Drift AI chat integration. With them, they pulled data from the Salesforce systems of hundreds of companies, including several major security vendors.</p>
+<p style="font-size:28px;line-height:1.45;color:#46536B"><b style="color:#16234A">Your situation:</b> Over the past year, teams have connected more than 30 AI tools to email, CRM and file storage. Nobody holds a full list of their tokens.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:20px;background:#16234A;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F2B544">Your call · 15 min</p>
+<ol style="font-size:28px;line-height:1.45;color:#F5F6F9">
+<li>Who owns the inventory of AI integrations and their tokens?</li>
+<li>Could we revoke one vendor’s tokens within an hour?</li>
+<li>What scope and expiry rules apply from now on?</li>
+</ol>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Source: Google Threat Intelligence Group advisory (UNC6395) and vendor disclosures, August–September 2025</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 10</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">Enterprise Trust Architecture</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">4 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Concept tested: supply chain trust and token misuse. The attacker never touched the victims' own systems directly; they used a trusted integration's keys. Model answer. 1) Security owns the inventory, but each integration needs a business owner who justifies it. Most organizations can find these tokens in their SaaS admin consoles (connected apps). 2) Test it: run a revocation drill for one vendor and time it. 3) Least scope (read only what is needed), short expiry with refresh, IP restrictions where possible, and alerts on unusual bulk data pulls by integrations. Leadership point: every "connect your CRM" button on an AI tool creates a long-lived key to your data held by someone else.</aside>
+</section>

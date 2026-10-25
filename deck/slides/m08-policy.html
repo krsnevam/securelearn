@@ -1,0 +1,18 @@
+<section id="m08-policy" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 08 · Runtime policy enforcement</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">Rules the agent cannot talk its way past</h2>
+</div>
+<table style="font-size:26px;color:#16234A">
+<tr style="background:#16234A"><th style="width:22%;color:#F5F6F9">Policy type</th><th style="width:48%;color:#F5F6F9">Example</th><th style="width:30%;color:#F5F6F9">Enforcement</th></tr>
+<tr><td><b>Spending limit</b></td><td>Refunds above ₹50,000 need approval</td><td>Pause and route to a human</td></tr>
+<tr style="background:#E9EEF6"><td><b>Data class</b></td><td>No customer PII sent to external tools</td><td>Redact or block</td></tr>
+<tr><td><b>Action allowlist</b></td><td>May read the CRM; may not delete records</td><td>Deny at the gateway</td></tr>
+<tr style="background:#E9EEF6"><td><b>Confidence</b></td><td>Low-confidence answers on medical or legal topics</td><td>Escalate to an expert</td></tr>
+<tr><td><b>Time and volume</b></td><td>No bulk customer emails outside business hours</td><td>Queue for review</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.4;color:#46536B"><b style="color:#16234A">Key design point:</b> enforce policy in code at the gateway, not as instructions in the prompt. Prompts can be overridden; gateways cannot.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Boston Institute of Analytics · Agentic AI Security, Architecture &amp; Governance</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 08</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">Responsive AI &amp; Runtime Adaptability</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">2 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Figures here are illustrative; set your own thresholds. The most important message: telling a model "never do X" in its instructions is a request, not a control. A determined user or a malicious document can talk the model out of it. Real policy sits in a layer the model cannot rewrite, typically an AI gateway or the tool's own permission system.</aside>
+</section>

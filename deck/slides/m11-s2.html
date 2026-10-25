@@ -1,0 +1,27 @@
+<section id="m11-s2" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 11 · Scenario 2 of 4</p>
+<p style="font-size:24px;font-weight:600;color:#F5F6F9;background:#16234A;border-radius:999px;padding:8px 24px;white-space:nowrap">Real case · 2026</p>
+</div>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">Traps for agents on the open web</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:3;display:flex;flex-direction:column;gap:20px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5E6A80">What happened</p>
+<p style="font-size:28px;line-height:1.45;color:#16234A">Forcepoint and Unit 42 found live web pages hiding instructions for AI agents: a $5,000 PayPal transfer, file-deletion commands, and a push to make an AI hiring screener approve fake candidates. Google measured a 32% rise in such content in three months.</p>
+<p style="font-size:28px;line-height:1.45;color:#46536B"><b style="color:#16234A">Your situation:</b> Your research and procurement agents browse supplier and competitor websites every day.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:20px;background:#16234A;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F2B544">Your call · 15 min</p>
+<ol style="font-size:28px;line-height:1.45;color:#F5F6F9">
+<li>What may an agent do right after reading a web page?</li>
+<li>Which of our agents could move money or data?</li>
+<li>How would we know if one had been triggered?</li>
+</ol>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Source: Cloud Security Alliance research note on indirect prompt injection in the wild, April 2026</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 11</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">Attack Surface &amp; Risk Landscape</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">5 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Concept tested: indirect prompt injection is no longer theoretical; attackers are seeding the web for agents. The Google figure is a 32% relative increase in malicious injection content on crawled pages between November 2025 and February 2026. Model answer. 1) After reading untrusted content, an agent should be limited to read-only actions and drafting; payments, sending data out and running commands need fresh human approval. 2) Map them now: any agent with web access plus a payment, email or shell tool is the risky combination. 3) Log every tool call after browsing and alert on sensitive tool calls that follow external content. Live demo idea for the room: show a harmless hidden-text document that makes an assistant end its summary with a codeword.</aside>
+</section>

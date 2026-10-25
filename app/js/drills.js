@@ -54,49 +54,69 @@ function drillSummary(lab, st) {
   }).filter(Boolean);
 }
 
-/* ---------- scenarios ---------- */
+/* ---------- case studies: three calls per case, each locked in once made ---------- */
 function scenariosFor(lab) { return (typeof SCENARIOS !== 'undefined' && SCENARIOS[lab.id]) || []; }
+function casePlays(lab, sc) { return (PLAYS[lab.id] || {})[sc.id]; }
+function casePicks(st, sc) { st.pk = st.pk || {}; return st.pk[sc.id] || (st.pk[sc.id] = {}); }
+function caseMade(st, sc) { const pk = (st.pk || {})[sc.id] || {}; return sc.q.filter((_, i) => pk[i] != null).length; }
+function casePoints(lab, st, sc) { const pl = casePlays(lab, sc), pk = (st.pk || {})[sc.id] || {}; return sum(sc.q.map((_, i) => pk[i] != null ? movePoints(pl[i][+pk[i]][1]) : 0)); }
+const CASE_VERDICT = ['Your table would be in the headlines. Read the expert answer and replay it in the debrief.', 'Some good instincts, and some calls that would cost you. Compare with the expert answer.', 'Solid. One call could be sharper: check the strongest move you missed.', 'Every call was the strongest one. Lead the debrief.'];
+
 function scenarioCard(lab, st, sc) {
-  st.sc = st.sc || {}; const ans = st.sc[sc.id] || (st.sc[sc.id] = {});
+  const pl = casePlays(lab, sc), pk = casePicks(st, sc);
   const key = lab.id + ':' + sc.id; const rev = !!S.revealed[key];
   const tone = /^Real/.test(sc.tag) ? 'real' : /^Research/.test(sc.tag) ? 'research' : 'composite';
-  return box('scenario', h('div', { class: 'rowhead' }, h('h3', null, sc.title), h('span', { class: 'tag ' + tone }, sc.tag), kindBadge('write')),
+  const made = caseMade(st, sc), done = made === sc.q.length, pts = casePoints(lab, st, sc), max = sc.q.length * 10, stars = starsFor(pts, max);
+  return box('scenario', h('div', { class: 'rowhead' }, h('h3', null, sc.title), h('span', { class: 'tag ' + tone }, sc.tag), kindBadge('decide'),
+      done ? starRow(stars) : pill(made + ' / ' + sc.q.length + ' calls', made ? 'amber' : '')),
     h('p', { class: 'small' }, label(sc.whatLabel)), h('p', null, sc.what),
     sc.situation ? h('p', { class: 'situation' }, h('b', null, sc.situationLabel + ': '), sc.situation) : null,
-    h('div', { class: 'callbox' }, label('Your call · ' + sc.minutes + ' min'),
-      sc.q.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, (i + 1) + '. '), q), field(ans[i], v => { ans[i] = v; }, { id: 'sc-' + lab.id + '-' + sc.id + '-' + i, ph: 'Your table’s answer' })))),
+    h('div', { class: 'callbox' }, label('Your calls · ' + sc.minutes + ' min'),
+      sc.q.map((q, i) => i > made ? h('div', { class: 'qa locked' }, h('p', null, h('b', null, (i + 1) + '. '), q), h('span', { class: 'small' }, 'Unlocks after call ' + i))
+        : h('div', { class: 'qa' }, h('p', null, h('b', null, (i + 1) + '. '), q), moveCards(pl[i], pk[i], k => { pk[i] = k; }, lab.id + sc.id + i, q)))),
+    done ? h('div', { class: 'casescore' }, starRow(stars), h('div', null, h('b', null, pts + ' / ' + max + ' points'), h('p', { class: 'small' }, CASE_VERDICT[stars]))) : null,
     sc.source ? h('p', { class: 'small' }, sc.source) : null,
-    coachFeedbackBlock(lab, st, sc),
     rev ? h('div', { class: 'answer' }, h('b', null, 'Expert answer'), h('p', null, sc.notes)) :
-      h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn', onclick: () => { S.revealed[key] = true; commit(); } }, 'Compare with the expert answer')));
+      h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn', onclick: () => { S.revealed[key] = true; commit(); } }, done ? 'Read the expert answer' : 'Skip ahead to the expert answer')));
 }
 function scenariosPane(lab) {
   const list = scenariosFor(lab); const st = L(lab.id);
   if (!list.length) return [box('', h('p', { class: 'sub' }, 'No scenarios for this module.'))];
-  const answered = list.filter(sc => st.sc && st.sc[sc.id] && Object.values(st.sc[sc.id]).some(v => (v || '').trim())).length;
-  return [box('dark', label('Case studies'), h('p', null, 'For each case: read it (3 min), discuss in role and write your table’s answers (8 min), then tap Compare with the expert answer and debrief (4 min). Nothing here is scored.'),
-    stats(stat(answered + ' / ' + list.length, 'Scenarios answered'))),
+  const pts = sum(list.map(sc => casePoints(lab, st, sc))), max = sum(list.map(sc => sc.q.length * 10));
+  const done = list.filter(sc => caseMade(st, sc) === sc.q.length);
+  const stars = sum(done.map(sc => starsFor(casePoints(lab, st, sc), sc.q.length * 10)));
+  return [box('dark', label('Case studies'), h('p', null, 'For each case: read it, argue in role, then make three calls. Each call locks in and shows what happens next. Strong calls score 10, partial ones 5. Debrief with the expert answer.'),
+    stats(stat(pts + ' / ' + max, 'Points'), stat(done.length + ' / ' + list.length, 'Cases played'), stat(stars + ' / ' + list.length * 3, 'Stars')), meter(max ? pts / max : 0, 'accent', 'Points')),
     list.map(sc => scenarioCard(lab, st, sc)), discussionCard(lab, st)];
 }
+
+/* ---------- leadership discussion: where does our own organization stand? ---------- */
+const DISC_VERDICT = [[5, 'Ahead of most', 'good'], [3, 'Partly covered', 'amber'], [0, 'A real gap to take home', 'bad']];
 function discussionCard(lab, st) {
-  const d = typeof DISCUSSIONS !== 'undefined' && DISCUSSIONS[lab.id]; if (!d) return null;
-  st.disc = st.disc || {}; const key = lab.id + ':disc';
+  const d = typeof DISCUSSIONS !== 'undefined' && DISCUSSIONS[lab.id]; const pos = DISC_PLAYS[lab.id]; if (!d || !pos) return null;
+  st.dp = st.dp || {}; const key = lab.id + ':disc';
+  const set = d.items.filter((_, i) => st.dp[i] != null).length, score = sum(d.items.map((_, i) => st.dp[i] != null ? 2 - st.dp[i] : 0));
+  const v = DISC_VERDICT.find(([m]) => score >= m);
   return box('discussion', label('Leadership discussion · Module ' + lab.n), h('h3', null, d.q),
-    d.items.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, '0' + (i + 1) + ' '), q), field(st.disc[i], v => { st.disc[i] = v; }, { id: 'disc-' + lab.id + '-' + i, ph: 'For our organization…' }))),
+    h('p', { class: 'small' }, 'For your own organization. Agree as a table, then tap where you stand today.'),
+    d.items.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, '0' + (i + 1) + ' '), q), levelCards(pos[i], st.dp[i], x => { if (x == null) delete st.dp[i]; else st.dp[i] = x; }, q))),
+    set === d.items.length ? h('div', { class: 'casescore' }, h('div', { class: 'gauge ' + v[2] }, h('b', null, score), h('span', null, '/ 6')), h('div', null, h('b', null, v[1]), h('p', { class: 'small' }, 'Each red answer is a candidate for your 90-day plan.'))) : null,
     S.revealed[key] ? h('div', { class: 'answer' }, h('b', null, 'Facilitator note'), h('p', null, d.notes)) : h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn', onclick: () => { S.revealed[key] = true; commit(); } }, 'Show the facilitator note')));
 }
+
+const SCORE_CATS = [['2', 'Strong'], ['1', 'Partly'], ['0', 'Risky']];
 function scenarioAgg(lab, docs) {
   const d = typeof DISCUSSIONS !== 'undefined' && DISCUSSIONS[lab.id];
-  const disc = d ? [{ type: 'texts', title: 'Discussion · ' + d.q, items: docs.filter(x => x.disc && Object.values(x.disc).some(v => (v || '').trim())).map(x => [x._table, d.items.map((q, i) => (x.disc[i] || '').trim() ? (i + 1) + ') ' + x.disc[i].trim() : '').filter(Boolean).join('  ')]) }] : [];
-  return disc.concat(scenariosFor(lab).map(sc => ({
-    type: 'texts', title: 'Scenario · ' + sc.title,
-    items: docs.filter(d => d.sc && d.sc[sc.id] && Object.values(d.sc[sc.id]).some(v => (v || '').trim()))
-      .map(d => [d._table, sc.q.map((q, i) => (d.sc[sc.id][i] || '').trim() ? (i + 1) + ') ' + d.sc[sc.id][i].trim() : '').filter(Boolean).join('  ')])
-  })));
+  const disc = d && DISC_PLAYS[lab.id] ? [{ title: 'Discussion · ' + d.q, cats: [['0', 'Ready'], ['1', 'Partly'], ['2', 'Gap']],
+    rows: d.items.map((q, i) => ({ label: (i + 1) + '. ' + q, counts: count(docs.map(x => x.dp && x.dp[i] != null ? String(x.dp[i]) : null)) })) }] : [];
+  return disc.concat(scenariosFor(lab).map(sc => { const pl = casePlays(lab, sc); return {
+    title: 'Case · ' + sc.title, cats: SCORE_CATS,
+    rows: sc.q.map((q, i) => ({ label: (i + 1) + '. ' + q, counts: count(docs.map(x => { const k = x.pk && x.pk[sc.id] && x.pk[sc.id][i]; return k != null && pl[i][+k] ? String(pl[i][+k][1]) : null; })) }))
+  }; }));
 }
 function scenarioSummary(lab, st) {
-  const d = typeof DISCUSSIONS !== 'undefined' && DISCUSSIONS[lab.id];
-  const disc = d && st.disc && Object.values(st.disc).some(v => (v || '').trim()) ? ['Discussion "' + d.q + '": ' + d.items.map((q, i) => (st.disc[i] || '').trim() ? (i + 1) + ') ' + st.disc[i].trim() : '').filter(Boolean).join(' ')] : [];
-  return disc.concat(scenariosFor(lab).filter(sc => st.sc && st.sc[sc.id] && Object.values(st.sc[sc.id]).some(v => (v || '').trim()))
-    .map(sc => 'Scenario "' + sc.title + '": ' + sc.q.map((q, i) => (st.sc[sc.id][i] || '').trim() ? (i + 1) + ') ' + st.sc[sc.id][i].trim() : '').filter(Boolean).join(' ')));
+  const d = typeof DISCUSSIONS !== 'undefined' && DISCUSSIONS[lab.id]; const pos = DISC_PLAYS[lab.id];
+  const disc = d && pos && st.dp && Object.keys(st.dp).length ? ['Discussion "' + d.q + '": ' + d.items.map((q, i) => st.dp[i] != null ? (i + 1) + ') ' + pos[i][st.dp[i]] : '').filter(Boolean).join(' · ')] : [];
+  return disc.concat(scenariosFor(lab).filter(sc => caseMade(st, sc)).map(sc => { const pl = casePlays(lab, sc), pk = st.pk[sc.id];
+    return 'Case "' + sc.title + '": ' + casePoints(lab, st, sc) + '/' + sc.q.length * 10 + ' · ' + sc.q.map((q, i) => pk[i] != null ? (i + 1) + ') ' + pl[i][+pk[i]][0] : '').filter(Boolean).join(' · '); }));
 }

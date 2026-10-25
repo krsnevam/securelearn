@@ -43,6 +43,7 @@
     { k: '4', name: 'Level 4 · Stop all agents', contain: 1, disrupt: 1, who: 'CISO with executive sign-off' }];
   const hhmm = m => '09:' + String(m).padStart(2, '0');
 
+  const WHYS = [['stop', 'Stop the exfiltration first; restore later'], ['keep', 'Contain it while the business keeps running'], ['evidence', 'Preserve evidence before acting'], ['wait', 'Watch a little longer to be sure']];
   function init(st) { st.s = st.s || {}; st.rules = st.rules || {}; st.fa = st.fa || {}; st.ft = st.ft || {}; return st; }
   function ruleStats(id) {
     const r = RULES.find(x => x.id === id); const hits = LOG.map((l, i) => r.hit(l, i) ? i : -1).filter(i => i >= 0);
@@ -110,7 +111,7 @@
         stepHead('m14', 3),
         box('dark', label('Kill switch'), seg(KILL.map(k => [k.k, k.name]), st.ks, v => { st.ks = v; }, 'Kill-switch level', 'multi'),
           ks ? [h('div', { class: 'tradeoff' }, h('span', null, 'Containment'), meter(ks.contain, 'good', 'Containment'), h('span', null, 'Business disruption'), meter(ks.disrupt, 'bad', 'Disruption')), h('p', { class: 'sub' }, 'Authorised by: ' + ks.who)] : null,
-          field(st.why, v => { st.why = v; }, { id: 'm14-why', ph: 'Why this level, in one line' })),
+          h('p', { class: 'small' }, 'Why this level?'), seg(WHYS, st.why, v => { st.why = v; }, 'Why this level', 'multi')),
         stepHead('m14', 4),
         box('', label('Incident ticket'), h('pre', { class: 'memo-out' }, ticket(st)), h('div', { class: 'btnrow' }, copyButton(() => ticket(st), 'Copy the ticket')))
       ];
@@ -189,6 +190,6 @@
       'Entry point: ' + (st.entry != null ? 'line ' + (+st.entry + 1) + ' · ' + LOG[+st.entry].t : 'not identified'),
       'Suspicious lines: ' + (LOG.map((_, i) => i).filter(i => st.s[i]).map(i => i + 1).join(', ') || 'none'),
       'Detections proposed: ' + (RULES.filter(r => st.rules[r.id]).map(r => r.name).join('; ') || 'none') + ' (' + cov.total + ' alerts on this log)',
-      'Containment: ' + (ks ? ks.name + ', authorised by ' + ks.who : 'not chosen'), st.why ? 'Reason: ' + st.why : ''].filter(Boolean).join('\n');
+      'Containment: ' + (ks ? ks.name + ', authorised by ' + ks.who : 'not chosen'), st.why ? 'Reason: ' + ((WHYS.find(x => x[0] === st.why) || [0, st.why])[1]) : ''].filter(Boolean).join('\n');
   }
 })();

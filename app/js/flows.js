@@ -5,16 +5,13 @@
      decide   – your table's call; nothing is graded until "Check my work"
      simulate – change something and watch the consequences; never graded
      quiz     – pick an answer and see straight away if it is right, and why
-     write    – discuss, then type your table's answer
      read     – take in the material; no clicks needed */
 
 const KINDS = {
   decide: { label: 'Decide', hint: 'Your table’s call. Nothing is graded until you tap Check my work.' },
   simulate: { label: 'Simulate', hint: 'Change it and watch what happens. Nothing is graded.' },
   quiz: { label: 'Quiz', hint: 'Pick an answer. You see straight away whether it is right, and why.' },
-  write: { label: 'Write', hint: 'Discuss as a table, then type your answer.' },
-  read: { label: 'Read', hint: 'Take in the material. No clicks needed.' },
-  live: { label: 'Live AI', hint: 'A live AI responds to what you write. It uses your Claude account; you are asked once.' }
+  read: { label: 'Read', hint: 'Take in the material. No clicks needed.' }
 };
 
 const FLOWS = {
@@ -22,11 +19,11 @@ const FLOWS = {
     ['simulate', 'Choose how the agent signs in', 'Pick an identity model. The scoreboard above and the map change instantly.'],
     ['decide', 'Mark what the attacker can reach', 'Tap each system on the map that a hijacked agent could reach.'],
     ['decide', 'Keep, reduce or cut each permission', 'Break every red attack chain while “Job still works” stays at Yes. Watch the blast radius fall.'],
-    ['write', 'Name the worst chain', 'In one line, the attack your table worries about most.']] },
+    ['decide', 'Name the worst chain', 'Pick the attack chain your table worries about most, and see whether you broke it.']] },
   m07: { produce: 'A scorecard for one of your own AI systems, and one gap you will close in 30 days.', steps: [
-    ['write', 'Describe the system you will score', 'Name it (anonymise if needed), its owner and who it affects.'],
+    ['decide', 'Profile the system you will score', 'Pick the kind of system, who owns it and who it affects.'],
     ['decide', 'Score each principle 0, 1 or 2', 'For each test pick a score and write the evidence. The radar draws your shape. The regulator may challenge any score.'],
-    ['write', 'Commit to one 30-day gap', 'Your weakest principle is shown. Write what you will fix, who and by when.']] },
+    ['decide', 'Commit to one 30-day gap', 'Your weakest principle is shown. Pick the fix, who owns it and by when.']] },
   m08: { produce: 'A sort of fifteen agent actions, and a written policy that reproduces it.', steps: [
     ['decide', 'Sort every card into a pile', 'On each card tap In the loop, On the loop or Autonomous. The diagram counts update as you go.'],
     ['simulate', 'Check your sort on the risk map', 'See where your piles land. The consistency check flags risky or over-controlled choices.'],
@@ -35,7 +32,7 @@ const FLOWS = {
     ['decide', 'Warm-up: find the seven planted flaws', 'Tap any box or flow you think is a flaw, then rate it and choose a fix below.'],
     ['read', 'Pick an exercise and read the architecture', 'Choose one of the three platforms. Its parts and boundaries are listed.'],
     ['decide', 'Build the threat register', 'Mark each threat that applies, choose a control, name an owner and rate the residual risk.'],
-    ['write', 'Answer the leader’s eight questions', 'One line each, for the platform you picked.'],
+    ['decide', 'Rate the leader’s eight questions', 'Could you answer each one today? Unknowns become open questions in the report.'],
     ['decide', 'Give your verdict', 'Yes, with conditions or no, on each of the five criteria.'],
     ['read', 'Hand over the deliverables', 'Drafted automatically from your answers. Copy them into your report.']] },
   m11: { produce: 'An understanding of how indirect injection works and which defences stop which attacks.', steps: [
@@ -64,7 +61,7 @@ const FLOWS = {
     ['decide', 'Classify each use case', 'Pick the EU AI Act tier, then open “Score it” and rate the four factors.'],
     ['simulate', 'Read the portfolio', 'The heat map and counts update from your classification.'],
     ['decide', 'Decide, and set board thresholds', 'Approve, add conditions, defer or reject each use case; then set thresholds for the six board numbers.'],
-    ['write', 'Finish the board report', 'The first lines are drafted for you. Add risks, decisions and your ask.']] },
+    ['decide', 'Finish the board report', 'The first lines are drafted for you. Pick the top risks, the decisions and your one ask.']] },
   m16: { produce: 'Three capstone deliverables, a crisis score and an after-action report.', steps: [
     ['read', 'See the three capstone exercises', 'Exercises 1 and 2 use the Module 12 and Module 09 labs. Tick deliverables as you finish them.'],
     ['decide', 'Run the incident tabletop', 'Reveal one inject at a time. Choose a response (it cannot be undone) and see what happens next.']] }

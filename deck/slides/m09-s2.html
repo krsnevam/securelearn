@@ -1,0 +1,27 @@
+<section id="m09-s2" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 09 · Scenario 2 of 3</p>
+<p style="font-size:24px;font-weight:600;color:#FCFCFD;background:#2E6BB8;border-radius:999px;padding:8px 24px;white-space:nowrap">Research finding · Jan 2026</p>
+</div>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">A meeting invite that briefs the attacker</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:3;display:flex;flex-direction:column;gap:20px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5E6A80">What happened</p>
+<p style="font-size:28px;line-height:1.45;color:#16234A">Miggo Security sent a calendar invite with dormant instructions hidden inside. Later, when the user asked Gemini to summarise their day, it copied private meeting details into an event the attacker could see.</p>
+<p style="font-size:28px;line-height:1.45;color:#46536B"><b style="color:#16234A">Your situation:</b> Your CXOs want an executive-assistant agent with access to their mail, calendar and document drive, by next month.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:20px;background:#16234A;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F2B544">Your call · 15 min</p>
+<ol style="font-size:28px;line-height:1.45;color:#F5F6F9">
+<li>Which inputs to this agent are untrusted?</li>
+<li>What should it never do right after reading them?</li>
+<li>Which data should be out of its reach entirely?</li>
+</ol>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Source: Miggo Security research, January 2026, summarised by the Cloud Security Alliance, April 2026</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 09</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">Architecture Review Workshop</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">3 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Concept tested: reviewing an architecture for indirect injection. Model answer. 1) Anything an outsider can send: emails, calendar invites, shared documents, meeting titles and descriptions. Executives receive a lot of these. 2) Create or edit calendar events, send email, or share files, without the executive confirming. 3) Board papers, M&amp;A folders and HR files should be outside its default scope, available only on explicit request. Leadership point: executive assistants are the highest-value target because CXO inboxes hold the most sensitive data and receive the most outside content. Start with read-only plus drafts that a human sends.</aside>
+</section>

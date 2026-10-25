@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, Coach, EPISODES, TRAPS };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -83,27 +83,54 @@ for (const lab of App.labs) {
   const done = lab.done(S.labs[lab.id]);
   console.log(lab.id.padEnd(4) + ' ok · done=' + done + ' · ' + doc.querySelectorAll('#app *').length + ' nodes');
 }
-// live AI with a stand-in model: role-play turn, debrief and coach feedback
+// tap-to-play: no text boxes left, case calls lock in, discussions, role-play dialogue
 {
-  const C = window.__T.Coach; let calls = 0;
-  C.fn = async (input, opts) => { calls++; opts.onText({ text: 'Reply ' + calls, delta: 'Reply ' + calls }); return { text: 'Reply ' + calls, truncated: false }; };
-  C.state = 'on';
-  S.tab.m13 = 'do'; go('m13');
-  const ta = doc.getElementById('rp-m13'); if (!ta) fail('m13 role-play input missing');
-  else {
-    ta.value = 'We launch with a person approving every claim until the fix ships.';
-    [...doc.querySelectorAll('#app .roleplay button')].find(b => b.textContent === 'Send').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-    await new Promise(r => setTimeout(r, 30));
-    if (S.labs.m13.rp.turns.length !== 2) fail('role-play did not record the exchange');
-    if (doc.querySelectorAll('#app .bubble').length !== 3) fail('role-play bubbles not rendered');
+  const click = b => b && b.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  for (const lab of App.labs) for (const tab of ['do', 'drills', 'scen']) {
+    S.tab[lab.id] = tab; go(lab.id);
+    const boxes = doc.querySelectorAll('#app textarea:not([readonly]), #app input[type=text]');
+    if (boxes.length) fail(lab.id + ' ' + tab + ' still has ' + boxes.length + ' text box(es)');
   }
-  S.labs.m08.sc = { s1: { 0: 'The vendor and us' } }; S.tab.m08 = 'scen'; go('m08');
-  const fb = [...doc.querySelectorAll('#app .coach button')].find(b => /AI coach/.test(b.textContent));
-  if (!fb) fail('coach button missing'); else { fb.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await new Promise(r => setTimeout(r, 30)); if (!S.labs.m08.cf || !S.labs.m08.cf.s1 || !S.labs.m08.cf.s1.text) fail('coach feedback not stored'); }
-  console.log('live AI (stand-in): ' + calls + ' calls ok');
-  C.fn = null; C.state = 'off';
+  go('labs'); if (doc.querySelectorAll('#app textarea, #app input[type=text]').length) fail('workbench home still has a text box');
+  delete S.labs.m08.pk; delete S.labs.m08.dp; S.tab.m08 = 'scen'; go('m08');
+  for (let i = 0; i < 3; i++) click(doc.querySelector('#app .scenario .move:not([aria-disabled])'));
+  const pk = S.labs.m08.pk && S.labs.m08.pk.s1;
+  if (!pk || Object.keys(pk).length !== 3) fail('case calls not recorded: ' + JSON.stringify(pk));
+  if (!doc.querySelector('#app .scenario .casescore .starrow')) fail('case score not shown');
+  const before = JSON.stringify(pk); click(doc.querySelector('#app .scenario .move')); if (JSON.stringify(S.labs.m08.pk.s1) !== before) fail('a locked call changed');
+  doc.querySelectorAll('#app .discussion .levels').forEach(g => click(g.querySelector('.lvl')));
+  if (!doc.querySelector('#app .discussion .gauge')) fail('discussion readiness not shown');
+  delete S.labs.m13.dlg; S.tab.m13 = 'do'; go('m13');
+  for (let i = 0; i < 3; i++) click(doc.querySelector('#app .roleplay .replies .move'));
+  if (Object.keys(S.labs.m13.dlg || {}).length !== 3) fail('role-play replies not recorded');
+  if (!doc.querySelector('#app .roleplay .casescore') || !doc.querySelector('#app .roleplay .mood')) fail('role-play debrief or mood missing');
+  if (/Claude|live AI/i.test(doc.getElementById('app').textContent)) fail('lab still mentions Claude or live AI');
+  S.labs.m16 = { at: 4, ch: { 0: 'a', 1: 'a', 2: 'a', 3: 'a', 4: 'a' }, o: {}, d: {} }; S.tab.m16 = 'do'; go('m16');
+  for (let i = 0; i < 9; i++) click(doc.querySelector('#app .lineopt:not(.on):not([aria-disabled])'));
+  const picked = ['cust', 'reg', 'lesson'].map(k => Object.keys(S.labs.m16[k] || {}).length);
+  if (picked.join() !== '3,3,3') fail('m16 notice builder picked ' + picked.join());
+  if (!/Client notice: /.test(window.__T.App.byId.m16.summary(S.labs.m16))) fail('m16 summary misses the client notice');
+  console.log('tap-to-play: no text boxes; case calls, discussion and role-play and notice builder ok');
 }
 go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map missing');
+// the deck: every lab has a Deck tab with its module's slides; #deck shows them all
+{
+  const click = b => b && b.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  for (const lab of App.labs) {
+    S.deck = S.deck || {}; S.deck[lab.id] = 0; S.tab[lab.id] = 'deck'; go(lab.id);
+    const n = doc.querySelectorAll('#app .deckthumb').length;
+    if (n < 8) fail(lab.id + ' deck tab shows ' + n + ' slides');
+    if (!doc.querySelector('#app .slidecanvas section')) fail(lab.id + ' slide did not render');
+    if (doc.querySelector('#app .slidecanvas x-icon') && !doc.querySelector('#app .slidecanvas x-icon svg')) fail(lab.id + ' icon not drawn');
+    click([...doc.querySelectorAll('#app .deckbar button')].find(b => b.getAttribute('aria-label') === 'Next slide'));
+    if ((S.deck || {})[lab.id] !== 1) fail(lab.id + ' next slide did not advance: ' + JSON.stringify(S.deck));
+    S.tab[lab.id] = 'do';
+  }
+  go('deck-m12'); if (!/RAG/.test(doc.querySelector('#app .deckpos').textContent) && S.deck.all !== window.__T.DECK.order.indexOf('m12')) fail('#deck-m12 did not open at Module 12');
+  go('deck'); if (doc.querySelectorAll('#app .deckthumb').length !== window.__T.DECK.order.length) fail('full deck incomplete');
+  go(''); if (!doc.querySelector('#app .seasonnav a[href="#labs"]') || !doc.querySelector('#app .seasonnav a[href="#deck"]')) fail('story home lacks workbench or deck links');
+  console.log('deck: ' + window.__T.DECK.order.length + ' slides; every lab has a Deck tab; home links to workbench and deck');
+}
 // RAG Lab: a naive design then the expert design
 {
   const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
@@ -134,6 +161,7 @@ for (const ep of window.__T.EPISODES) {
     if (sc.type === 'sort') { let n = 0; while (doc.querySelector('#app .bin') && n++ < 20) click(doc.querySelector('#app .bin')); }
     if (sc.type === 'toggle') click(doc.querySelector('#app .switch'));
     if (sc.type === 'trap' && !(S.traps && S.traps[ep.lab] && S.traps[ep.lab].locked)) { click(doc.querySelector('#app .trapopt')); click([...doc.querySelectorAll('#app .trap button')].find(b => /Lock in/.test(b.textContent))); }
+    if (sc.type === 'live') { let n = 0; let b; while ((b = doc.querySelector('#app .sc-live .replies .move')) && n++ < 5) click(b); }
     if (sc.type === 'timeline') { let n = 0; let b; while ((b = [...doc.querySelectorAll('#app .sc-timeline button')].find(x => /Hour|Go live/.test(x.textContent))) && n++ < 10) click(b); }
     const next = [...doc.querySelectorAll('#app .stagebot button')].find(b => /Continue|Begin/.test(b.textContent));
     if (!next || next.disabled) { fail(ep.id + ' stuck on scene ' + st.i + ' (' + sc.type + ')'); break; }
@@ -142,6 +170,24 @@ for (const ep of window.__T.EPISODES) {
   if (!doc.querySelector('#app .sc-recap') || !S.story[ep.id].finished) fail(ep.id + ' did not reach the recap');
 }
 go(''); if (!doc.querySelector('#app .repair')) fail('repair board missing after the opening');
+// every question in every episode is framed: a story bridge, why it matters, and an explanation once answered
+{
+  const X = window.__T.STORY_EXTRA; let framed = 0;
+  for (const ep of window.__T.EPISODES) ep.scenes.forEach((sc, i) => {
+    const x = X[ep.id + ':' + i];
+    if (!['choice', 'sort', 'spots', 'toggle', 'timeline', 'live'].includes(sc.type)) { if (x) fail(ep.id + ':' + i + ' extra on a ' + sc.type + ' scene'); return; }
+    if (!x || !x.lead || !x.why) { fail(ep.id + ':' + i + ' (' + sc.type + ') has no story bridge or why'); return; }
+    if (sc.type !== 'live' && (!x.explain || !x.viz)) fail(ep.id + ':' + i + ' (' + sc.type + ') has no explanation or visual');
+    if (x.viz && !['counter', 'clock', 'headline', 'bars', 'feed', 'path'].includes(x.viz.kind)) fail(ep.id + ':' + i + ' unknown visual ' + x.viz.kind);
+    framed++;
+  });
+  S.story.e07.i = 4; go('e07');
+  if (!doc.querySelector('#app .leadline') || !doc.querySelector('#app .viz-headline') || !doc.querySelector('#app .whybox')) fail('e07 question frame not rendered');
+  if (!doc.querySelector('#app .explainbox')) fail('e07 explanation not shown after answering');
+  if (!/Up next/.test(doc.querySelector('#app .stagebot .hint').textContent)) fail('no up-next teaser');
+  console.log('story frames: ' + framed + ' questions with a bridge, why it matters, visual and explanation');
+  go('');
+}
 if (doc.querySelectorAll('#app .rpill.ok').length !== 6) fail('all six NEXUS failures should show fixed after every episode');
 if (Object.keys(window.__T.TRAPS).length !== 9) fail('expected 9 traps');
 console.log('story: ' + window.__T.EPISODES.length + ' episodes played to the end; repair board 6/6');

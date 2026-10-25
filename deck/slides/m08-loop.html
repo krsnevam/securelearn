@@ -1,0 +1,45 @@
+<section id="m08-loop" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 08 · Real-time feedback loops</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">Governance plugs into the loop at two points</h2>
+</div>
+<div style="display:flex;align-items:center;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:32px">
+<h3 style="font-size:36px;font-weight:600;color:#16234A">Sense</h3>
+<p style="font-size:24px;line-height:1.4;color:#46536B">Request, context, data signals</p>
+</div>
+<x-shape kind="arrow-right" style="background:#8FB4E8;width:48px;height:28px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:32px">
+<h3 style="font-size:36px;font-weight:600;color:#16234A">Decide</h3>
+<p style="font-size:24px;line-height:1.4;color:#46536B">Model plans the next step</p>
+</div>
+<x-shape kind="arrow-right" style="background:#8FB4E8;width:48px;height:28px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#16234A;border-radius:16px;padding:32px">
+<h3 style="font-size:36px;font-weight:600;color:#F5F6F9">Act</h3>
+<p style="font-size:24px;line-height:1.4;color:#F2B544;font-weight:600">Policy check before every action</p>
+</div>
+<x-shape kind="arrow-right" style="background:#8FB4E8;width:48px;height:28px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#16234A;border-radius:16px;padding:32px">
+<h3 style="font-size:36px;font-weight:600;color:#F5F6F9">Observe</h3>
+<p style="font-size:24px;line-height:1.4;color:#F2B544;font-weight:600">Telemetry on every outcome</p>
+</div>
+<x-shape kind="arrow-right" style="background:#8FB4E8;width:48px;height:28px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:32px">
+<h3 style="font-size:36px;font-weight:600;color:#16234A">Adjust</h3>
+<p style="font-size:24px;line-height:1.4;color:#46536B">Feeds back into the next Sense</p>
+</div>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:0px 0px 0px 32px;border-left:4px solid #2E6BB8">
+<h3 style="font-size:32px;font-weight:600;color:#16234A">Before acting: prevent</h3>
+<p style="font-size:28px;line-height:1.4;color:#46536B">Rules checked outside the model decide whether the action may run.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;padding:0px 0px 0px 32px;border-left:4px solid #2E6BB8">
+<h3 style="font-size:32px;font-weight:600;color:#16234A">After acting: detect</h3>
+<p style="font-size:28px;line-height:1.4;color:#46536B">Observability shows drift, errors and misuse fast enough to intervene.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Boston Institute of Analytics · Agentic AI Security, Architecture &amp; Governance</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 08</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">Responsive AI &amp; Runtime Adaptability</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">2 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Every agent runs some version of this loop, many times per task. Leaders do not need to know the code, but they should know the two points where control lives: a policy check between deciding and acting, and observability after acting. If a vendor cannot show you both, the system is ungoverned at runtime.</aside>
+</section>

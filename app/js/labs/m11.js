@@ -22,6 +22,7 @@
     v3: { strip: 'none', spot: 'weak', out: 'none', gate: 'none' },
     v4: { strip: 'block', spot: 'weak', out: 'block', gate: 'none' }
   };
+  const STOPS = [['prompt', 'Instructions in its prompt'], ['input', 'A check on what we typed'], ['output', 'A check on its answer'], ['model', 'A second model watching'], ['none', 'Nothing: we passed level 8']];
   const TECH = [['role', 'Role play'], ['hint', 'Ask for hints'], ['spell', 'Spell it out'], ['encode', 'Encode or translate'], ['split', 'Ask in parts'], ['story', 'Hide it in a story'], ['opposite', 'Ask for the opposite']];
 
   function init(st) { st.d = st.d || {}; st.tech = st.tech || {}; st.v = st.v || 'v1'; if (st.email == null) st.email = true; return st; }
@@ -117,8 +118,9 @@
           h('p', { class: 'small' }, 'Highest level passed'),
           seg([['0', 'None'], ...[1, 2, 3, 4, 5, 6, 7, 8].map(n => [String(n), String(n)])], st.lvl, v => { st.lvl = v; }, 'Highest level passed'),
           h('p', { class: 'small' }, 'Techniques that worked'), chips(TECH, st.tech, 'Techniques'),
-          field(st.trick, v => { st.trick = v; }, { id: 'm11-trick', ph: 'The single best trick, in your words' }),
-          field(st.stop, v => { st.stop = v; }, { id: 'm11-stop', ph: 'What finally stopped you?' }))
+          h('p', { class: 'small' }, 'Your single best trick'), seg(TECH, st.trick, v => { st.trick = v; }, 'Best trick', 'multi'),
+          h('p', { class: 'small' }, 'What finally stopped you?'), seg(STOPS, st.stop, v => { st.stop = v; }, 'What stopped you', 'multi'),
+          st.stop && st.stop !== 'none' ? h('p', { class: 'goodline' }, 'That defence sits ' + (st.stop === 'prompt' ? 'inside the model, so a better trick usually beats it.' : 'outside the prompt. Layers like this are what hold in production.')) : null)
       ];
     },
     answers() {
@@ -133,7 +135,8 @@
       return [{ title: 'Highest Gandalf level passed', cats: [['n', 'Players']], rows: ['0', '1', '2', '3', '4', '5', '6', '7', '8'].map(l => ({ label: l === '0' ? 'None' : 'Level ' + l, counts: { n: docs.filter(d => d.lvl === l).length } })) },
         { title: 'Techniques that worked', cats: [['n', 'Tables']], rows: TECH.map(([k, t]) => ({ label: t, counts: { n: docs.filter(d => d.tech && d.tech[k]).length } })) },
         { title: 'Defences tables switched on', cats: [['n', 'Tables']], rows: DEF.map(d => ({ label: d.name, counts: { n: docs.filter(x => x.d && x.d[d.id]).length } })) },
-        { type: 'texts', title: 'Best tricks', items: docs.filter(d => d.trick).map(d => [d._table, d.trick]) }];
+        { title: 'Best trick per table', cats: [['n', 'Tables']], rows: TECH.map(([k, t]) => ({ label: t, counts: { n: docs.filter(d => d.trick === k).length } })) },
+        { title: 'What finally stopped them', cats: [['n', 'Tables']], rows: STOPS.map(([k, t]) => ({ label: t, counts: { n: docs.filter(d => d.stop === k).length } })) }];
     },
     done: st => st.lvl != null,
     drills: [
@@ -177,7 +180,7 @@
     ],
     summary(st) {
       init(st);
-      return ['Injection lab', 'Defences on: ' + (DEF.filter(d => st.d[d.id]).map(d => d.name).join(', ') || 'none'), 'Gandalf level: ' + (st.lvl || 'not recorded'), st.trick ? 'Best trick: ' + st.trick : ''].filter(Boolean).join('\n');
+      return ['Injection lab', 'Defences on: ' + (DEF.filter(d => st.d[d.id]).map(d => d.name).join(', ') || 'none'), 'Gandalf level: ' + (st.lvl || 'not recorded'), st.trick ? 'Best trick: ' + nameOf(TECH, st.trick) : '', st.stop ? 'Stopped by: ' + nameOf(STOPS, st.stop) : ''].filter(Boolean).join('\n');
     }
   });
 })();

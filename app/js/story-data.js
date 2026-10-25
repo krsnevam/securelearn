@@ -7,7 +7,7 @@
      spots   – tap every item that fits the prompt, then check
      sort    – cards come one at a time; tap the right bin
      toggle  – flip switches and watch the outcome change
-     live    – a live role-play with a character played by Claude
+     live    – a role-play: pick a reply to each of a character’s three lines
      recap   – lessons and the episode result */
 
 const CAST = {

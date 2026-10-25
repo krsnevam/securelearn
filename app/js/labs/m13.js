@@ -19,6 +19,8 @@
     ['observer', 'Observer', 'Do not speak in the meeting. Note who changed their mind, what made them change it, and whether the decision followed the readiness rule.']
   ];
   const GNG = [['go', 'Go'], ['cond', 'Go with conditions'], ['nogo', 'No-go']];
+  const SIGNERS = [['owner', 'Vikram Mehta, the business owner'], ['ciso', 'The CISO'], ['team', 'The project team'], ['none', 'Nobody']];
+  const SIGNER_WARN = { ciso: 'Security can advise, but the business owns this risk.', team: 'A team cannot accept risk. The rule needs a named person.', none: 'Without a signature, a “No” in the pack means no go-live.' };
   const CONDS = [
     ['human', 'A person approves every claim until the fix ships', 'sec'],
     ['cap', 'Cap AI approvals at ₹10,000 until the fix ships', 'sec-part'],
@@ -38,7 +40,7 @@
     const c = st.c;
     const sec = c.human ? 'closed' : c.cap ? 'partial' : 'open';
     const resp = c.kill ? 'closed' : 'open';
-    const ruleOk = (sec === 'closed' && resp === 'closed') || !!(c.accept && (st.signer || '').trim());
+    const ruleOk = (sec === 'closed' && resp === 'closed') || !!(c.accept && st.signer === 'owner');
     return { sec, resp, ruleOk };
   }
   function verdict(st) {
@@ -77,9 +79,9 @@
       'Decision: ' + (st.dec ? nameOf(GNG, st.dec) : 'not yet decided'),
       'Conditions: ' + (CONDS.filter(([k]) => st.c[k]).map(([, t]) => t).join('; ') || 'none'),
       'Security gap: ' + g.sec + ' · Response gap: ' + g.resp,
-      'Residual risk accepted by: ' + ((st.signer || '').trim() || 'nobody yet'),
+      'Residual risk accepted by: ' + (st.signer ? (SIGNERS.find(x => x[0] === st.signer) || [0, st.signer])[1] : 'nobody yet'),
       'Readiness rule: ' + (g.ruleOk || st.dec === 'nogo' ? 'followed' : 'NOT followed'),
-      st.note ? 'Notes: ' + st.note : ''].filter(Boolean).join('\n');
+      ].filter(Boolean).join('\n');
   }
 
   registerLab({
@@ -111,8 +113,9 @@
             h('ul', { class: 'plain small' }, RISKS.map(r => h('li', null, h('b', null, r.id.slice(1) + '. '), r.name))))),
         stepHead('m13', 3),
         box('dark', label('The decision'), seg(GNG, st.dec, v => { st.dec = v; }, 'Decision'),
-          field(st.signer, v => { st.signer = v; }, { line: 1, id: 'm13-signer', ph: 'Who accepts the residual risk in writing?' }),
-          field(st.note, v => { st.note = v; }, { id: 'm13-note', ph: st.dec === 'nogo' ? 'What must change before we meet again?' : 'Anything else the record should show' }),
+          h('p', { class: 'small' }, 'Who accepts the residual risk in writing?'),
+          seg(SIGNERS, st.signer, v => { st.signer = v; }, 'Who signs the residual risk', 'multi'),
+          SIGNER_WARN[st.signer] ? h('p', { class: 'flagline' }, SIGNER_WARN[st.signer]) : null,
           h('div', { class: 'verdict ' + vtone }, vt)),
         stepHead('m13', 4),
         box('', label('Decision memo'), h('pre', { class: 'memo-out' }, memo(st)), h('div', { class: 'btnrow' }, copyButton(() => memo(st), 'Copy the memo')))

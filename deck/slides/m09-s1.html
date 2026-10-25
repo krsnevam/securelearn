@@ -1,0 +1,27 @@
+<section id="m09-s1" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 09 · Scenario 1 of 3</p>
+<p style="font-size:24px;font-weight:600;color:#FCFCFD;background:#2E6BB8;border-radius:999px;padding:8px 24px;white-space:nowrap">Research finding · Sep 2025</p>
+</div>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">ForcedLeak: a breach for five dollars</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:3;display:flex;flex-direction:column;gap:20px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5E6A80">What happened</p>
+<p style="font-size:28px;line-height:1.45;color:#16234A">Noma Security showed that hidden instructions in a public Web-to-Lead form could make Salesforce Agentforce send CRM data out. The destination was still on the trusted-domain list but had expired; the researchers bought it for $5. Salesforce has fixed it.</p>
+<p style="font-size:28px;line-height:1.45;color:#46536B"><b style="color:#16234A">Your situation:</b> Marketing wants an agent that reads every inbound lead and drafts replies inside your CRM.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:20px;background:#16234A;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F2B544">Your call · 15 min</p>
+<ol style="font-size:28px;line-height:1.45;color:#F5F6F9">
+<li>Draw the trust boundaries: where does untrusted text enter?</li>
+<li>Which boundary failed in ForcedLeak?</li>
+<li>Name two controls that would have stopped it.</li>
+</ol>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Source: Noma Security research disclosure, September 2025 (rated critical, CVSS 9.4, by the researchers)</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 09</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">Architecture Review Workshop</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">3 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Concept tested: trust boundaries and threat mapping. Model answer. 1) Untrusted text enters at the public web form, which any outsider can fill in, and then flows into CRM records the agent later reads as trusted. 2) Two failed together: the agent treated lead data as instructions, and the outbound allowlist trusted a domain nobody owned any more. 3) Treat CRM fields from public forms as data only, with no tool calls triggered by them; maintain the outbound allowlist and review it (expired domains removed); block the agent from rendering external images or links; require approval before data leaves the CRM. Leadership point: a forgotten domain registration became a security hole. Asset hygiene matters more with agents.</aside>
+</section>

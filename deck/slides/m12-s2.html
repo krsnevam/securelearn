@@ -1,0 +1,27 @@
+<section id="m12-s2" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 12 · Scenario 2 of 4</p>
+<p style="font-size:24px;font-weight:600;color:#FCFCFD;background:#2E6BB8;border-radius:999px;padding:8px 24px;white-space:nowrap">Research finding · May 2025</p>
+</div>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">A public issue, a private leak</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:3;display:flex;flex-direction:column;gap:20px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5E6A80">What happened</p>
+<p style="font-size:28px;line-height:1.45;color:#16234A">Invariant Labs showed that a malicious issue in a public GitHub repository could hijack a developer’s AI agent through the GitHub MCP server. The agent copied data from private repositories into a public pull request.</p>
+<p style="font-size:28px;line-height:1.45;color:#46536B"><b style="color:#16234A">Your situation:</b> Your engineers’ agents read public issues and can write to every company repository using one token.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:20px;background:#16234A;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F2B544">Your call · 15 min</p>
+<ol style="font-size:28px;line-height:1.45;color:#F5F6F9">
+<li>Spot the toxic mix: untrusted input, private data, a way out.</li>
+<li>Which of the three do we cut first?</li>
+<li>Should one token ever span public and private work?</li>
+</ol>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Source: Invariant Labs research, May 2025</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 12</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">RAG &amp; MCP Security</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">6 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Concept tested: the "toxic flow" or lethal trifecta: an agent that reads untrusted content, can access private data, and has a channel to send data out. Any agent with all three can be turned into a leak. Model answer. 1) Untrusted input: public issues. Private data: private repositories. Way out: creating a public pull request. 2) Usually the easiest leg to cut is access: split tokens so an agent working on public issues cannot read private repositories. Adding approval for anything published publicly cuts the exit as well. 3) No; scope tokens per repository or per task. Leadership point: ask of every agent, "does it have all three legs?" If yes, it needs an explicit risk decision.</aside>
+</section>

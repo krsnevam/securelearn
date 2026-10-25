@@ -12,8 +12,14 @@
   const LEVELS = [['0', '0 · None'], ['1', '1 · Partial'], ['2', '2 · Documented']];
   const AUD = [['staff', 'Internal staff'], ['cust', 'Customers'], ['public', 'The public']];
   const ROLE = [['adv', 'Advises a person'], ['dec', 'Decides on its own']];
+  const SYS = [['chat', 'Customer chatbot'], ['credit', 'Credit or loan decisions'], ['hire', 'Hiring screener'], ['fraud', 'Fraud detection'],
+    ['claims', 'Claims or document processing'], ['copilot', 'Internal copilot'], ['content', 'Marketing content'], ['code', 'Coding assistant']];
+  const OWNER = [['named', 'A named person'], ['team', 'A team'], ['none', 'Nobody clear']];
+  const WHO = [['owner', 'System owner'], ['risk', 'Risk lead'], ['data', 'Data / IT team'], ['cxo', 'A CXO']];
+  const WHEN = [['7', '7 days'], ['14', '14 days'], ['30', '30 days']];
+  const hasEv = (st, i) => { const e = st.e[i]; return typeof e === 'string' ? !!e.trim() : !!e && Object.keys(e).length > 0; };
   const band = t => t >= 10 ? ['Defensible', 'good'] : t >= 6 ? ['Developing', 'amber'] : ['Exposed', 'bad'];
-  const effective = (st, i) => { const v = st.s[i]; if (v == null) return null; return st.ch[i] && !(st.e[i] || '').trim() ? Math.min(+v, 1) : +v; };
+  const effective = (st, i) => { const v = st.s[i]; if (v == null) return null; return st.ch[i] && !hasEv(st, i) ? Math.min(+v, 1) : +v; };
 
   function init(st) { st.s = st.s || {}; st.e = st.e || {}; st.ch = st.ch || {}; st.gap = st.gap || {}; return st; }
   function totals(st) {
@@ -36,10 +42,11 @@
       return [
         stepHead('m07', 0),
         box('', label('System profile'),
-          h('div', { class: 'split' },
-            field(st.sys, v => { st.sys = v; }, { line: 1, id: 'm07-sys', ph: 'System name (anonymise if needed)' }),
-            field(st.owner, v => { st.owner = v; }, { line: 1, id: 'm07-owner', ph: 'Owner, by name' })),
-          field(st.purpose, v => { st.purpose = v; }, { line: 1, id: 'm07-purpose', ph: 'What it does, in one line' }),
+          h('p', { class: 'small' }, 'Which kind of system are you scoring?'),
+          seg(SYS, st.sys, v => { st.sys = v; }, 'Kind of system', 'multi'),
+          h('p', { class: 'small' }, 'Who owns it today?'),
+          seg(OWNER, st.owner, v => { st.owner = v; }, 'Owner'),
+          st.owner && st.owner !== 'named' ? h('p', { class: 'flagline' }, 'No named owner: accountability can score 1 at most.') : null,
           h('div', { class: 'split' },
             h('div', null, h('p', { class: 'small' }, 'Who it affects'), seg(AUD, st.aud, v => { st.aud = v; }, 'Who it affects')),
             h('div', null, h('p', { class: 'small' }, 'Its role'), seg(ROLE, st.role, v => { st.role = v; }, 'Its role'))),
@@ -58,18 +65,20 @@
         P.map((p, i) => box('principle', h('div', { class: 'rowhead' }, h('h3', null, p.name), st.ch[i] ? pill('Challenged', 'bad') : null),
           h('p', { class: 'sub' }, 'Test: ' + p.test),
           seg(LEVELS, st.s[i], v => { if (v == null) delete st.s[i]; else st.s[i] = v; }, p.name),
-          field(st.e[i], v => { st.e[i] = v; }, { id: 'm07-e' + i, ph: 'Evidence we could show today, or “none”' }),
+          h('p', { class: 'small' }, 'Evidence you could show a regulator today'),
+          chips(p.ev.map((e, j) => [String(j), e]), typeof st.e[i] === 'object' && st.e[i] ? st.e[i] : (st.e[i] = {}), 'Evidence for ' + p.name),
           h('div', { class: 'btnrow' },
-            toggle(st.ch[i], st.ch[i] ? 'Regulator challenged this' : 'Regulator: challenge this score', () => { st.ch[i] = !st.ch[i]; }),
-            details('What good evidence looks like', false, h('ul', { class: 'plain' }, p.ev.map(e => h('li', null, e))))),
-          st.ch[i] && !(st.e[i] || '').trim() && +st.s[i] === 2 ? h('p', { class: 'flagline' }, 'Challenged with no evidence written: counted as 1.') : null)),
+            toggle(st.ch[i], st.ch[i] ? 'Regulator challenged this' : 'Regulator: challenge this score', () => { st.ch[i] = !st.ch[i]; })),
+          st.ch[i] && !hasEv(st, i) && +st.s[i] === 2 ? h('p', { class: 'flagline' }, 'Challenged with no evidence ticked: counted as 1.') : null)),
         stepHead('m07', 2),
         box('dark', label('Your 30-day gap'),
           h('p', null, t.weakest.length ? 'Weakest: ' + t.weakest.join(', ') : 'Score the tests to find your weakest principle.'),
-          field(st.gap.action, v => { st.gap.action = v; }, { id: 'm07-gap', ph: 'The one thing we will fix in 30 days' }),
-          h('div', { class: 'split' },
-            field(st.gap.who, v => { st.gap.who = v; }, { line: 1, id: 'm07-gap-who', ph: 'Who' }),
-            field(st.gap.when, v => { st.gap.when = v; }, { line: 1, id: 'm07-gap-when', ph: 'By when' })))
+          t.weakest.length ? [h('p', { class: 'small' }, 'Pick the one fix you will make'),
+            seg(P.filter(p => t.weakest.includes(p.name)).flatMap(p => p.ev.map(e => [e, p.name + ': ' + e])), st.gap.action, v => { st.gap.action = v; }, 'The fix', 'multi'),
+            h('div', { class: 'split' },
+              h('div', null, h('p', { class: 'small' }, 'Who'), seg(WHO, st.gap.who, v => { st.gap.who = v; }, 'Who')),
+              h('div', null, h('p', { class: 'small' }, 'By when'), seg(WHEN, st.gap.when, v => { st.gap.when = v; }, 'By when'))),
+            st.gap.action && st.gap.who && st.gap.when ? h('p', { class: 'goodline' }, 'Commitment: ' + st.gap.action + ' · ' + nameOf(WHO, st.gap.who) + ' · within ' + nameOf(WHEN, st.gap.when) + '.') : null] : null)
       ];
     },
     answers(st) {
@@ -87,7 +96,7 @@
       return [
         { type: 'radar', title: 'Room average by principle', note: 'Average of every table’s score, 0 to 2.', axes: P.map(p => p.name), series: [avg], max: 2, target: 2 },
         { title: 'Scores by principle', cats: LEVELS, rows: P.map((p, i) => ({ label: p.name, counts: count(docs.map(d => d.s && d.s[i])) })) },
-        { type: 'texts', title: '30-day commitments', items: docs.filter(d => d.gap && d.gap.action).map(d => [d._table, d.gap.action + (d.gap.who ? ' · ' + d.gap.who : '') + (d.gap.when ? ' · ' + d.gap.when : '')]) }
+        { type: 'texts', title: '30-day commitments', items: docs.filter(d => d.gap && d.gap.action).map(d => [d._table, d.gap.action + (d.gap.who ? ' · ' + nameOf(WHO, d.gap.who) : '') + (d.gap.when ? ' · ' + nameOf(WHEN, d.gap.when) : '')]) }
       ];
     },
     done: st => st.s && Object.keys(st.s).length === 6,
@@ -143,8 +152,8 @@
     ],
     summary(st) {
       init(st); const t = totals(st);
-      return ['Responsible AI scorecard: ' + (st.sys || 'unnamed system') + (st.owner ? ' (owner: ' + st.owner + ')' : ''),
-        ...P.map((p, i) => '- ' + p.name + ': ' + (t.vals[i] == null ? 'not scored' : t.vals[i]) + (st.e[i] ? ' · ' + st.e[i] : '')),
+      return ['Responsible AI scorecard: ' + (st.sys ? (SYS.find(x => x[0] === st.sys) || [0, st.sys])[1] : 'unnamed system') + (st.owner ? ' (owner: ' + (OWNER.find(x => x[0] === st.owner) || [0, st.owner])[1] + ')' : ''),
+        ...P.map((p, i) => '- ' + p.name + ': ' + (t.vals[i] == null ? 'not scored' : t.vals[i]) + (hasEv(st, i) ? ' · evidence: ' + (typeof st.e[i] === 'string' ? st.e[i] : p.ev.filter((_, j) => st.e[i][j]).join('; ')) : '')),
         'Total ' + t.total + '/12 · ' + band(t.total)[0], st.gap.action ? '30-day gap: ' + st.gap.action : ''].filter(Boolean).join('\n');
     }
   });

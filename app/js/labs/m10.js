@@ -94,7 +94,10 @@
           st.idp === 'obo' && OBO[p.id] && ARANK[OBO[p.id]] > ARANK[st.k[p.id] || 'keep'] ? h('p', { class: 'goodline' }, 'On-behalf-of identity already limits this: effectively ' + nameOf(ACT, OBO[p.id]).toLowerCase() + '.') : null,
           act(st, p.id) === 'reduce' ? seg(p.red.map((t, j) => [String(j), t]), st.red[p.id], v => { if (v == null) delete st.red[p.id]; else st.red[p.id] = v; }, 'How to reduce', 'multi') : null)),
         stepHead('m10', 3),
-        box('', h('h3', null, 'The worst chain your table found'), field(st.chain, v => { st.chain = v; }, { id: 'm10-chain', ph: 'In your own words' }))
+        box('', h('h3', null, 'The chain your table worries about most'),
+          seg(CHAINS.map(ch => [ch.id, ch.id + ' · ' + ch.name]), st.chain, v => { st.chain = v; }, 'Worst chain', 'multi'),
+          st.chain && CHAINS.find(ch => ch.id === st.chain) ? h('p', { class: live(st, CHAINS.find(ch => ch.id === st.chain)) ? 'flagline' : 'goodline' },
+            live(st, CHAINS.find(ch => ch.id === st.chain)) ? 'Still live. Cut or reduce a permission it needs.' : 'Broken by your choices. Well defended.') : null)
       ];
     },
     answers(st) {

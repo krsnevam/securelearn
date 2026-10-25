@@ -1,0 +1,27 @@
+<section id="m14-s3" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 14 · Scenario 3 of 4</p>
+<p style="font-size:24px;font-weight:600;color:#16234A;background:#F2B544;border-radius:999px;padding:8px 24px;white-space:nowrap">Realistic scenario · Manufacturing</p>
+</div>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">1,100 purchase orders in 40 minutes</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:3;display:flex;flex-direction:column;gap:20px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5E6A80">The situation</p>
+<p style="font-size:28px;line-height:1.45;color:#16234A">A supplier changes the format of its order confirmations. Your procurement agent reads them as failures and keeps re-ordering. No attacker is involved.</p>
+<p style="font-size:28px;line-height:1.45;color:#46536B"><b style="color:#16234A">The twist:</b> In 40 minutes it raises 1,100 duplicate purchase orders worth ₹6.8 crore. Twelve suppliers have already started dispatch.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:20px;background:#16234A;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F2B544">Your call · 15 min</p>
+<ol style="font-size:28px;line-height:1.45;color:#F5F6F9">
+<li>Which detection should have fired, and when?</li>
+<li>Which level of stop, and who pulls it?</li>
+<li>How do we unwind the orders with suppliers?</li>
+</ol>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Composite scenario; figures are illustrative</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 14</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">SOC Integration &amp; Runtime Defense</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">8 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Concept tested: the runaway agent detection and graduated kill switches. Not every AI incident is an attack; cascading failure (OWASP ASI08) is just as costly. Model answer. 1) A rate rule: more than, say, five orders per supplier per hour, or any duplicate order for the same item within a day, should alert and pause within minutes. Ideally it fires after the first 10 orders, not 1,100. 2) Level 3: stop this agent and revoke its ordering access; the procurement head or the system owner can pull it, with the SOC executing. 3) Contact the twelve suppliers immediately with a cancellation list generated from the logs; check contract terms on cancellation charges. Leadership point: speed multiplies small errors. A rate limit is the cheapest control in agentic AI.</aside>
+</section>

@@ -37,6 +37,11 @@
     });
     return svgWrap(640, 420, 'Portfolio heat map by autonomy and impact', 500, g);
   }
+  const ASKS = [['emo', 'Stop the workplace emotion recognition now'], ['hire', 'Approve the hiring agent with conditions'], ['crit', 'No critical finding open beyond 30 days'],
+    ['inv', 'Fund discovery of unlisted AI'], ['bom', 'Require an AI bill of materials from vendors']];
+  const ONE_ASK = [['budget', 'Budget'], ['people', 'People'], ['policy', 'A policy']];
+  const picked = x => typeof x === 'string' ? (x.trim() ? 1 : 0) : x ? Object.keys(x).length : 0;
+  const listOf = (x, opts) => typeof x === 'string' ? x : opts.filter(([k]) => x[k]).map(o => o[1]).join('; ');
   function report(st) {
     const R = rows(st), byEU = count(R.map(r => r.eu)), byIn = count(R.map(r => r.it));
     const prohib = R.filter(r => r.eu === 'prohib'), blind = R.filter(r => r.eu === 'minimal' && (r.it === 'High' || r.it === 'Medium'));
@@ -46,7 +51,7 @@
       prohib.length ? 'Stop now: ' + prohib.map(r => r.c.t).join('; ') + '. This use is prohibited.' : '',
       blind.length ? 'Not caught by the Act but material to us: ' + blind.map(r => r.c.t).join('; ') + '.' : '',
       top.length ? 'Highest internal scores: ' + top.map(r => r.c.t + ' (' + r.sc + '/12)').join('; ') + '.' : '',
-      st.rep.risks ? 'Top risks: ' + st.rep.risks : '', st.rep.decide ? 'Decisions needed from the board: ' + st.rep.decide : '', st.rep.ask ? 'Our ask: ' + st.rep.ask : ''].filter(x => x !== '').join('\n');
+      picked(st.rep.risks) ? 'Top risks: ' + listOf(st.rep.risks, CASES.map(c => [c.id, c.t])) : '', picked(st.rep.decide) ? 'Decisions needed from the board: ' + listOf(st.rep.decide, ASKS) : '', st.rep.ask ? 'Our ask: ' + ((ONE_ASK.find(x => x[0] === st.rep.ask) || [0, st.rep.ask])[1]) : ''].filter(x => x !== '').join('\n');
   }
 
 
@@ -62,6 +67,13 @@
     ['mttc', '42 min', 'Median time to contain an AI incident', 'invest', 'Leaking agents need minutes, not most of an hour: invest in level 1 automation.'],
     ['bom', '35%', 'Vendor AI with an AI bill of materials', 'invest', 'Make AI-BOM a contract requirement at renewal.']];
   const BD = [['accept', 'Accept'], ['invest', 'Invest'], ['stop', 'Stop']];
+  const TH = {
+    inv: [['95', 'Below 95%'], ['90', 'Below 90%'], ['70', 'Below 70%']],
+    hra: [['all', 'Any unassessed'], ['75', 'Below 75%'], ['50', 'Below half']],
+    crit: [['30', 'Any over 30 days'], ['60', 'Any over 60 days'], ['90', 'Any over 90 days']],
+    inc: [['high', 'Any high severity'], ['3', 'More than 3'], ['10', 'More than 10']],
+    mttc: [['15', 'Over 15 min'], ['60', 'Over an hour'], ['240', 'Over 4 hours']],
+    bom: [['100', 'Below 100% of new contracts'], ['50', 'Below 50%'], ['none', 'No target']] };
   function governancePart(st) {
     st.dd = st.dd || {}; st.bd = st.bd || {}; st.th = st.th || {};
     const R = rows(st);
@@ -74,7 +86,7 @@
       box('', label('Board dashboard · fictional bank, Q3'), h('h3', null, 'Six numbers for the board’s AI risk report'),
         h('p', { class: 'sub' }, 'Give each number a threshold that triggers a decision, then make the call: accept, invest or stop.'),
         h('div', { class: 'boardgrid' }, BOARD.map(([k, v, t]) => h('div', { class: 'kpi' }, h('b', null, v), h('span', null, t),
-          field(st.th[k], x => { st.th[k] = x; }, { line: 1, id: 'm15-th-' + k, ph: 'Threshold, e.g. “below 90% → invest”' }),
+          h('span', { class: 'small' }, 'Trigger a decision when'), seg(TH[k], st.th[k], x => { if (x) st.th[k] = x; else delete st.th[k]; }, 'Threshold for ' + t, 'multi'),
           seg(BD, st.bd[k], x => { if (x) st.bd[k] = x; else delete st.bd[k]; }, 'Decision for ' + t)))))
     ];
   }
@@ -107,7 +119,9 @@
         governancePart(st),
         stepHead('m15', 3),
         box('', label('Board report'), h('p', { class: 'sub' }, 'The first lines are drafted from your classification. Add the rest.'),
-          [['risks', 'Our top three AI risks'], ['decide', 'Decisions we need from the board'], ['ask', 'Our one ask: budget, people or a policy']].map(([k, p]) => field(st.rep[k], v => { st.rep[k] = v; }, { id: 'm15-' + k, ph: p })),
+          h('p', { class: 'small' }, 'Our top three AI risks' + (picked(st.rep.risks) > 3 ? ' (pick three)' : '')), chips(CASES.map(c => [c.id, c.t]), typeof st.rep.risks === 'object' && st.rep.risks ? st.rep.risks : (st.rep.risks = {}), 'Top risks'),
+          h('p', { class: 'small' }, 'Decisions we need from the board'), chips(ASKS, typeof st.rep.decide === 'object' && st.rep.decide ? st.rep.decide : (st.rep.decide = {}), 'Board decisions'),
+          h('p', { class: 'small' }, 'Our one ask'), seg(ONE_ASK, st.rep.ask, v => { st.rep.ask = v; }, 'Our one ask'),
           h('pre', { class: 'memo-out' }, report(st)), h('div', { class: 'btnrow' }, copyButton(() => report(st), 'Copy the report')))
       ];
     },
@@ -127,7 +141,8 @@
     },
     agg(docs) {
       return [{ title: 'EU AI Act tier chosen', cats: TIERS, rows: CASES.map((c, i) => ({ label: (i + 1) + '. ' + c.t, counts: count(docs.map(d => d.t && d.t[c.id])) })) },
-        { type: 'texts', title: 'Board asks', items: docs.filter(d => d.rep && d.rep.ask).map(d => [d._table, d.rep.ask]) }];
+        { title: 'Board asks', cats: [['n', 'Tables']], rows: ONE_ASK.map(([k, t]) => ({ label: t, counts: { n: docs.filter(d => d.rep && d.rep.ask === k).length } })) },
+        { title: 'Decisions tables want from the board', cats: [['n', 'Tables']], rows: ASKS.map(([k, t]) => ({ label: t, counts: { n: docs.filter(d => d.rep && d.rep.decide && typeof d.rep.decide === 'object' && d.rep.decide[k]).length } })) }];
     },
     done: st => !!st.t && Object.keys(st.t).length === 8,
     drills: [

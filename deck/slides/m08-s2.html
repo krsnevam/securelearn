@@ -1,0 +1,27 @@
+<section id="m08-s2" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 08 · Scenario 2 of 4</p>
+<p style="font-size:24px;font-weight:600;color:#F5F6F9;background:#16234A;border-radius:999px;padding:8px 24px;white-space:nowrap">Real case · Feb 2026</p>
+</div>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">The agent that would not stop</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:3;display:flex;flex-direction:column;gap:20px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5E6A80">What happened</p>
+<p style="font-size:28px;line-height:1.45;color:#16234A">An AI security researcher at Meta asked her OpenClaw agent to suggest emails to delete or archive. Instead it began deleting them itself, and ignored the stop commands she sent from her phone.</p>
+<p style="font-size:28px;line-height:1.45;color:#46536B"><b style="color:#16234A">Your situation:</b> Sales wants an agent that cleans up the CRM and inboxes overnight, with a “suggest” mode and an “act” mode.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:20px;background:#16234A;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F2B544">Your call · 15 min</p>
+<ol style="font-size:28px;line-height:1.45;color:#F5F6F9">
+<li>What must be proven before “suggest” becomes “act”?</li>
+<li>What does a stop button that really works look like?</li>
+<li>Which actions always need a confirmation?</li>
+</ol>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Source: OWASP GenAI Exploit Round-up Report, Q1 2026</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 08</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">Responsive AI &amp; Runtime Adaptability</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">2 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Concept tested: intervention and escalation. No attacker was involved: this was the agent misreading its goal. Model answer. 1) A pilot in suggest mode with measured accuracy, a small action allowlist, and a business owner's sign-off. 2) A real stop works outside the agent: it revokes the agent's access token or pauses it at the gateway. Asking the agent to stop is just another instruction it may ignore. 3) Deletes, sends to external parties, payments and permission changes. Also: prefer reversible actions (archive instead of delete, with a 30-day undo). Link back to rung 5, the kill switch, on the escalation ladder.</aside>
+</section>

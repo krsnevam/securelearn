@@ -1,0 +1,27 @@
+<section id="m12-s1" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 12 · Scenario 1 of 4</p>
+<p style="font-size:24px;font-weight:600;color:#F5F6F9;background:#16234A;border-radius:999px;padding:8px 24px;white-space:nowrap">Real case · Sep 2025</p>
+</div>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">The first malicious MCP server</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:3;display:flex;flex-direction:column;gap:20px;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5E6A80">What happened</p>
+<p style="font-size:28px;line-height:1.45;color:#16234A">Koi Security found “postmark-mcp” on npm, a lookalike of a legitimate email MCP server. After 15 clean versions, an update quietly sent a blind copy of every email to the attacker. Teams that auto-updated never noticed.</p>
+<p style="font-size:28px;line-height:1.45;color:#46536B"><b style="color:#16234A">Your situation:</b> Developers have installed 60 MCP servers from public registries. None is pinned to a version, and none has an owner.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:20px;background:#16234A;border-radius:16px;padding:40px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F2B544">Your call · 15 min</p>
+<ol style="font-size:28px;line-height:1.45;color:#F5F6F9">
+<li>Which servers stay, and who decides?</li>
+<li>What rules apply to versions and updates?</li>
+<li>How do we check a publisher is genuine?</li>
+</ol>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5E6A80">Source: Koi Security research, September 2025</p>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 12</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">RAG &amp; MCP Security</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">6 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>Concept tested: the MCP rug pull; trust earned by early clean versions was then abused. Model answer. 1) Freeze new installs, inventory all 60, and keep only servers with a business owner, a clear purpose and an acceptable publisher; the rest are removed. 2) Pin exact versions; every update goes through review (diff the tool descriptions and behaviour) before rollout; no auto-update. 3) Prefer official servers published by the vendor itself, verify the publisher's identity and repository, and route all MCP traffic through a gateway that logs calls. Leadership point: one line of code turned a helpful tool into a silent data leak, so MCP servers need supplier-level vetting.</aside>
+</section>

@@ -5,6 +5,8 @@
   "description": "Hands-on labs for Modules 07–16 of the Agentic AI Security & Governance program.",
   "scripts": {
     "check": "node scripts/check-syntax.mjs",
+    "deck": "node scripts/import-deck.mjs",
+    "build": "node scripts/build-standalone.mjs",
     "test": "node scripts/check-syntax.mjs && node scripts/smoke.mjs"
   },
   "devDependencies": {

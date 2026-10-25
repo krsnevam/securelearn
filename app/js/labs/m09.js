@@ -73,6 +73,7 @@
   const VERDICT = ['Secure', 'Scalable', 'Trustworthy', 'Governable', 'Ready for production'];
   const VOPT = [['yes', 'Yes'], ['cond', 'With conditions'], ['no', 'No']];
   const RES = [['low', 'Low'], ['med', 'Medium'], ['high', 'High']];
+  const QLEVELS = ['Clear answer', 'Partly', 'Unknown: an open question'];
   const EXS = [
     { id: 'copilot', n: 1, name: 'Enterprise AI Security Copilot', min: 40,
       desc: 'An LLM layer, a RAG layer over past incidents, an MCP integration layer, and links to the SIEM, the SOAR platform and threat-intelligence feeds. The copilot can isolate laptops and servers.',
@@ -125,11 +126,14 @@
               toggle(r.on, r.on ? 'Applies' : 'Mark as applying', () => { r.on = !r.on; }, 'good')),
             r.on ? [h('p', { class: 'small' }, 'Control'), seg(t.ctl.map((c, i) => [String(i), c]), r.ctl, v => { if (v == null) delete r.ctl; else r.ctl = v; }, 'Control', 'multi'),
               rev && r.ctl != null ? h('p', { class: +r.ctl === t.ok ? 'goodline' : 'flagline' }, +r.ctl === t.ok ? 'Strong control.' : 'Weaker choice. Stronger: ' + t.ctl[t.ok]) : null,
-              h('div', { class: 'split' }, field(r.owner, v => { r.owner = v; }, { line: 1, id: 'wb-' + t.id + '-owner', ph: 'Named owner' + (rev ? ' (suggested: ' + t.owner + ')' : '') }),
-                h('div', null, h('p', { class: 'small' }, 'Residual risk'), seg(RES, r.res, v => { if (v) r.res = v; else delete r.res; }, 'Residual risk')))] : null); }),
+              h('p', { class: 'small' }, 'Owner'), seg([...new Set(ex.threats.map(x => x.owner))].map(o => [o, o]), r.owner, v => { if (v) r.owner = v; else delete r.owner; }, 'Owner', 'multi'),
+              rev && r.owner ? h('p', { class: r.owner === t.owner ? 'goodline' : 'flagline' }, r.owner === t.owner ? 'Right owner.' : 'Suggested owner: ' + t.owner) : null,
+              h('p', { class: 'small' }, 'Residual risk'), seg(RES, r.res, v => { if (v) r.res = v; else delete r.res; }, 'Residual risk')] : null); }),
         stats(stat(on.length + ' / ' + ex.threats.length, 'Threats marked'), stat(on.filter(t => (w.t[t.id] || {}).owner).length, 'With a named owner'))),
       stepHead('m09', 3),
-      box('', label('The leader’s eight questions'), QUESTIONS.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, (i + 1) + '. '), q), field(w.q[i], v => { w.q[i] = v; }, { line: 1, id: 'wb-' + ex.id + '-q' + i, ph: 'Answer for ' + ex.name })))),
+      box('', label('The leader’s eight questions'), h('p', { class: 'sub' }, 'For ' + ex.name + ': could your team answer each one from this design today?'),
+        QUESTIONS.map((q, i) => h('div', { class: 'qa' }, h('p', null, h('b', null, (i + 1) + '. '), q), levelCards(QLEVELS, typeof w.q[i] === 'number' ? w.q[i] : null, v => { if (v == null) delete w.q[i]; else w.q[i] = v; }, q))),
+        stats(stat(QUESTIONS.filter((_, i) => w.q[i] === 0).length + ' / 8', 'Answered clearly', 'good'), stat(QUESTIONS.filter((_, i) => w.q[i] === 1 || w.q[i] === 2).length, 'Open questions', 'amber'))),
       stepHead('m09', 4),
       box('dark', label('Your verdict'), VERDICT.map(c => h('div', { class: 'polrow' }, h('span', null, c), seg(VOPT, w.v[c], v => { if (v) w.v[c] = v; else delete w.v[c]; }, c)))),
       stepHead('m09', 5),
@@ -144,7 +148,7 @@
       lines.push('=== Exercise ' + ex.n + ': ' + ex.name + ' ===',
         '1 · ARCHITECTURE ASSESSMENT REPORT', 'Components: ' + ex.parts.join(', '),
         'Trust boundaries reviewed: ' + [...new Set(ex.threats.map(t => t.b))].join('; '),
-        ...QUESTIONS.map((q, i) => (w.q[i] || '').trim() ? '  ' + q + ' ' + w.q[i].trim() : '').filter(Boolean),
+        ...QUESTIONS.map((q, i) => typeof w.q[i] === 'number' ? '  ' + q + ' ' + QLEVELS[w.q[i]] : typeof w.q[i] === 'string' && w.q[i].trim() ? '  ' + q + ' ' + w.q[i].trim() : '').filter(Boolean),
         '2 · THREAT MODEL & RISK MATRIX',
         ...(on.length ? on.map(t => { const r = w.t[t.id]; return '  - ' + t.t + ' [' + t.b + ' · ' + t.asi + '] control: ' + (r.ctl != null ? t.ctl[+r.ctl] : 'not chosen') + ' · owner: ' + (r.owner || 'unassigned') + ' · residual: ' + nameOf(RES, r.res); }) : ['  (no threats marked)']),
         '3 · SECURITY & GOVERNANCE REVIEW', '  Verdict: ' + VERDICT.map(c => c + ' ' + nameOf(VOPT, w.v[c])).join(' · '), '');

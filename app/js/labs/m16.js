@@ -38,6 +38,30 @@
   const START = 10 * 60 + 5, DEADLINE = START + 6 * 60;
   const toMin = c => { const [a, b] = c.split(':').map(Number); return a * 60 + b; };
 
+  /* Sentence cards for the two notices and the lesson: [key, text, good, why it hurts]. */
+  const CUST = [
+    ['c1', 'Today our client assistant sent one client document to an unknown address. We stopped it within the hour.', true],
+    ['c2', 'We are contacting every affected client directly, and your adviser will call you today.', true],
+    ['c3', 'You can reach a dedicated team on our helpline; we will update you as the investigation progresses.', true],
+    ['c4', 'A sophisticated cyber attack beyond our control affected our systems.', false, 'Blames others and speculates before the facts are known.'],
+    ['c5', 'No client data was affected.', false, 'Untrue: one client’s file was sent out.'],
+    ['c6', 'Our AI is industry-leading and completely safe.', false, 'Empty reassurance on the day it leaked a file.']];
+  const REG = [
+    ['r1', 'At 10:05 our AI assistant emailed one client’s portfolio file to an external address after reading a supplier PDF with hidden instructions.', true],
+    ['r2', 'We disabled the assistant’s email tool, preserved all logs and opened an investigation.', true],
+    ['r3', 'We will submit a full report with root cause and remediation within the required period.', true],
+    ['r4', 'We will report once our investigation is complete.', false, 'Too late: the six-hour clock does not wait for the investigation.'],
+    ['r5', 'The incident was minor and needs no further action.', false, 'Prejudges the outcome and invites scrutiny.'],
+    ['r6', 'Our AI vendor is responsible for the incident.', false, 'You remain accountable for your own systems.']];
+  const LESSON = [
+    ['l1', 'Strip hidden text and instructions from supplier PDFs before Aria reads them.', true],
+    ['l2', 'Require approval before Aria emails attachments outside the company.', true],
+    ['l3', 'No outbound email straight after reading untrusted documents.', true],
+    ['l4', 'A stronger system prompt telling Aria to ignore instructions.', false, 'Prompts are not controls: the attack already overrode one.'],
+    ['l5', 'Train advisers to spot suspicious PDFs.', false, 'Advisers never saw the hidden text; Aria did.'],
+    ['l6', 'Switch to a bigger model.', false, 'Bigger models follow hidden instructions too.']];
+  const sets = (st, k) => (st[k] && typeof st[k] === 'object') ? st[k] : (st[k] = {});
+  const said = (x, lines) => typeof x === 'string' ? x : x ? lines.filter(([k]) => x[k]).map(l => l[1]).join(' ') : '';
   function init(st) { st.at = st.at == null ? -1 : st.at; st.ch = st.ch || {}; st.d = st.d || {}; st.o = st.o || {}; return st; }
   function scores(st) {
     const tot = DIMS.map(() => 0); let dis = 0;
@@ -69,9 +93,9 @@
   function report(st) {
     const sc = scores(st);
     return ['AFTER-ACTION REPORT · Meridian Wealth Advisors · Aria data leak', '',
-      ...INJ.map((inj, i) => { const o = inj.opts.find(x => x.k === st.ch[i]); return inj.t + ' ' + inj.clock + ' · ' + inj.q + '\n  Decision: ' + (o ? o.t : 'not reached') + (st.o[i] ? ' (owner: ' + nameOf(CREW, st.o[i]) + ')' : '') + (st.d[i] ? '\n  Notes: ' + st.d[i] : '') + (o ? '\n  Result: ' + o.fx : ''); }),
+      ...INJ.map((inj, i) => { const o = inj.opts.find(x => x.k === st.ch[i]); return inj.t + ' ' + inj.clock + ' · ' + inj.q + '\n  Decision: ' + (o ? o.t : 'not reached') + (st.o[i] ? ' (owner: ' + nameOf(CREW, st.o[i]) + ')' : '') + (typeof st.d[i] === 'string' && st.d[i] ? '\n  Notes: ' + st.d[i] : '') + (o ? '\n  Result: ' + o.fx : ''); }),
       '', 'Scores (out of 3): ' + DIMS.map((d, i) => d + ' ' + sc.vals[i].toFixed(1)).join(' · ') + ' · Business disruption ' + sc.dis + '/9',
-      st.cust ? 'Client notice: ' + st.cust : '', st.reg ? 'Regulator notice: ' + st.reg : '', st.lesson ? 'What would have prevented it: ' + st.lesson : ''].filter(x => x !== '').join('\n');
+      said(st.cust, CUST) ? 'Client notice: ' + said(st.cust, CUST) : '', said(st.reg, REG) ? 'Regulator notice: ' + said(st.reg, REG) : '', said(st.lesson, LESSON) ? 'What would have prevented it: ' + said(st.lesson, LESSON) : ''].filter(x => x !== '').join('\n');
   }
   let cbTimer = null;
   function startCurveball() {
@@ -138,8 +162,7 @@
             h('div', { class: 'opts' }, inj.opts.map(o => h('button', { type: 'button', class: 'optbtn', 'aria-pressed': String(st.ch[i] === o.k), disabled: chosen && chosen.k !== o.k ? true : null,
               onclick: () => { if (st.ch[i] == null) { st.ch[i] = o.k; commit(); } } }, h('span', { class: 'ok' }, o.k.toUpperCase()), h('span', null, o.t)))),
             chosen ? h('div', { class: 'consq' }, label('What happens'), h('p', null, chosen.fx)) : h('p', { class: 'small' }, 'Choose one. You cannot change it afterwards.'),
-            h('p', { class: 'small' }, 'Owner'), seg(CREW, st.o[i], v => { if (v) st.o[i] = v; else delete st.o[i]; }, 'Owner', 'multi'),
-            field(st.d[i], v => { st.d[i] = v; }, { id: 'm16-d' + i, ph: 'Notes for the record' })),
+            h('p', { class: 'small' }, 'Owner'), seg(CREW, st.o[i], v => { if (v) st.o[i] = v; else delete st.o[i]; }, 'Owner', 'multi')),
           inj.curve ? box('curve', pill('Curveball', 'bad'), h('p', null, 'The facilitator is phoning your comms head now for a comment on the record. Nobody else at the table may help for 60 seconds.'),
             h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn', onclick: startCurveball }, 'Start the 60 seconds'), h('b', { id: 'm16-cb', class: 'cb' }, '1:00'))) : null];
         }),
@@ -148,10 +171,13 @@
             h('div', { class: 'btnrow' }, h('button', { type: 'button', class: 'btn primary', disabled: st.at >= 0 && st.ch[st.at] == null ? true : null, onclick: () => { st.at++; startTimer('m16', 150 + st.at * 10); } }, st.at < 0 ? 'Reveal inject 1' : 'Reveal inject ' + (st.at + 2))))
           : [box('dark', label('Your crisis score'), h('div', { class: 'radarbox' }, radar(DIMS, [sc.vals], 3, { target: 3, label: 'Crisis score' })),
             stats(...DIMS.map((d, i) => stat(sc.vals[i].toFixed(1), d)), stat(sc.dis + ' / 9', 'Disruption'))),
-            box('', label('After the injects'),
-              field(st.cust, v => { st.cust = v; }, { id: 'm16-cust', ph: 'Three-line notice to affected clients' }),
-              field(st.reg, v => { st.reg = v; }, { id: 'm16-reg', ph: 'Three-line notice to the regulator' }),
-              field(st.lesson, v => { st.lesson = v; }, { id: 'm16-lesson', ph: 'What would have prevented this?' })),
+            box('', label('After the injects'), h('h3', null, 'Build the notice to affected clients'), h('p', { class: 'small' }, 'Pick three sentences.'),
+              lineBuilder(CUST, sets(st, 'cust'), 3, 'Client notice'),
+              h('h3', null, 'Build the notice to the regulator'), h('p', { class: 'small' }, 'Pick three sentences.'),
+              lineBuilder(REG, sets(st, 'reg'), 3, 'Regulator notice'),
+              h('h3', null, 'What would have prevented this?'), h('p', { class: 'small' }, 'Pick the three controls that matter most.'),
+              lineBuilder(LESSON, sets(st, 'lesson'), 3, 'Prevention'),
+              stats(stat(Math.max(0, lineScore(CUST, st.cust) + lineScore(REG, st.reg) + lineScore(LESSON, st.lesson)) + ' / 9', 'Notice score'))),
             box('', label('After-action report'), h('pre', { class: 'memo-out' }, report(st)), h('div', { class: 'btnrow' }, copyButton(() => report(st), 'Copy the report')))]
       ];
     },

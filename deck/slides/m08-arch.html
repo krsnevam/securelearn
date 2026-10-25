@@ -1,0 +1,42 @@
+<section id="m08-arch" data-transition="fade" style="background:#F5F6F9;color:#16234A;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2E6BB8">Module 08 · Enterprise responsive AI architecture</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#16234A">Six layers that let AI adapt without losing control</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:28px;align-items:center;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:12px;padding:16px 28px">
+<p style="font-size:26px;font-weight:700;color:#16234A;width:340px">1 · Context</p>
+<p style="flex:1;font-size:24px;line-height:1.35;color:#46536B">Who is asking, which data, current trust score</p>
+</div>
+<div style="display:flex;gap:28px;align-items:center;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:12px;padding:16px 28px">
+<p style="font-size:26px;font-weight:700;color:#16234A;width:340px">2 · Reasoning</p>
+<p style="flex:1;font-size:24px;line-height:1.35;color:#46536B">Model plans the next step, with a confidence score</p>
+</div>
+<div style="display:flex;gap:28px;align-items:center;background:#16234A;border-radius:12px;padding:16px 28px">
+<p style="font-size:26px;font-weight:700;color:#F2B544;width:340px">3 · Policy engine</p>
+<p style="flex:1;font-size:24px;line-height:1.35;color:#C5CFE0">Rules as code; adaptive risk thresholds</p>
+</div>
+<div style="display:flex;gap:28px;align-items:center;background:#16234A;border-radius:12px;padding:16px 28px">
+<p style="font-size:26px;font-weight:700;color:#F2B544;width:340px">4 · Action gateway</p>
+<p style="flex:1;font-size:24px;line-height:1.35;color:#C5CFE0">Tool calls, approval gates, rate limits</p>
+</div>
+<div style="display:flex;gap:28px;align-items:center;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:12px;padding:16px 28px">
+<p style="font-size:26px;font-weight:700;color:#16234A;width:340px">5 · Observability</p>
+<p style="flex:1;font-size:24px;line-height:1.35;color:#46536B">Telemetry, evaluations, drift detection</p>
+</div>
+<div style="display:flex;gap:28px;align-items:center;background:#FCFCFD;border:1px solid #D9DFEA;border-radius:12px;padding:16px 28px">
+<p style="font-size:26px;font-weight:700;color:#16234A;width:340px">6 · Human escalation</p>
+<p style="flex:1;font-size:24px;line-height:1.35;color:#46536B">On-call owner, override, kill switch</p>
+</div>
+</div>
+<div style="width:420px;display:flex;flex-direction:column;justify-content:center;gap:20px;border:2px dashed #2E6BB8;border-radius:16px;padding:36px">
+<x-icon name="Activity" style="color:#2E6BB8;width:56px;height:56px"></x-icon>
+<h3 style="font-size:32px;font-weight:600;color:#16234A">The feedback loop</h3>
+<p style="font-size:24px;line-height:1.4;color:#46536B">Layer 5 feeds layers 1 and 3, so controls tighten automatically when signals worsen.</p>
+<p style="font-size:24px;line-height:1.4;color:#16234A"><b>Layers 3 and 4 sit outside the model,</b> so the AI cannot talk its way past them.</p>
+</div>
+</div>
+<div style="position:absolute;left:0px;top:0px;width:1920px;height:72px;background:#16234A;display:flex;align-items:center;gap:24px;padding:0px 128px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;color:#F2B544;white-space:nowrap">MODULE 08</p><p style="font-size:24px;color:#F5F6F9;white-space:nowrap">Responsive AI &amp; Runtime Adaptability</p><div style="flex:1"></div><p style="font-size:24px;color:#C5CFE0;white-space:nowrap">2 of 10</p><div style="display:flex;gap:8px"><div style="width:36px;height:8px;border-radius:4px;background:#8FB4E8"></div><div style="width:36px;height:8px;border-radius:4px;background:#F2B544"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div><div style="width:36px;height:8px;border-radius:4px;background:#3A4A75"></div></div></div>
+<aside>This is the summary slide for the module: the enterprise responsive AI architecture, curriculum topic 12. Each layer maps to an earlier slide: context-aware AI (layer 1), dynamic decision making and self-correction (layer 2), runtime policy enforcement and adaptive risk controls (layers 3 and 4), AI observability and feedback loops (layer 5), runtime intervention and human escalation paths (layer 6). Use it as a checklist when a vendor presents an agent platform: ask them to point to each layer in their product. Layers 3 and 4 are the ones most often missing in early deployments.</aside>
+</section>

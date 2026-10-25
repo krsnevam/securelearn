@@ -28,8 +28,7 @@ function wrapUp() {
     chips(App.labs.map(l => [l.id, 'M' + l.n + ' · ' + LEAD_Q[l.id]]), P.ans, 'Questions I can answer'),
     h('h3', null, 'Know, control, prove: your three commitments'),
     h('div', { class: 'plangrid' }, PLAN.map(([k, t, acts]) => { const set = P[k] || (P[k] = {});
-      return h('div', { class: 'plancol' }, h('b', null, t), chips(acts.map((a, i) => [String(i), a]), set, t),
-        field(P.mine[k], v => { P.mine[k] = v; }, { line: 1, id: 'plan-' + k, ph: 'My own commitment' })); })),
+      return h('div', { class: 'plancol' }, h('b', null, t), chips(acts.map((a, i) => [String(i), a]), set, t)); })),
     h('pre', { class: 'memo-out' }, planText()), h('div', { class: 'btnrow' }, copyButton(planText, 'Copy my 90-day plan')));
 }
 function statusOf(id) {
@@ -61,24 +60,27 @@ function howItWorks() {
       h('li', null, h('b', null, 'Work task. '), 'Follow the numbered steps. Every step says what kind of action it is.'),
       h('li', null, h('b', null, 'Check my work. '), 'Scores your choices and opens the expert answers.'),
       h('li', null, h('b', null, 'Quick quiz. '), 'Short questions on the module’s concepts, with instant feedback.'),
-      h('li', null, h('b', null, 'Case studies. '), 'Real incidents to discuss as a table; write your answer, then compare with the expert’s.')),
+      h('li', null, h('b', null, 'Case studies. '), 'Real incidents: make three calls per case, see what happens, then compare with the expert’s answer.')),
     h('div', { class: 'kindgrid' }, Object.entries(KINDS).map(([k, v]) => h('div', { class: 'kindrow' }, kindBadge(k), h('span', null, v.hint)))));
 }
 function home() {
   const done = App.labs.filter(l => statusOf(l.id)[1] === 'done').length;
   const minutes = sum(App.labs.map(l => l.min));
-  const tbl = h('input', { type: 'text', id: 'tbl', placeholder: 'For example: Table 3' });
-  tbl.value = S.table; tbl.addEventListener('input', () => { S.table = tbl.value; persist(); paintChrome(); });
+  const tbl = h('div', { id: 'tbl', class: 'tablepick', role: 'group', 'aria-label': 'Your table', tabindex: '-1' },
+    [...Array(12)].map((_, i) => { const t = 'Table ' + (i + 1);
+      return h('button', { type: 'button', 'aria-pressed': String(S.table === t), onclick: () => { S.table = t; commit(); paintChrome(); } }, String(i + 1)); }));
   return [
     h('section', { class: 'hero' },
       h('a', { class: 'back', href: '#' }, '← Back to the story mode'),
       h('span', { class: 'eyebrow' }, 'Facilitator workbench · Modules 07–16'),
       h('h1', null, 'Ten labs where leaders make the calls'),
       h('p', null, 'Each lab puts your table in role, against the clock, on realistic material: architecture diagrams, permission maps, agent logs, tool manifests and a live incident. No technical background needed.')),
+    h('a', { class: 'deckhero', href: '#deck' }, h('span', { class: 'kicker' }, 'Program deck · ' + DECK.order.length + ' slides'), h('b', null, DECK.title),
+      h('span', null, 'Present any section from here. Each lab also has a Deck tab with its module’s slides and speaker notes.')),
     howItWorks(),
     h('div', { class: 'homegrid' },
-      h('div', { class: 'tablebox' }, h('label', { for: 'tbl' }, 'Your table name'), tbl,
-        h('p', { class: 'small' }, 'Use the same name on every phone at your table. Answers stay on this device until you share a result code.')),
+      h('div', { class: 'tablebox' }, h('span', { class: 'label' }, 'Your table'), tbl,
+        h('p', { class: 'small' }, 'Tap your table number on every phone at your table. Answers stay on this device until you share a result code.')),
       h('div', { class: 'box dark' }, label('Your progress'), stats(stat(done + ' / 10', 'Labs done'), stat(Math.round(minutes / 60 * 10) / 10 + ' h', 'Hands-on time')), meter(done / 10, 'accent', 'Labs done'))),
     programMap(),
     h('div', { class: 'grid' }, App.labs.map(l => { const [t, k] = statusOf(l.id);
@@ -96,7 +98,7 @@ function home() {
         h('li', null, 'Project this app on the main screen. Use ', h('b', null, 'Present'), ' inside a lab for larger text.'),
         h('li', null, 'Each table works on a phone and taps ', h('b', null, 'Share with the room'), ' at the end of the lab. That gives a result code to paste into the room chat.'),
         h('li', null, 'On the projected screen, open the lab’s ', h('b', null, 'Room'), ' tab and paste all the codes at once. The room view compares every table.'),
-        h('li', null, 'Every lab has three parts: 1 · Work task (numbered steps, each labelled Decide, Simulate, Write or Read), 2 · Quick quiz (instant feedback) and 3 · Case studies (the module’s live scenarios and leadership discussion, each with an expert answer).'),
+        h('li', null, 'Every lab has three parts: 1 · Work task (numbered steps, each labelled Decide, Simulate, Quiz or Read), 2 · Quick quiz (instant feedback) and 3 · Case studies (the module’s live scenarios and leadership discussion, each with an expert answer).'),
         h('li', null, 'Ask tables to tap Check my work only after the room has compared. Facilitator notes are at the bottom of each Expert answers tab.')))
   ];
 }
@@ -125,7 +127,7 @@ function sharePanel(lab) {
     h('p', { class: 'sub' }, 'Copy your result code and paste it into the room chat. The facilitator pastes all codes into the Room tab to compare tables.'),
     h('div', { class: 'codeline' }, h('code', null, code.length > 64 ? code.slice(0, 60) + '…' : code), h('span', { class: 'small' }, (S.table || 'Unnamed table'))),
     h('div', { class: 'btnrow' }, copyButton(() => makeCode(lab.id), 'Copy result code'), text ? copyButton(() => fullSummary(lab), 'Copy a plain-text summary') : null),
-    S.table ? null : h('p', { class: 'flagline' }, 'Set your table name on the home screen so the room knows whose result this is.'));
+    S.table ? null : h('p', { class: 'flagline' }, 'Pick your table number on the home screen so the room knows whose result this is.'));
 }
 
 function roomPane(lab) {
@@ -155,7 +157,7 @@ function roomPane(lab) {
     })());
   if (!docs.length) return [collector, box('', h('h3', null, live ? 'Waiting for tables' : 'No results yet'), h('p', { class: 'sub' }, live ? 'Results appear as tables work. Project this tab on the main screen.' : 'Once codes are added, the room view compares every table here.'))].filter(Boolean);
   let blocks = []; try { blocks = lab.agg(docs); } catch (e) { blocks = []; }
-  try { blocks = blocks.concat(drillAgg(lab, docs), scenarioAgg(lab, docs).filter(b => b.items.length)); } catch (e) { /* keep the lab's own blocks */ }
+  try { blocks = blocks.concat(drillAgg(lab, docs), scenarioAgg(lab, docs).filter(b => (b.items || b.rows).length)); } catch (e) { /* keep the lab's own blocks */ }
   return [collector,
     h('div', { class: 'roomhead' }, h('b', { class: 'n-tables' }, docs.length + ' table' + (docs.length === 1 ? '' : 's')), h('div', { class: 'roles' }, docs.map(d => h('span', { class: 'role' }, d._table)))),
     blocks.map(b => renderBlock(b, docs.length))].filter(Boolean);
@@ -164,7 +166,8 @@ function roomPane(lab) {
 function labView(lab) {
   const st = L(lab.id); const tab = S.tab[lab.id] || 'do'; const rev = !!S.revealed[lab.id];
   const nd = sum((lab.drills || []).map(d => d.items.length)), ns = scenariosFor(lab).length;
-  const tabs = [['do', '1 · Work task'], ['drills', '2 · Quick quiz' + (nd ? ' (' + nd + ')' : '')], ['scen', '3 · Case studies' + (ns ? ' (' + ns + ')' : '')], ['ans', rev ? 'Expert answers ✓' : 'Expert answers'], ['room', 'Room']];
+  const nslides = deckIdsFor(lab.id).length;
+  const tabs = [['deck', 'Deck' + (nslides ? ' (' + nslides + ')' : '')], ['do', '1 · Work task'], ['drills', '2 · Quick quiz' + (nd ? ' (' + nd + ')' : '')], ['scen', '3 · Case studies' + (ns ? ' (' + ns + ')' : '')], ['ans', rev ? 'Expert answers ✓' : 'Expert answers'], ['room', 'Room']];
   let body;
   if (tab === 'do') body = [trapPanel(lab), lab.id === 'm09' || lab.id === 'm12' ? h('a', { class: 'raglink', href: '#rag' }, h('b', null, 'Core lab: Build Ask Meridian'), h('span', null, 'Design a RAG pipeline, run a day of attacks through it, read the incident report, rebuild. →')) : null, missionCard(lab), clockPanel(lab), lab.render(st), rolePlayPanel(lab), checkPanel(lab), sharePanel(lab),
     h('div', { class: 'btnrow end' }, confirmTwice('reset-' + lab.id, 'Clear this lab’s answers', () => { delete S.labs[lab.id]; delete S.revealed[lab.id]; }, 'warn'))];
@@ -173,6 +176,7 @@ function labView(lab) {
       h('div', { class: 'btnrow' }, confirmTwice('hide-' + lab.id, 'Hide answers again', () => { delete S.revealed[lab.id]; }))]
     : [box('locked', h('h3', null, 'Finish the work task first'), h('p', { class: 'sub' }, 'Expert answers open when your table taps Check my work. In a facilitated session, wait until tables have compared in the Room: seeing answers first spoils the debate.'),
       h('button', { type: 'button', class: 'btn primary', onclick: () => checkWork(lab) }, 'Check my work'))];
+  else if (tab === 'deck') body = deckPane(lab);
   else if (tab === 'drills') body = [drillsPane(lab), sharePanel(lab)];
   else if (tab === 'scen') body = [scenariosPane(lab), sharePanel(lab)];
   else body = roomPane(lab);
@@ -197,14 +201,17 @@ App.render = function () {
   if (route === '' || route === 'rag' || /^e\d\d$/.test(route)) { document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route); return; }
   document.body.classList.remove('story');
   const app = document.getElementById('app'); const id = currentLabId(); const y = window.scrollY;
+  const deckRoute = route === 'deck' || route.startsWith('deck-'); if (!deckRoute) App.deckJump = null;
+  App.deckNav = null;
   const active = document.activeElement && document.activeElement.id;
   let view;
-  try { view = id ? labView(App.byId[id]) : home(); }
+  try { view = deckRoute ? deckPage(route) : id ? labView(App.byId[id]) : home(); }
   catch (e) { console.error(e); view = [box('', h('h3', null, 'This lab could not load'), h('p', { class: 'sub' }, 'Clear its answers to start again.'), id ? h('button', { type: 'button', class: 'btn warn', onclick: () => { delete S.labs[id]; commit(); } }, 'Clear this lab') : null)]; }
   app.replaceChildren(...[view].flat(Infinity).filter(Boolean));
-  if (lastView === (id || '')) window.scrollTo(0, y); else window.scrollTo(0, 0);
-  lastView = id || '';
-  const viewKey = (id || 'labs') + ':' + (id ? (S.tab[id] || 'do') : '');
+  const here = deckRoute ? 'deck' : id || '';
+  if (lastView === here) window.scrollTo(0, y); else window.scrollTo(0, 0);
+  lastView = here;
+  const viewKey = (deckRoute ? 'deck' : id || 'labs') + ':' + (id ? (S.tab[id] || 'do') : '');
   if (viewKey !== App.viewKey) { App.viewKey = viewKey; app.classList.remove('fresh'); void app.offsetWidth; app.classList.add('fresh'); clearTimeout(App.freshT); App.freshT = setTimeout(() => app.classList.remove('fresh'), 1200); }
   if (active) { const el = document.getElementById(active); if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) el.focus(); }
   paintChrome(); tick();
