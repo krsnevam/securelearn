@@ -20,6 +20,14 @@ The deck's source is in `deck/` (exported from the Slides artifact). After updat
 
 **Build Ask Meridian** is the hands-on core of Modules 09 and 12. Participants design a knowledge assistant's pipeline under a 13-point budget, choosing the approach (RAG, fine-tuning or pasting everything) and an option at each of eight stages: sources, ingestion, vector store, access, retrieval, generation, output and updates. Their design then runs through a day in production: nine events, from ordinary questions to a stale policy, a stale permission after a role change, a poisoned wiki, hidden instructions in a vendor PDF, a keyword-stuffed ticket, a secret in a runbook, an exposed vector store and an auto-updating parser. Each event animates through the pipeline and is stopped, weakened or succeeds. The incident report counts incidents, records exposed, wrong answers and direct loss, names the control, owner and module for each, and compares the design with an expert one. Participants redesign and replay; their run history shows the improvement. The simulation is deterministic, so tables with the same design see the same result.
 
+## Harden NEXUS (`#harden`)
+
+The second core lab rebuilds NEXUS as seven defence layers, one per kind of failure: permission-aware knowledge (Module 12), identity (10), untrusted content (11), tools and approvals (08), supply chain (12), go-live gates and the SOC (13 and 14), governance (15). A console fires NEXUS's own failures through one pipeline, and only the layers a table has cleared defend. Each layer is a brief, an off/on simulation of three scenarios, four drills and a debrief that links to the module's episode, lab and slides. Content is in `app/js/harden-data.js`.
+
+## The syllabus (Modules 10–15)
+
+Modules 10–15 open on a **Syllabus** tab that follows the programme syllabus topic by topic, in teaching order: what the topic means, where it shows up at Meridian, one tap-to-answer check, and a link to where the workbench practises it. Each module page carries its syllabus title; the work task is the module's hands-on exercise. The syllabus text is in `app/js/syllabus-data.js`; edit it there when the syllabus changes.
+
 ## The ten labs
 
 Each lab opens with the module's fail-first trap, then has five tabs: **1 · Work task** (a mission card, then numbered steps, each labelled Decide, Simulate, Write or Read, ending with **Check my work**), **2 · Quick quiz** (instant right/wrong feedback with the reason), **3 · Case studies** (the deck’s live scenarios and leadership discussion, each with an expert answer), **Expert answers** (opened by Check my work, with facilitator notes) and **Room** (compares every table).
@@ -75,6 +83,10 @@ app/
   js/story-viz.js     the animated stakes visuals and the question frame
   js/story-data.js    the story season: the NEXUS opening, ten episodes, the NEXUS failure timeline
   js/rag.js           the core RAG Lab: pipeline design, production run, incident report
+  js/harden-data.js   Harden NEXUS: seven layers, their simulations and drills, the console attacks
+  js/harden.js        Harden NEXUS: console, layer screens, scoring
+  js/syllabus-data.js the Modules 10–15 syllabus, one card per topic
+  js/syllabus.js      the Syllabus tab
   js/story.js         story engine: one-screen scenes, animation, meters, routing ('#' and '#e07'…)
   js/labs/m07–m16.js  one file per lab: data, render, answers, aggregation, summary
   js/main.js          home, lab view, tabs, presenter mode, room collector

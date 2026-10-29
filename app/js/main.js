@@ -57,6 +57,7 @@ function howItWorks() {
   return box('how', label('How these labs work'),
     h('p', { class: 'howlead' }, 'Each lab is a piece of real leadership work, not a test. You make the calls your job would ask of you, see the consequences, then compare with an expert answer.'),
     h('ol', { class: 'howsteps' },
+      h('li', null, h('b', null, 'Syllabus. '), 'Modules 10–15 open on their syllabus: every topic in teaching order, with a Meridian example and one quick check.'),
       h('li', null, h('b', null, 'Work task. '), 'Follow the numbered steps. Every step says what kind of action it is.'),
       h('li', null, h('b', null, 'Check my work. '), 'Scores your choices and opens the expert answers.'),
       h('li', null, h('b', null, 'Quick quiz. '), 'Short questions on the module’s concepts, with instant feedback.'),
@@ -86,7 +87,8 @@ function home() {
     h('div', { class: 'grid' }, App.labs.map(l => { const [t, k] = statusOf(l.id);
       return h('a', { class: 'card', href: '#' + l.id },
         h('div', { class: 'row' }, h('span', { class: 'modnum' }, 'M' + l.n), h('span', { class: 'meta' }, l.mod), h('span', { class: 'status ' + k }, t)),
-        h('h3', null, l.title), h('p', { class: 'leadq' }, LEAD_Q[l.id]), h('span', { class: 'meta' }, l.format + ' · ' + l.min + ' min'),
+        h('h3', null, syllabusFor(l.id) ? syllabusFor(l.id).name : l.title), h('p', { class: 'leadq' }, LEAD_Q[l.id]),
+        syllabusFor(l.id) ? h('span', { class: 'meta' }, (p => p.done + ' of ' + p.total + ' syllabus topics checked · work task: ' + l.title)(topicProgress(l.id))) : h('span', { class: 'meta' }, l.format + ' · ' + l.min + ' min'),
         h('span', { class: 'meta' }, scenariosFor(l).length + ' scenarios · ' + sum((l.drills || []).map(d => d.items.length)) + ' drill items'));
     })),
     h('div', { class: 'tips' }, [['Take a role', 'People argue harder from a role than as themselves.'], ['Watch the clock', 'Time pressure shows how people really decide.'], ['Compare tables', 'Where tables disagree, there is a lesson.'], ['Use your own systems', 'Share only what you are allowed to; anonymise freely.']]
@@ -164,12 +166,14 @@ function roomPane(lab) {
 }
 
 function labView(lab) {
-  const st = L(lab.id); const tab = S.tab[lab.id] || 'do'; const rev = !!S.revealed[lab.id];
+  const sy = syllabusFor(lab.id), sp = sy && topicProgress(lab.id), o = sy ? 1 : 0;
+  const st = L(lab.id); const tab = S.tab[lab.id] || (sy ? 'topics' : 'do'); const rev = !!S.revealed[lab.id];
   const nd = sum((lab.drills || []).map(d => d.items.length)), ns = scenariosFor(lab).length;
   const nslides = deckIdsFor(lab.id).length;
-  const tabs = [['deck', 'Deck' + (nslides ? ' (' + nslides + ')' : '')], ['do', '1 · Work task'], ['drills', '2 · Quick quiz' + (nd ? ' (' + nd + ')' : '')], ['scen', '3 · Case studies' + (ns ? ' (' + ns + ')' : '')], ['ans', rev ? 'Expert answers ✓' : 'Expert answers'], ['room', 'Room']];
+  const tabs = [['deck', 'Deck' + (nslides ? ' (' + nslides + ')' : '')], ...(sy ? [['topics', '1 · Syllabus (' + sp.done + '/' + sp.total + ')']] : []), ['do', (1 + o) + ' · Work task'], ['drills', (2 + o) + ' · Quick quiz' + (nd ? ' (' + nd + ')' : '')], ['scen', (3 + o) + ' · Case studies' + (ns ? ' (' + ns + ')' : '')], ['ans', rev ? 'Expert answers ✓' : 'Expert answers'], ['room', 'Room']];
   let body;
-  if (tab === 'do') body = [trapPanel(lab), lab.id === 'm09' || lab.id === 'm12' ? h('a', { class: 'raglink', href: '#rag' }, h('b', null, 'Core lab: Build Ask Meridian'), h('span', null, 'Design a RAG pipeline, run a day of attacks through it, read the incident report, rebuild. →')) : null, hdLayersFor(lab.id).map(hdLink), missionCard(lab), clockPanel(lab), lab.render(st), rolePlayPanel(lab), checkPanel(lab), sharePanel(lab),
+  if (tab === 'topics' && sy) body = syllabusPane(lab);
+  else if (tab === 'do') body = [trapPanel(lab), lab.id === 'm09' || lab.id === 'm12' ? h('a', { class: 'raglink', href: '#rag' }, h('b', null, 'Core lab: Build Ask Meridian'), h('span', null, 'Design a RAG pipeline, run a day of attacks through it, read the incident report, rebuild. →')) : null, hdLayersFor(lab.id).map(hdLink), missionCard(lab), clockPanel(lab), lab.render(st), rolePlayPanel(lab), checkPanel(lab), sharePanel(lab),
     h('div', { class: 'btnrow end' }, confirmTwice('reset-' + lab.id, 'Clear this lab’s answers', () => { delete S.labs[lab.id]; delete S.revealed[lab.id]; }, 'warn'))];
   else if (tab === 'ans') body = rev
     ? [lab.answers(st), details('Facilitator notes', false, h('ul', { class: 'plain' }, lab.guide.map(g => h('li', null, g)))),
@@ -185,8 +189,8 @@ function labView(lab) {
     h('section', { class: 'labhead' },
       h('div', { class: 'crumbs' }, h('a', { class: 'back', href: '#labs' }, '← All labs'), h('span', { class: 'spacer' }),
         h('button', { type: 'button', class: 'btn small', 'aria-pressed': String(!!S.present), onclick: () => { S.present = !S.present; commit(); } }, S.present ? 'Exit present mode' : 'Present')),
-      h('span', { class: 'eyebrow' }, 'Module ' + lab.n + ' · ' + lab.mod + ' · ' + lab.format + ' · ' + lab.min + ' min'),
-      h('h1', null, lab.title), h('p', { class: 'leadq big' }, 'The leadership question: ' + LEAD_Q[lab.id]), h('p', { class: 'task' }, lab.task),
+      h('span', { class: 'eyebrow' }, sy ? 'Module ' + lab.n + ' · ' + sy.hours + ' hours · ' + sp.total + ' syllabus topics' : 'Module ' + lab.n + ' · ' + lab.mod + ' · ' + lab.format + ' · ' + lab.min + ' min'),
+      h('h1', null, sy ? sy.name : lab.title), sy ? h('p', { class: 'worktitle' }, h('b', null, 'Work task (' + lab.min + ' min): '), lab.title) : null, h('p', { class: 'leadq big' }, 'The leadership question: ' + LEAD_Q[lab.id]), h('p', { class: 'task' }, lab.task),
       h('div', { class: 'roles' }, lab.roles.map(r => h('span', { class: 'role' }, r)))),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([k, t]) => h('button', { type: 'button', class: 'tab', role: 'tab', 'aria-selected': String(tab === k),
       onclick: () => { S.tab[lab.id] = k; commit(); if (k === 'room') watchRoom(lab.id); } }, t, k === 'ans' && rev ? ' ·' : ''))),

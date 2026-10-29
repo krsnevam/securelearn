@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -159,6 +159,26 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (!(naive >= 6 && expert === 0)) fail('RAG outcomes unexpected: naive ' + naive + ' incidents, expert ' + expert);
   console.log('rag lab: naive design ' + naive + ' incidents, expert design ' + expert);
 }
+// Syllabus tab: Modules 10–15 open on their syllabus; every topic is answerable and links somewhere real
+{
+  const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const { SYLLABUS, HD } = window.__T; let n = 0;
+  for (const [id, sy] of Object.entries(SYLLABUS)) {
+    const topics = sy.groups.flatMap(g => g[1]);
+    topics.forEach((t, k) => { if (!(t.o.length >= 2 && t.a >= 0 && t.a < t.o.length && t.say && t.eg && t.why)) fail(id + ' topic ' + (k + 1) + ' incomplete');
+      if (t.go && !(['do', 'drills', 'scen', 'deck', 'rag'].includes(t.go) || (t.go.startsWith('harden-') && HD[t.go.slice(7)]))) fail(id + ' topic ' + (k + 1) + ' links to unknown ' + t.go); });
+    delete S.tab[id]; delete (S.topics || {})[id]; go(id);
+    const cards = doc.querySelectorAll('#app .topic');
+    if (cards.length !== topics.length) fail(id + ' shows ' + cards.length + ' topic cards, syllabus has ' + topics.length);
+    if (doc.querySelector('#app h1').textContent !== sy.name) fail(id + ' heading is not the syllabus title');
+    topics.forEach((t, k) => { const card = doc.getElementById('topic-' + k); const btns = [...card.querySelectorAll('.move')];
+      clk(btns.find(b => b.textContent.slice(1) === t.o[t.a])); });
+    if (S.topics[id] && topics.some((t, k) => S.topics[id][k] !== t.a)) fail(id + ' could not answer every topic correctly');
+    if (doc.querySelectorAll('#app .topic.good').length !== topics.length) fail(id + ' topic cards not marked right');
+    n += topics.length;
+  }
+  console.log('syllabus: ' + Object.keys(SYLLABUS).length + ' modules, ' + n + ' topics, each answered and linked');
+}
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {
   const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
@@ -186,7 +206,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   const left = HD_ATTACKS.filter(a => a.kind !== 'benign' && hdOutcome(a) !== 'block');
   if (left.length) fail('harden: still getting through with every layer online: ' + left.map(a => a.id).join(', '));
   if (hdOutcome(HD_ATTACKS[0]) !== 'served') fail('harden: the legitimate invoice should be served');
-  go('m12'); if (!doc.querySelector('#app .hdlink')) fail('Module 12 lab lacks its Harden NEXUS links');
+  S.tab.m12 = 'do'; go('m12'); if (!doc.querySelector('#app .hdlink')) fail('Module 12 lab lacks its Harden NEXUS links');
   go(''); if (!doc.querySelector('#app .hdhero')) fail('story home lacks the Harden NEXUS card');
   console.log('harden nexus: ' + HARDEN_LAYERS.length + ' layers played at 3 stars; all ' + (HD_ATTACKS.length - 1) + ' attacks stopped');
 }

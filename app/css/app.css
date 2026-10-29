@@ -1228,3 +1228,19 @@ body.story .casescore { background: var(--st-card); color: var(--st-ink); }
 html, body, .scenewrap, .stage.season, .eps, .chat, .tabs, .deckstrip { scrollbar-width: none; -ms-overflow-style: none; }
 html::-webkit-scrollbar, body::-webkit-scrollbar, .scenewrap::-webkit-scrollbar, .stage.season::-webkit-scrollbar, .eps::-webkit-scrollbar,
 .chat::-webkit-scrollbar, .tabs::-webkit-scrollbar, .deckstrip::-webkit-scrollbar { display: none; }
+
+/* Syllabus tab (Modules 10–15): one card per topic, in teaching order */
+.worktitle { font-size: 15px; color: var(--muted); max-width: 72ch; } .worktitle b { color: var(--ink); }
+.sylindex { margin: 4px 0 0; padding-left: 22px; columns: 2 260px; column-gap: 24px; font-size: 14px; }
+.sylindex li { margin-bottom: 4px; break-inside: avoid; } .sylindex a { color: var(--blue); text-decoration: none; }
+.sylindex li.good::marker { color: var(--good); font-weight: 700; } .sylindex li.bad::marker { color: var(--bad); font-weight: 700; }
+.sylgroup { font-family: var(--f-display); font-size: 22px; margin: 18px 0 2px; }
+.topic { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 0 14px 14px 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 70px; }
+.topic.good { border-left-color: var(--good); } .topic.bad { border-left-color: var(--bad); }
+.topichead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.topichead h3 { font-family: var(--f-display); font-size: 20px; flex: 1; min-width: 0; }
+.topicn { flex: none; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--dark); color: var(--on-dark); font: 600 14px var(--f-mono); }
+.topic > p { max-width: 74ch; }
+.topiceg { font-size: 15px; color: var(--muted); border-left: 3px solid var(--accent); padding-left: 10px; } .topiceg b { color: var(--ink); }
+.topicq { display: flex; flex-direction: column; gap: 8px; }
+.topicgo { margin-top: -2px; }
