@@ -185,6 +185,7 @@ function sceneRecap(ep, st) {
       next ? h('a', { class: 'btn primary', href: '#' + next.id }, 'Next: ' + next.title + ' →') : h('a', { class: 'btn primary', href: '#' }, 'Back to the season'),
       h('button', { type: 'button', class: 'btn', onclick: () => { S.story[ep.id] = { i: 0, picks: {}, spots: {}, sorts: {}, tog: {}, live: {}, tl: {} }; if (ep.lab && S.traps) delete S.traps[ep.lab]; Story.typed = {}; commit(); } }, 'Replay'),
       ep.id === 'e09' || ep.id === 'e12' ? h('a', { class: 'btn', href: '#rag' }, 'Open the RAG Lab') : null,
+      hdLayersFor(ep.id).map(l => h('a', { class: 'btn', href: '#harden-' + l.id }, 'Harden NEXUS · Layer ' + l.n)),
       ep.lab ? h('a', { class: 'btn', href: '#' + ep.lab }, 'Deep-dive workbench') : null, ep.lab ? h('a', { class: 'btn', href: '#deck-' + ep.lab }, 'Module slides') : null));
 }
 
@@ -266,6 +267,8 @@ function renderSeason() {
         h('a', { class: 'navcard', href: '#labs' }, h('b', null, 'Workbench'), h('span', null, 'Full labs, quizzes, case studies and room results')),
         h('a', { class: 'navcard', href: '#deck' }, h('b', null, 'Program deck'), h('span', null, DECK.order.length + ' slides, every module, with speaker notes')))),
     h('a', { class: 'raghero', href: '#rag' }, h('span', { class: 'kicker' }, 'Core lab · Modules 09 and 12'), h('b', null, 'Build Ask Meridian: a RAG pipeline under attack'), h('span', null, (S.rag && S.rag.runs && S.rag.runs.length ? 'Runs so far: ' + S.rag.runs.length + '. Last: ' + S.rag.runs[S.rag.runs.length - 1].bad + ' incidents.' : 'Design it, run a day in production, see what breaks, rebuild.'))),
+    h('a', { class: 'raghero hdhero', href: '#harden' }, h('span', { class: 'kicker' }, 'Core lab · Modules 08 to 15'), h('b', null, 'Harden NEXUS: seven defence layers'), h('span', null, (() => { const n = HARDEN_LAYERS.filter(l => hdOn(l.id)).length;
+      return n ? n + ' of 7 layers online. Fire NEXUS’s failures at your pipeline and see what still gets through.' : 'Fire NEXUS’s own failures at the pipeline, then clear a layer at a time until they stop.'; })())),
     opened ? repairStrip(false) : h('a', { class: 'nexushero', href: '#e00' }, h('span', { class: 'kicker alarm' }, 'Opening challenge'), h('b', null, 'Approve Project NEXUS'), h('span', null, 'Vote first. Then watch what happens in the first 72 hours.')),
     h('div', { class: 'eps' }, mods.map((e, k) => { const st = (S.story || {})[e.id]; const n = st && st.finished ? stars(e, st) : -1;
       return h('a', { class: 'ep' + (n >= 0 ? ' done' : '') + (e === next ? ' next' : ''), href: '#' + e.id, style: 'animation-delay:' + (0.04 * k) + 's' },
@@ -277,7 +280,7 @@ function renderSeason() {
 /* Called by App.render for story routes. */
 function renderStoryRoute(hash) {
   const app = document.getElementById('app');
-  app.replaceChildren(hash === 'rag' ? renderRag() : /^e\d\d$/.test(hash) && EP[hash] ? renderEpisode(hash) : renderSeason());
+  app.replaceChildren(hash === 'rag' ? renderRag() : hash.startsWith('harden') ? renderHarden(hash) : /^e\d\d$/.test(hash) && EP[hash] ? renderEpisode(hash) : renderSeason());
   animateViz(app);
   // typewriter for speech
   const el = app.querySelector('[data-typed]');

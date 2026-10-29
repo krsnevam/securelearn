@@ -169,7 +169,7 @@ function labView(lab) {
   const nslides = deckIdsFor(lab.id).length;
   const tabs = [['deck', 'Deck' + (nslides ? ' (' + nslides + ')' : '')], ['do', '1 · Work task'], ['drills', '2 · Quick quiz' + (nd ? ' (' + nd + ')' : '')], ['scen', '3 · Case studies' + (ns ? ' (' + ns + ')' : '')], ['ans', rev ? 'Expert answers ✓' : 'Expert answers'], ['room', 'Room']];
   let body;
-  if (tab === 'do') body = [trapPanel(lab), lab.id === 'm09' || lab.id === 'm12' ? h('a', { class: 'raglink', href: '#rag' }, h('b', null, 'Core lab: Build Ask Meridian'), h('span', null, 'Design a RAG pipeline, run a day of attacks through it, read the incident report, rebuild. →')) : null, missionCard(lab), clockPanel(lab), lab.render(st), rolePlayPanel(lab), checkPanel(lab), sharePanel(lab),
+  if (tab === 'do') body = [trapPanel(lab), lab.id === 'm09' || lab.id === 'm12' ? h('a', { class: 'raglink', href: '#rag' }, h('b', null, 'Core lab: Build Ask Meridian'), h('span', null, 'Design a RAG pipeline, run a day of attacks through it, read the incident report, rebuild. →')) : null, hdLayersFor(lab.id).map(hdLink), missionCard(lab), clockPanel(lab), lab.render(st), rolePlayPanel(lab), checkPanel(lab), sharePanel(lab),
     h('div', { class: 'btnrow end' }, confirmTwice('reset-' + lab.id, 'Clear this lab’s answers', () => { delete S.labs[lab.id]; delete S.revealed[lab.id]; }, 'warn'))];
   else if (tab === 'ans') body = rev
     ? [lab.answers(st), details('Facilitator notes', false, h('ul', { class: 'plain' }, lab.guide.map(g => h('li', null, g)))),
@@ -198,7 +198,7 @@ function labView(lab) {
 let lastView = '';
 App.render = function () {
   const route = location.hash.slice(1);
-  if (route === '' || route === 'rag' || /^e\d\d$/.test(route)) { document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route); return; }
+  if (route === '' || route === 'rag' || /^harden(-\w+)?$/.test(route) || /^e\d\d$/.test(route)) { document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route); return; }
   document.body.classList.remove('story');
   const app = document.getElementById('app'); const id = currentLabId(); const y = window.scrollY;
   const deckRoute = route === 'deck' || route.startsWith('deck-'); if (!deckRoute) App.deckJump = null;

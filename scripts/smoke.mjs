@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -158,6 +158,37 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   const expert = S.rag.runs[1].bad;
   if (!(naive >= 6 && expert === 0)) fail('RAG outcomes unexpected: naive ' + naive + ' incidents, expert ' + expert);
   console.log('rag lab: naive design ' + naive + ' incidents, expert design ' + expert);
+}
+// Harden NEXUS: every failure gets through at first; play each layer with the right answers
+{
+  const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const { HARDEN_LAYERS, HD_ATTACKS, hdOutcome } = window.__T;
+  const btn = re => [...doc.querySelectorAll('#app .stagebot .btn')].find(b => re.test(b.textContent));
+  delete S.harden; go('harden');
+  if (doc.querySelectorAll('#app .hdshot').length !== HD_ATTACKS.length) fail('harden console should list every attack');
+  if (HD_ATTACKS.some(a => a.kind !== 'benign' && hdOutcome(a) !== 'breach')) fail('harden: with no layers, every failure should get through');
+  clk(doc.querySelectorAll('#app .hdshot')[1]); if (!doc.querySelector('#app .hn.hit')) fail('harden console did not show a breach');
+  for (const L of HARDEN_LAYERS) {
+    go('harden-' + L.id); clk(btn(/Begin/));
+    clk(doc.querySelector('#app .hdshot')); if (!doc.querySelector('#app .hdnarr li')) fail('harden ' + L.id + ' simulation ran nothing');
+    clk([...doc.querySelectorAll('#app .hdtog button')].find(b => b.textContent === 'Off')); if (!doc.querySelector('#app .hdnarr li.hit')) fail('harden ' + L.id + ' off path shows no breach');
+    clk(btn(/Continue/));
+    L.qs.forEach((q, qi) => {
+      if (q.t === 'mcq') clk(doc.querySelectorAll('#app .card-opt')[q.a]);
+      else if (q.t === 'order') { q.s.forEach(t => clk([...doc.querySelectorAll('#app .hdpool .hdstep')].find(b => b.textContent === '+ ' + t))); clk([...doc.querySelectorAll('#app .sc button')].find(b => /Check the order/.test(b.textContent))); }
+      else q.rows.forEach((r, ri) => clk(doc.querySelectorAll('#app .hdrow')[ri].querySelectorAll('button')[r[1]]));
+      if (!doc.querySelector('#app .consequence.good')) fail('harden ' + L.id + ' drill ' + (qi + 1) + ' not marked right');
+      clk(btn(/Continue|Bring the layer online/));
+    });
+    if (!(S.harden.done[L.id] && S.harden.done[L.id].stars === 3)) fail('harden ' + L.id + ' should finish with 3 stars');
+    if (!doc.querySelector('#app .sc-recap')) fail('harden ' + L.id + ' debrief missing');
+  }
+  const left = HD_ATTACKS.filter(a => a.kind !== 'benign' && hdOutcome(a) !== 'block');
+  if (left.length) fail('harden: still getting through with every layer online: ' + left.map(a => a.id).join(', '));
+  if (hdOutcome(HD_ATTACKS[0]) !== 'served') fail('harden: the legitimate invoice should be served');
+  go('m12'); if (!doc.querySelector('#app .hdlink')) fail('Module 12 lab lacks its Harden NEXUS links');
+  go(''); if (!doc.querySelector('#app .hdhero')) fail('story home lacks the Harden NEXUS card');
+  console.log('harden nexus: ' + HARDEN_LAYERS.length + ' layers played at 3 stars; all ' + (HD_ATTACKS.length - 1) + ' attacks stopped');
 }
 // story mode: play every episode start to finish
 go(''); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 module episodes'); if (!doc.querySelector('#app .nexushero')) fail('NEXUS opening missing on home');
