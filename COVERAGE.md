@@ -11,6 +11,8 @@ This file maps every slide in the program deck (*Agentic AI Security & Governanc
 
 The scenario and discussion text, including the facilitators' model answers, is generated from the deck's own slides and speaker notes (`app/js/scenario-data.js`).
 
+**Syllabus.** Every syllabus topic for Modules 10–15 (82 topics) has a card on that module's Syllabus tab, with an explanation, a Meridian example, a check question and a link to where it is practised. Four quiz drills fill the gaps the syllabus exposed: *Trust boundaries, and trust that is re-checked* (M10), *Secure indexing and retrieval* (M12), *Release it safely, and prove what went live* (M13) and *Decide, report and audit like a board* (M15).
+
 | Deck slide | Covered in |
 |---|---|
 | **Opening challenge · Project NEXUS** | |

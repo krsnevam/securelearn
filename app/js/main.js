@@ -78,6 +78,8 @@ function home() {
       h('p', null, 'Each lab puts your table in role, against the clock, on realistic material: architecture diagrams, permission maps, agent logs, tool manifests and a live incident. No technical background needed.')),
     h('a', { class: 'deckhero', href: '#deck' }, h('span', { class: 'kicker' }, 'Program deck · ' + DECK.order.length + ' slides'), h('b', null, DECK.title),
       h('span', null, 'Present any section from here. Each lab also has a Deck tab with its module’s slides and speaker notes.')),
+    h('a', { class: 'deckhero advhero', href: '#adv' }, h('span', { class: 'kicker' }, 'Advanced path · ' + ADV_CASES.length + ' real attacks'), h('b', null, 'How AI systems actually get broken'),
+      h('span', null, ADV_TRACKS.map(t => t.name).join(' · '))),
     howItWorks(),
     h('div', { class: 'homegrid' },
       h('div', { class: 'tablebox' }, h('span', { class: 'label' }, 'Your table'), tbl,
@@ -206,16 +208,17 @@ App.render = function () {
   document.body.classList.remove('story');
   const app = document.getElementById('app'); const id = currentLabId(); const y = window.scrollY;
   const deckRoute = route === 'deck' || route.startsWith('deck-'); if (!deckRoute) App.deckJump = null;
+  const advRoute = route === 'adv' || route.startsWith('adv-');
   App.deckNav = null;
   const active = document.activeElement && document.activeElement.id;
   let view;
-  try { view = deckRoute ? deckPage(route) : id ? labView(App.byId[id]) : home(); }
+  try { view = deckRoute ? deckPage(route) : advRoute ? advPage(route) : id ? labView(App.byId[id]) : home(); }
   catch (e) { console.error(e); view = [box('', h('h3', null, 'This lab could not load'), h('p', { class: 'sub' }, 'Clear its answers to start again.'), id ? h('button', { type: 'button', class: 'btn warn', onclick: () => { delete S.labs[id]; commit(); } }, 'Clear this lab') : null)]; }
   app.replaceChildren(...[view].flat(Infinity).filter(Boolean));
-  const here = deckRoute ? 'deck' : id || '';
+  const here = deckRoute ? 'deck' : advRoute ? route : id || '';
   if (lastView === here) window.scrollTo(0, y); else window.scrollTo(0, 0);
   lastView = here;
-  const viewKey = (deckRoute ? 'deck' : id || 'labs') + ':' + (id ? (S.tab[id] || 'do') : '');
+  const viewKey = (deckRoute ? 'deck' : advRoute ? route : id || 'labs') + ':' + (id ? (S.tab[id] || 'do') : '');
   if (viewKey !== App.viewKey) { App.viewKey = viewKey; app.classList.remove('fresh'); void app.offsetWidth; app.classList.add('fresh'); clearTimeout(App.freshT); App.freshT = setTimeout(() => app.classList.remove('fresh'), 1200); }
   if (active) { const el = document.getElementById(active); if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) el.focus(); }
   paintChrome(); tick();

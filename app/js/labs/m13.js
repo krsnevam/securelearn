@@ -199,7 +199,14 @@
         { t: 'Logs are tamper-evident and written outside the agent', a: 'good', why: 'Independent and trustworthy.' },
         { t: 'One logging schema for all agents, personal data masked, fed to the SIEM', a: 'good', why: 'The logging framework.' },
         { t: 'Only errors are logged, to save storage', a: 'gap', why: 'No audit trail of decisions.' },
-        { t: 'We could reconstruct any decision from last quarter within a day', a: 'good', why: 'The test on the slide.' }] }
+        { t: 'We could reconstruct any decision from last quarter within a day', a: 'good', why: 'The test on the slide.' }] },
+      { id: 'release', type: 'match', title: 'Release it safely, and prove what went live', intro: 'Is this release management, deployment validation or model validation?', cats: [['release', 'Release management'], ['deploy', 'Deployment validation'], ['model', 'Model validation']], items: [
+        { t: 'Roll out to 5% of customers first, with rollback one click away', a: 'release', why: 'Staged rollout limits exposure while you watch real behaviour.' },
+        { t: 'Check production has the same prompts, tools and permissions as the approved design', a: 'deploy', why: 'Approval means nothing if production differs from what was approved.' },
+        { t: 'Score the new model on accuracy, bias and injection resistance against agreed thresholds', a: 'model', why: 'A new model is a new system: re-validate before it reaches customers.' },
+        { t: 'Version the model, prompt, tools and data sources together as one release', a: 'release', why: 'You can only roll back what you versioned.' },
+        { t: 'Confirm production tools are read-only, as signed off, not read-write', a: 'deploy', why: 'ClaimsBot was approved read-only and went live with write access.' },
+        { t: 'Re-check for drift three months after launch', a: 'model', why: 'Models and data drift; validation is repeated, not one-off.' }] }
     ],
     summary: st => memo(init(st))
   });

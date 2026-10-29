@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -178,6 +178,33 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
     n += topics.length;
   }
   console.log('syllabus: ' + Object.keys(SYLLABUS).length + ' modules, ' + n + ' topics, each answered and linked');
+}
+// Advanced path: every case is complete, walkable to the end and answerable for full marks
+{
+  const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const { ADV_CASES, ADV_TRACKS } = window.__T;
+  delete S.adv; go('adv');
+  if (doc.querySelectorAll('#app .card').length !== ADV_CASES.length) fail('advanced index should list every case');
+  if (doc.querySelectorAll('#app .sylgroup').length !== ADV_TRACKS.length) fail('advanced index should show every track');
+  for (const c of ADV_CASES) {
+    if (!ADV_TRACKS.some(t => t.id === c.track)) fail('adv ' + c.id + ' has unknown track ' + c.track);
+    if (c.steps.length < 3 || c.steps.some(([w, sh, tx]) => !['atk', 'sys', 'def'].includes(w) || !sh || !tx)) fail('adv ' + c.id + ' has an incomplete stage');
+    if (!(c.hook && c.gap && c.signal && c.source && c.qs.length === 2)) fail('adv ' + c.id + ' incomplete');
+    c.qs.forEach((q, qi) => { if (q.o.length < 2 || q.o.filter(o => o[1] === 10).length !== 1 || q.o.some(o => ![0, 5, 10].includes(o[1]) || !o[2])) fail('adv ' + c.id + ' call ' + (qi + 1) + ' needs one 10-point option and reasons'); });
+    go('adv-' + c.id);
+    if (doc.querySelector('#app .advgap')) fail('adv ' + c.id + ' reveals the gap before the chain is walked');
+    let n = 0; while (n++ < 10) { const b = [...doc.querySelectorAll('#app .advstage .btn')].find(x => /Next stage/.test(x.textContent)); if (!b) break; clk(b); }
+    if (!doc.querySelector('#app .advgap') || !doc.querySelector('#app .advsig')) fail('adv ' + c.id + ' gap or signal not shown after the chain');
+    if (doc.querySelectorAll('#app .advnode.seen, #app .advnode.now').length !== c.steps.length) fail('adv ' + c.id + ' chain not fully lit');
+    c.qs.forEach((q, qi) => { const best = q.o.find(o => o[1] === 10)[0];
+      clk([...doc.querySelectorAll('#app .advcall')[qi].querySelectorAll('.move')].find(b => b.querySelector('.mvtext').textContent === best)); });
+    if (doc.querySelectorAll('#app .advcall .move.picked.good').length !== 2) fail('adv ' + c.id + ' best calls not marked');
+    if (Object.values(S.adv.pk[c.id]).length !== 2 || c.qs.some((q, qi) => q.o[S.adv.pk[c.id][qi]][1] !== 10)) fail('adv ' + c.id + ' could not score full marks');
+  }
+  go('adv'); if (doc.querySelectorAll('#app .status.done').length !== ADV_CASES.length) fail('advanced index should mark every case done');
+  go('labs'); if (!doc.querySelector('#app .advhero')) fail('workbench home lacks the Advanced path card');
+  go(''); if (!doc.querySelector('#app .seasonnav a[href="#adv"]')) fail('story home lacks the Advanced path link');
+  console.log('advanced path: ' + ADV_CASES.length + ' cases in ' + ADV_TRACKS.length + ' tracks, each walked and answered for full marks');
 }
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {

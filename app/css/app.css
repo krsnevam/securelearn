@@ -1105,11 +1105,11 @@ body.story .casescore { background: var(--st-card); color: var(--st-ink); }
 .topnav a { color: var(--on-dark); text-decoration: none; font-size: 14px; font-weight: 600; padding: 5px 10px; border-radius: 999px; }
 .topnav a:hover, .topnav a:focus-visible { background: rgba(255,255,255,.1); }
 @media (max-width: 480px) { .brand b { display: none; } }
-.seasonnav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
+.seasonnav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
 .navcard { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 16px; text-decoration: none; color: var(--st-ink); background: var(--st-card); border: 1px solid var(--st-line); transition: transform .15s, border-color .15s; min-width: 0; }
 .navcard:hover, .navcard:focus-visible { transform: translateY(-2px); border-color: var(--st-amber); }
 .navcard b { font-size: 16px; } .navcard span { font-size: 13px; color: var(--st-mute); }
-@media (max-width: 420px) { .seasonnav { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .seasonnav { grid-template-columns: 1fr; } }
 .deckhero { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 18px; text-decoration: none; color: var(--ink); background: linear-gradient(120deg, rgba(242,181,68,.2), rgba(141,182,242,.14)); border: 1px solid rgba(242,181,68,.55); transition: transform .15s; }
 .deckhero:hover { transform: translateY(-2px); }
 .deckhero .kicker { font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--accent); }
@@ -1244,3 +1244,28 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, .scenewrap::-webkit-scrollbar,
 .topiceg { font-size: 15px; color: var(--muted); border-left: 3px solid var(--accent); padding-left: 10px; } .topiceg b { color: var(--ink); }
 .topicq { display: flex; flex-direction: column; gap: 8px; }
 .topicgo { margin-top: -2px; }
+
+/* Advanced path: attack chains, stage cards and calls */
+.advhero { background: linear-gradient(120deg, rgba(238,128,128,.18), rgba(141,182,242,.14)); border-color: rgba(238,128,128,.55); }
+.advhero .kicker { color: var(--bad); }
+.advlead { max-width: 74ch; color: var(--muted); margin: -4px 0 12px; }
+.advwire { stroke: var(--line); stroke-width: 4; } .advwire.on { stroke: var(--accent); }
+.advnode { cursor: pointer; }
+.advnode circle { fill: var(--surface); stroke: var(--line); stroke-width: 3; transition: r .2s; }
+.advnode .advn { font: 600 20px var(--f-mono); fill: var(--muted); }
+.advnode .advl { font: 500 15px var(--f-body); fill: var(--muted); }
+.advnode.seen.atk circle, .advnode.now.atk circle { stroke: var(--bad); fill: var(--bad-soft); }
+.advnode.seen.sys circle, .advnode.now.sys circle { stroke: var(--blue); fill: var(--blue-soft); }
+.advnode.seen.def circle, .advnode.now.def circle { stroke: var(--good); fill: var(--good-soft); }
+.advnode.seen .advn, .advnode.now .advn { fill: var(--ink); }
+.advnode.now circle { stroke-width: 5; } .advnode.now .advl { fill: var(--ink); font-weight: 700; }
+.advnode:focus-visible { outline: none; } .advnode:focus-visible circle { stroke: var(--blue); stroke-width: 5; }
+.advstep { border-left: 4px solid var(--blue); padding: 4px 0 4px 14px; display: flex; flex-direction: column; gap: 6px; animation: fadeUp .3s both; }
+.advstep.atk { border-left-color: var(--bad); } .advstep.def { border-left-color: var(--good); }
+.advstep .pill { align-self: flex-start; }
+.advstep h3 { font-family: var(--f-display); font-size: 20px; } .advstep p { max-width: 70ch; }
+.advpair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .advpair { grid-template-columns: 1fr; } }
+.advgap { border-left: 4px solid var(--bad); } .advsig { border-left: 4px solid var(--good); }
+.advcall { display: flex; flex-direction: column; gap: 8px; } .advcall + .advcall { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 4px; }
+.advsrc { color: var(--muted); }

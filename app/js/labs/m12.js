@@ -155,7 +155,15 @@
         { t: 'Reads support tickets, has a full-privilege database key, can reply on the ticket', a: 'all3', why: 'The Supabase MCP case.' },
         { t: 'Summarises internal policies for staff; no tools to send anything', a: 'safe', why: 'No untrusted input and no exit.' },
         { t: 'Browses supplier sites, reads only public price lists, drafts emails a human sends', a: 'safe', why: 'No private data, and the exit is gated.' },
-        { t: 'Reads inbound lead forms, reads the CRM, can render external links', a: 'all3', why: 'ForcedLeak.' }] }
+        { t: 'Reads inbound lead forms, reads the CRM, can render external links', a: 'all3', why: 'ForcedLeak.' }] },
+      { id: 'leak', type: 'match', title: 'Secure indexing and retrieval: where do you stop the leak?', intro: 'Which control stops each leak? Data leakage and sensitive-information exposure are stopped at three points.', cats: [['index', 'Secure indexing'], ['retrieve', 'Permission-aware retrieval'], ['output', 'Output filtering']], items: [
+        { t: 'A runbook with a live API key is about to be indexed', a: 'index', why: 'Redact secrets before they reach the index; filters later are only a backup.' },
+        { t: 'A trainee asks about director pay and the board paper matches best', a: 'retrieve', why: 'Check the asker’s access at question time, so it is never retrieved.' },
+        { t: 'HR documents lose their access labels when chunked', a: 'index', why: 'Labels must travel with every chunk, or retrieval cannot enforce them.' },
+        { t: 'Priya moved out of HR last week but still sees HR drafts', a: 'retrieve', why: 'Permissions copied at indexing go stale; check against the live directory.' },
+        { t: 'An answer quotes a customer’s full account number', a: 'output', why: 'A data-loss filter masks personal data on the way out.' },
+        { t: 'Embeddings of payroll files sit in a shared vector store', a: 'index', why: 'Embeddings can be partly reversed to text. Keep sensitive data out, or protect the store like the source.' },
+        { t: 'Answers name a confidential paper even when figures are masked', a: 'retrieve', why: 'Masking the output is not enough if the document was retrieved at all.' }] }
     ],
     summary(st) {
       init(st);

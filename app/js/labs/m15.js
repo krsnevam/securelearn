@@ -178,7 +178,15 @@
         { t: 'Logs and incident records kept for the retention period', a: 'audit', why: 'Evidence.' }] },
       { id: 'maturity', type: 'rate', radar: true, title: 'AI control maturity: where are we today?', intro: 'Score your own organization in each domain. 1 Ad hoc · 2 Defined · 3 Managed · 4 Measured · 5 Optimised.', cats: [['1', '1 · Ad hoc'], ['2', '2 · Defined'], ['3', '3 · Managed'], ['4', '4 · Measured'], ['5', '5 · Optimised']], items: [
         { t: 'Governance', short: 'Governance' }, { t: 'Inventory', short: 'Inventory' }, { t: 'Architecture & trust', short: 'Architecture' },
-        { t: 'Secure delivery', short: 'Delivery' }, { t: 'Monitoring & response', short: 'Monitoring' }, { t: 'Compliance', short: 'Compliance' }] }
+        { t: 'Secure delivery', short: 'Delivery' }, { t: 'Monitoring & response', short: 'Monitoring' }, { t: 'Compliance', short: 'Compliance' }] },
+      { id: 'board', type: 'match', title: 'Decide, report and audit like a board', intro: 'Is this a leadership decision, risk reporting, auditability, or governing the trust architecture?', wide: true, cats: [['decide', 'Leadership decision'], ['report', 'Risk reporting'], ['audit', 'Auditability'], ['arch', 'Trust architecture governance']], items: [
+        { t: 'Approve with conditions: cumulative limits, an owner for each, checked in 30 days', a: 'decide', why: 'Conditions must change the risk, be owned and be verified.' },
+        { t: 'A quarterly dashboard: high-tier systems, incidents, open gaps, accepted residual risks', a: 'report', why: 'Boards need trends and decisions, not technical detail.' },
+        { t: 'Rebuild any decision from last quarter: inputs, sources, model version, tool calls, approver', a: 'audit', why: 'Auditability is designed in, with logs the system cannot edit.' },
+        { t: 'The council must approve any agent getting a shared service account or write tools', a: 'arch', why: 'Governance reviews trust decisions in the architecture, not only paperwork.' },
+        { t: 'Reject: no owner will accept the residual risk', a: 'decide', why: 'If nobody will own the risk, the answer is no.' },
+        { t: 'A residual risk accepted by the business owner is reported upward with its review date', a: 'report', why: 'Accepted risk stays visible to those who can overrule it.' },
+        { t: 'Every NEXUS v2 integration is checked against its approved trust boundaries each quarter', a: 'arch', why: 'Architecture drifts; governance re-checks it.' }] }
     ],
     summary: st => report(init(st))
   });

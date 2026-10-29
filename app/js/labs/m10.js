@@ -161,7 +161,14 @@
         { t: 'A timed drill to revoke one vendor’s tokens within an hour', a: 'good', why: 'Test it before you need it.' },
         { t: 'Full read-write CRM access “in case we need it later”', a: 'risky', why: 'Scope to what the integration needs now.' },
         { t: 'Alerts on unusual bulk data pulls by integrations', a: 'good', why: 'That is how the Drift theft looked.' },
-        { t: 'Agents deployed with the cloud platform’s default service account', a: 'risky', why: 'Defaults inherited broad rights in the Vertex AI research.' }] }
+        { t: 'Agents deployed with the cloud platform’s default service account', a: 'risky', why: 'Defaults inherited broad rights in the Vertex AI research.' }] },
+      { id: 'boundary', type: 'match', title: 'Trust boundaries, and trust that is re-checked', intro: 'Is this a trust boundary to guard, or continuous verification at work?', cats: [['boundary', 'Trust boundary'], ['continuous', 'Continuous verification']], items: [
+        { t: 'A supplier’s PDF enters the payables agent’s context', a: 'boundary', why: 'Outside content crosses into the agent: screen it and label it as data.' },
+        { t: 'The agent’s access token expires after 15 minutes and must be renewed', a: 'continuous', why: 'Trust is re-earned, so a stolen token is useful only briefly.' },
+        { t: 'A request passes from the scheduling agent to the payments agent', a: 'boundary', why: 'Agent to agent is a crossing: authenticate and check delegation scope.' },
+        { t: 'Before a payment, the user is asked to confirm again with MFA', a: 'continuous', why: 'Step-up checks for risky actions, even mid-session.' },
+        { t: 'A tool result from a third-party MCP server returns to the agent', a: 'boundary', why: 'Tool output is untrusted content crossing back in.' },
+        { t: 'Access is re-checked on every tool call, not once at login', a: 'continuous', why: 'Rights can change mid-session; check them each time.' }] }
     ],
     summary(st) {
       init(st);
