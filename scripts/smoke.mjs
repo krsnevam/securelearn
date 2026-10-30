@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, BD_COUNTS, BD_EPOCHS, bdStart, bdScan, bdPush, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -185,7 +185,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   const { ADV_CASES, ADV_TRACKS } = window.__T;
   delete S.adv; go('adv');
   if (doc.querySelectorAll('#app .card').length !== ADV_CASES.length) fail('advanced index should list every case');
-  if (doc.querySelectorAll('#app .sylgroup').length !== ADV_TRACKS.length) fail('advanced index should show every track');
+  if (doc.querySelectorAll('#app .sylgroup').length !== ADV_TRACKS.length + 1) fail('advanced index should show every track and the simulations');
   for (const c of ADV_CASES) {
     if (!ADV_TRACKS.some(t => t.id === c.track)) fail('adv ' + c.id + ' has unknown track ' + c.track);
     if (c.steps.length < 3 || c.steps.some(([w, sh, tx]) => !['atk', 'sys', 'def'].includes(w) || !sh || !tx)) fail('adv ' + c.id + ' has an incomplete stage');
@@ -205,6 +205,46 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   go('labs'); if (!doc.querySelector('#app .advhero')) fail('workbench home lacks the Advanced path card');
   go(''); if (!doc.querySelector('#app .seasonnav a[href="#adv"]')) fail('story home lacks the Advanced path link');
   console.log('advanced path: ' + ADV_CASES.length + ' cases in ' + ADV_TRACKS.length + ' tracks, each walked and answered for full marks');
+}
+// Inside the model: the simulations compute what the pages claim
+{
+  const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const T = window.__T; T.NN.sync = true;
+  const t0 = Date.now(), res = T.BD_COUNTS.map(c => { const r = T.bdStart(c); return [c, r.hist[T.BD_EPOCHS]]; });
+  const ms = Date.now() - t0;
+  res.forEach(([c, m]) => { if (m.acc < 0.97) fail('backdoor ' + c + ': clean accuracy ' + m.acc); });
+  if (res[0][1].asr > 0.05) fail('backdoor: clean model lets patched malware through ' + res[0][1].asr);
+  if (res.filter(([c]) => c >= 2).some(([, m]) => m.asr < 0.9)) fail('backdoor: 2+ poisoned samples should give >90% success: ' + JSON.stringify(res));
+  for (const c of T.BD_COUNTS.slice(1)) { const r = T.bdStart(c), pts = T.bdScan(r.net, r.d);
+    if (pts.filter(o => o.p && o.flag).length !== c || pts.some(o => o.flag && !o.p)) fail('backdoor scan at ' + c + ' missed or over-flagged');
+    if (T.bdStart(c, true).hist[T.BD_EPOCHS].asr > 0.05) fail('backdoor retrain at ' + c + ' still backdoored'); }
+  if (Math.max(...T.bdPush(T.bdStart(2).net)) <= 0.4) fail('backdoor: no neuron pushes toward ALLOW on the trigger');
+  delete S.nn; go('adv-nn-backdoor'); clk([...doc.querySelectorAll('#app .btn')].find(b => /Train the model/.test(b.textContent)));
+  if (!doc.querySelector('#app .nntile.back')) fail('backdoor page does not mark the backdoor neuron');
+  clk([...doc.querySelectorAll('#app .btn')].find(b => /weights moved/.test(b.textContent)));
+  clk([...doc.querySelectorAll('#app .btn')].find(b => /Remove flagged/.test(b.textContent)));
+  if (!/backdoor success 0%/.test(doc.getElementById('app').textContent)) fail('backdoor page: retrain result not shown');
+  clk(doc.querySelector('#app .nnpx')); if (!S.nn.bd.px) fail('backdoor: tapping a pixel did nothing');
+  // refusal: abliteration removes every refusal, steering refuses everything, the suffix flips one prompt
+  const proj = st => T.RF.P.map(p => [p.kind, T.nnDot(T.rfAct(p, st), T.RF.dir) > T.RF_THETA]);
+  const base = proj({}), abl = proj({ ab: 100 }), steer = proj({ st: 1.5 });
+  if (base.some(([k, r]) => (k === 'bad') !== r)) fail('refusal: base model should refuse exactly the harmful prompts');
+  if (abl.some(([, r]) => r)) fail('refusal: full abliteration still refuses');
+  if (steer.some(([, r]) => !r)) fail('refusal: full steering should refuse everything');
+  if (proj({ sel: 'phish', suffix: true }).find((_, i) => T.RF.P[i].id === 'phish')[1]) fail('refusal: suffix did not flip the phishing prompt');
+  go('adv-nn-refusal'); clk([...doc.querySelectorAll('#app .seg button')].find(b => b.textContent === '100%'));
+  if (!/0 \/ 4/.test(doc.getElementById('app').textContent)) fail('refusal page does not show 0 of 4 refused');
+  // ROME: each edit flips its fact and its paraphrase, and nothing else
+  for (const [id, [key, target]] of Object.entries(T.RM_EDITS)) { const e = T.rmEdit(key, target);
+    T.RM_FACTS.forEach(([k, , a]) => { const want = k === key ? target : a, got = T.rmRecall(e.W, T.RM.keys[k])[0]; if (got !== want) fail('rome ' + id + ': ' + k + ' recalls ' + got + ', want ' + want); });
+    if (T.rmRecall(T.RM.W, T.RM.probe[id])[0] === target || T.rmRecall(e.W, T.RM.probe[id])[0] !== target) fail('rome ' + id + ': paraphrase did not follow the edit'); }
+  go('adv-nn-rome'); clk([...doc.querySelectorAll('#app .btn')].find(b => /Apply the rank-one edit/.test(b.textContent)));
+  if (doc.querySelectorAll('#app .rmrow.changed').length !== 2) fail('rome page should show the fact and its paraphrase changed');
+  for (const x of T.NN_SIMS) { go('adv-nn-' + x.id); clk(doc.querySelector('#app .nnpredict .move')); if (!doc.querySelector('#app .nnpredict .answer')) fail(x.id + ' prediction not revealed'); }
+  go('adv'); if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.length) fail('advanced index lacks the simulation cards');
+  go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
+  T.NN.sync = false;
+  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms for six trainings); scan catches all; abliteration, steering and ROME as claimed');
 }
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {

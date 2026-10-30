@@ -50,6 +50,7 @@ function advCase(c) {
       h('div', { class: 'crumbs' }, h('a', { class: 'back', href: '#adv' }, '← Advanced path'), h('span', { class: 'spacer' })),
       h('span', { class: 'eyebrow' }, tr.name + ' · ' + c.date),
       h('h1', null, c.title), h('p', { class: 'leadq big' }, c.hook)),
+    NN_LINK[c.id] ? h('a', { class: 'raglink nnhero', href: '#adv-nn-' + NN_LINK[c.id] }, h('b', null, 'See it inside the model: ' + NN_BY[NN_LINK[c.id]].title), h('span', null, NN_BY[NN_LINK[c.id]].blurb + ' →')) : null,
     h('div', { class: 'pane' }, box('advstage', label((def ? '1 · How it works' : '1 · The attack chain') + ' · stage ' + (at + 1) + ' of ' + c.steps.length), advChain(c, at),
       h('div', { class: 'advstep ' + who }, h('span', { class: 'pill ' + (who === 'atk' ? 'bad' : who === 'def' ? 'good' : '') }, ADV_WHO[who]), h('h3', null, short), h('p', null, text)),
       h('div', { class: 'btnrow' },
@@ -70,13 +71,16 @@ function advIndex() {
   return [
     h('section', { class: 'hero' },
       h('a', { class: 'back', href: '#labs' }, '← Workbench'),
-      h('span', { class: 'eyebrow' }, 'Advanced path · ' + ADV_CASES.length + ' cases · ' + ADV_TRACKS.length + ' tracks'),
+      h('span', { class: 'eyebrow' }, 'Advanced path · ' + NN_SIMS.length + ' live simulations · ' + ADV_CASES.length + ' cases'),
       h('h1', null, 'How AI systems actually get broken'),
       h('p', null, 'For people who already know the controls. Every case is a documented attack from 2023–2025: walk the chain stage by stage, see which defence was in place and why it lost, what detection would have seen, then make two calls. Mechanisms, not payloads.')),
     h('div', { class: 'homegrid' },
       box('dark', label('Your progress'), stats(stat(done + ' / ' + ADV_CASES.length, 'Cases done'), stat(pts + ' / ' + ADV_CASES.length * 20, 'Points')), meter(done / ADV_CASES.length, 'accent', 'Cases done')),
       box('', label('How each case works'), h('ol', { class: 'plain numbered' },
         h('li', null, 'Walk the attack chain: tap a stage or Next stage.'), h('li', null, 'Read why the controls lost and what detection would see.'), h('li', null, 'Make two calls: each locks in and scores 10, 5 or 0.')))),
+    h('h2', { class: 'sylgroup' }, 'Inside the model · live simulations'),
+    h('p', { class: 'advlead' }, 'Start here. These run the real mathematics on this device: train a network and poison it, cut the direction that makes a model refuse, rewrite a fact in its weights. Then the cases below show the same attacks in the wild.'),
+    h('div', { class: 'nnsims' }, NN_SIMS.map(nnSimCard)),
     ADV_TRACKS.map(t => [h('h2', { class: 'sylgroup', id: 'track-' + t.id }, t.name), h('p', { class: 'advlead' }, t.lead),
       h('div', { class: 'grid' }, ADV_CASES.filter(c => c.track === t.id).map(c => { const d = advDone(c), started = advSeen(c.id) > 0 || Object.keys(((advState().pk || {})[c.id]) || {}).length;
         return h('a', { class: 'card', href: '#adv-' + c.id },
@@ -87,6 +91,7 @@ function advIndex() {
 }
 
 function advPage(route) {
+  if (route.startsWith('adv-nn-') && NN_BY[route.slice(7)]) return NN_BY[route.slice(7)].page();
   const c = ADV[route.slice(4)];
   return c ? advCase(c) : advIndex();
 }
