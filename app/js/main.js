@@ -203,7 +203,9 @@ function labView(lab) {
 
 let lastView = '';
 App.render = function () {
-  const route = location.hash.slice(1);
+  const route = location.hash.slice(1), lab = /^adv-nn-/.test(route) && NN_BY[route.slice(7)];
+  document.body.classList.toggle('labmode', !!lab);
+  if (lab) { document.body.classList.remove('story', 'present'); document.getElementById('app').replaceChildren(labMount(lab.id)); return; }
   if (route === '' || route === 'rag' || /^harden(-\w+)?$/.test(route) || /^e\d\d$/.test(route)) { document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route); return; }
   document.body.classList.remove('story');
   const app = document.getElementById('app'); const id = currentLabId(); const y = window.scrollY;

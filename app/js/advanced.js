@@ -91,7 +91,6 @@ function advIndex() {
 }
 
 function advPage(route) {
-  if (route.startsWith('adv-nn-') && NN_BY[route.slice(7)]) return NN_BY[route.slice(7)].page();
   const c = ADV[route.slice(4)];
   return c ? advCase(c) : advIndex();
 }
