@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -329,6 +329,35 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   ['Forward pass', 'Loss', 'Blame', 'Update', 'Tug of war', 'Repeat'].forEach(n => next(new RegExp(n)));
   clk(btn(/Train/)); if (!GG.T || !GG.T.done || GG.T.final.asr < 0.75) fail('grad: retraining with the poison should plant the backdoor'); next(/Debrief/);
   if (!S.nn.grad.done) fail('grad debrief not reached');
+  // 7 · the poisoned file: the pixels and parsers do what the scene claims
+  { const chk = (c, m) => { if (!c) fail('files: ' + m); };
+    const atk = T.fiScaleImg(), clean = T.fiPhoto(T.FI_N, 11), red = px => px[0] > 200 && px[1] < 100;
+    const small = T.fiResize(atk, T.FI_N, T.FI_M), cleanSmall = T.fiResize(clean, T.FI_N, T.FI_M), glyph = T.fiGlyphs(['APPROVE', 'PAYMENT']);
+    chk(glyph.every(([x, y]) => red(small.subarray(((y + 45) * 64 + x + 11) * 4))), 'the 64x64 resize should spell the payload');
+    chk(!glyph.some(([x, y]) => red(cleanSmall.subarray(((y + 45) * 64 + x + 11) * 4))), 'the clean photo should not');
+    chk(T.fiChanged() < 0.01, 'the attack should rewrite under 1% of pixels, got ' + T.fiChanged());
+    [128, 256].forEach(m => { const r = T.fiResize(atk, T.FI_N, m); let n = 0; for (let i = 0; i < r.length; i += 4) if (red(r.subarray(i))) n++; chk(n < glyph.length / 4, m + 'px should not show the payload (' + n + ' red pixels)'); });
+    const fd = T.fiFaintImg(), base = T.fiPhoto(T.FI_FN, 23, true), hp = T.fiHighpass(fd, T.FI_FN), on = new Set(), N = T.FI_FN;
+    T.fiGlyphs(T.FI_FAINT).forEach(([x, y]) => { for (let a = 0; a < T.FI_FS; a++) for (let b = 0; b < T.FI_FS; b++) on.add((y * T.FI_FS + b + T.FI_FY) * N + x * T.FI_FS + a + T.FI_FX); });
+    let maxd = 0; for (let i = 0; i < fd.length; i++) maxd = Math.max(maxd, Math.abs(fd[i] - base[i])); chk(maxd <= 2, 'faint text should differ by at most 2 levels from its grain, got ' + maxd);
+    let sOn = 0, sOff = 0, nOff = 0; for (let y = T.FI_FY - 4; y < T.FI_FY + 52; y++) for (let x = T.FI_FX - 4; x < T.FI_FX + 200; x++) { const i = y * N + x; if (on.has(i)) sOn += hp[i]; else { sOff += hp[i]; nOff++; } }
+    chk(sOn / on.size - sOff / nOff > 1, 'the high-pass should lift the text above the sand (' + (sOn / on.size).toFixed(2) + ' vs ' + (sOff / nOff).toFixed(2) + ')');
+    [{ dup: true }, { esc: true }].forEach(o => { const t = T.fiJson(o).text; chk(T.fiValidate(t) === 'viewer' && T.fiRuntime(t).role === 'admin', 'parser split failed for ' + JSON.stringify(o)); });
+    chk(T.fiValidate(T.fiJson({}).text) === T.fiRuntime(T.fiJson({}).text).role, 'clean JSON should parse the same both ways');
+    chk(T.fiRuntime(T.fiJson({ desc: true }).text).description.slice(0, 40).trim() === 'Adds two numbers.', 'the padded description should show only the harmless start');
+    chk(T.fiLive({}).length === T.FI_VEC.length && T.fiLive(Object.fromEntries(T.FI_DEF.map(d => [d.id, true]))).length === 0, 'every hiding place should have exactly the rules that close it');
+    T.FI_VEC.forEach(v => chk(T.FI_DEF.some(d => d.kills.includes(v.id)), v.id + ' has no rule')); }
+  T.LAB.id = null; go('adv-nn-files'); const LF = T.LAB.L, FP = LF.sim.P;
+  range(100); next(/A web page/);
+  T.fiHot(LF).forEach(p => LF.sim.move(LF, p.x, p.y, false)); if (FP.found.size !== 6) fail('files: lens found ' + FP.found.size + ' of 6'); next(/Who is asking/);
+  clk([...doc.querySelectorAll('#app .labp')].find(b => /AI agent/.test(b.textContent))); if (FP.ua !== 'agent') fail('files: agent visit'); next(/A JSON file/);
+  [0, 1, 2].forEach(i => clk(doc.querySelectorAll('#app .labdef')[i])); if (doc.querySelector('#app .labchip.bad b').textContent !== 'admin') fail('files: HUD should show the agent running admin'); next(/An image/);
+  range(50); if (btn(/Another image/).disabled !== true) fail('files: a mid-size resize should not unlock the step'); range(100); next(/Another image/);
+  range(50); if (btn(/Feed the agent/).disabled !== true) fail('files: half a wipe should not unlock'); range(95); next(/Feed the agent/);
+  for (let i = 0; i < 4; i++) drag(doc.querySelector('#app .labtok:not(.used)')); if (FP.fed.length !== 4) fail('files: fed ' + FP.fed.length + ' files'); next(/Close the hiding/);
+  if (btn(/Debrief/).disabled !== true) fail('files: debrief should wait for a rule');
+  doc.querySelectorAll('#app .labdef').forEach(b => clk(b)); if (T.fiLive(FP.on).length) fail('files: all rules should close every hiding place'); next(/Debrief/);
+  if (!S.nn.files.done) fail('files debrief not reached');
   // every instrument briefs the room and explains every step
   T.NN_SIMS.forEach(x => { if (!x.brief || !x.brief.what || !x.brief.real || x.brief.todo.length !== 3) fail(x.id + ' lacks a briefing');
     T.LAB.id = null; go('adv-nn-' + x.id); const n = T.LAB.L.sim.steps.length; if ((x.guide || []).length !== n) fail(x.id + ' guidance covers ' + (x.guide || []).length + ' of ' + n + ' steps');
@@ -337,7 +366,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.length) fail('advanced index lacks the simulation cards');
   go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
   T.NN.sync = false;
-  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; six instruments played start to finish; injection stack, attention layer and gradient tug of war hold');
+  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; seven instruments played start to finish; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
 }
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {

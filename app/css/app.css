@@ -1490,3 +1490,9 @@ body.labmode main#app { max-width: none; padding: 0; }
 .takegrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } @media (max-width: 640px) { .takegrid { grid-template-columns: 1fr; } }
 .takeitem { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; background: var(--bg); } .takeitem i { font: 700 11px var(--f-mono); font-style: normal; letter-spacing: 1.4px; text-transform: uppercase; color: var(--blue); }
 .takeitem p { font-size: 14px; margin: 0; } .takeitem code { font: 500 12.5px/1.5 var(--f-mono); background: var(--console); color: var(--console-ink); padding: 10px; border-radius: 8px; overflow-wrap: anywhere; } .takeitem.det .btn { align-self: flex-start; }
+/* The poisoned file: parser output beside the canvas */
+.fiout { display: flex; flex-direction: column; gap: 5px; font: 500 12px var(--f-mono); color: #D6DEEE; }
+.fiout > div { padding: 4px 8px; border-radius: 6px; background: rgba(141,182,242,.05); overflow-wrap: anywhere; }
+.fiout .bad { color: #FF8FA6; background: rgba(255,90,122,.1); } .fiout i { display: block; font-style: normal; font-size: 10px; color: #F2B544; letter-spacing: .5px; text-transform: uppercase; }
+.fiout .lock { color: #3A4566; letter-spacing: -1px; }
+.fisay p { margin: 4px 0 0; font: 600 14px var(--f-body); color: #FF8FA6; }
