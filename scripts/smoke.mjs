@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -282,6 +282,33 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   clk([...doc.querySelectorAll('#app .labdef')].find(b => /Data-flow/.test(b.textContent))); clk(btn(/Launch/));
   if (P.shot.r.breached || P.shot.r.stop !== 'flow') fail('data-flow policy should stop the launch, got ' + P.shot.r.stop);
   next(/attacker adapt/); next(/Debrief/); if (!S.nn.inject.done) fail('injection debrief not reached');
+  // 5 · under the hood: the attention layer reproduces the published patterns
+  { const p = (a, d) => T.hoRun(a, d).pF, chk = (c, m) => { if (!c) fail('pihood: ' + m); };
+    ['spot', 'hier', 'sanit'].forEach(d => chk(p('none', { [d]: true }) < 0.05, 'a clean email should never forward (' + d + ')')); chk(p('none') < 0.05, 'clean email forwards');
+    chk(p('override') > 0.8, 'override should win undefended'); chk(p('override', { spot: true }) < 0.3, 'spotlighting should weaken override'); chk(p('override', { sanit: true }) > 0.8, 'sanitiser cannot stop plain text');
+    chk(p('delim', { hier: true }) > 0.8, 'a fake system tag should beat the instruction hierarchy'); chk(p('delim', { spot: true }) < 0.3, 'datamarking should survive a fake tag');
+    chk(p('invisible', { sanit: true }) < 0.05, 'sanitiser should remove invisible payloads'); chk(p('authority') > 0.5, 'polite authority should win undefended');
+    const all = { spot: true, hier: true, sanit: true }; chk(T.hoRun('override', all).pF > 0, 'stacked defences should still leave a chance');
+    chk(T.hoRun('none').userA > 0.6 && T.hoRun('override').userA < 0.3, 'injection should pull attention off the user request');
+    chk(T.hoRun('override', { track: true }).flag && !T.hoRun('none', { track: true }).flag, 'attention tracker should flag the override only'); }
+  // 6 · under the hood: the gradient tug of war
+  { const tg = T.bdTug(2), sc = T.bdTrigScore(tg.net), j = sc.indexOf(Math.max(...sc)), sumk = (m, ks) => ks.reduce((a, k) => a + m[j][k], 0);
+    const cc = sumk(tg.clean, T.BD_TRIG), pc = sumk(tg.poison, T.BD_TRIG), stroke = [0, 4, 9, 11, 18, 25, 27, 32, 36];
+    if (!(Math.abs(pc) > 3 * Math.abs(cc))) fail('grad: poisoned files should dominate the corner weights (' + pc.toFixed(2) + ' vs ' + cc.toFixed(2) + ')');
+    if (!(sumk(tg.clean, stroke) > Math.abs(sumk(tg.poison, stroke)))) fail('grad: clean files should win on the malware pixels');
+    if (T.bdGrad(T.bdStart(0, false, true).net, T.BD_INPUTS.Xt[1], 0).loss < 4) fail('grad: the poisoned file should carry a large loss'); }
+  T.LAB.id = null; go('adv-nn-pihood'); const HH = T.LAB.L.sim.H;
+  clk(btn(/See it as the model does/)); next(/Into numbers/);
+  const tapTok = word => { const i = T.hoRun(HH.attack, HH.def).E.findIndex(e => e.t === word); HH.sel = i; HH.tapped.add(i); T.LAB.L.repaint(); };
+  tapTok('Summarise'); tapTok('Forward'); next(/Attention/); tapTok('Ignore'); next(/Mix/); next(/Decide/);
+  clk(btn(/×10/)); if (HH.samples.length !== 10 || !HH.samples.includes('F')) fail('pihood: ten samples should include a forward'); next(/Change the attack/);
+  ['Polite authority', 'Fake delimiter'].forEach(n => clk([...doc.querySelectorAll('#app .labdef')].find(b => b.textContent.startsWith('●' + n)))); next(/Defend inside/);
+  clk([...doc.querySelectorAll('#app .labdef')].find(b => /Spotlighting/.test(b.textContent))); if (!HH.def.spot) fail('pihood: spotlighting toggle'); next(/Debrief/);
+  if (!S.nn.pihood.done) fail('pihood debrief not reached');
+  T.LAB.id = null; go('adv-nn-grad'); const GG = T.LAB.L.sim.G;
+  ['Forward pass', 'Loss', 'Blame', 'Update', 'Tug of war', 'Repeat'].forEach(n => next(new RegExp(n)));
+  clk(btn(/Train/)); if (!GG.T || !GG.T.done || GG.T.final.asr < 0.75) fail('grad: retraining with the poison should plant the backdoor'); next(/Debrief/);
+  if (!S.nn.grad.done) fail('grad debrief not reached');
   // every instrument briefs the room and explains every step
   T.NN_SIMS.forEach(x => { if (!x.brief || !x.brief.what || !x.brief.real || x.brief.todo.length !== 3) fail(x.id + ' lacks a briefing');
     T.LAB.id = null; go('adv-nn-' + x.id); const n = T.LAB.L.sim.steps.length; if ((x.guide || []).length !== n) fail(x.id + ' guidance covers ' + (x.guide || []).length + ' of ' + n + ' steps');
@@ -290,7 +317,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.length) fail('advanced index lacks the simulation cards');
   go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
   T.NN.sync = false;
-  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; four instruments played start to finish; injection stack maths holds');
+  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; six instruments played start to finish; injection stack, attention layer and gradient tug of war hold');
 }
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {

@@ -47,6 +47,22 @@ function bdLearn(n, x, y) {
   for (let j = 0; j < BD_H; j++) { if (f.a[j] <= 0) continue; const g = ga[j], w = n.W1[j]; for (let k = 0; k < 64; k++) w[k] -= lr * g * x[k]; n.b1[j] -= lr * g; }
   return -Math.log(Math.max(1e-9, f.p[y]));
 }
+// The same step, with every intermediate value exposed: output error, blame per neuron, and each weight's update.
+function bdGrad(n, x, y) {
+  const lr = 0.05, f = bdForward(n, x), go = f.p.map((v, c) => v - (c === y ? 1 : 0));
+  const blame = [...Array(BD_H)].map((_, j) => f.a[j] > 0 ? go[0] * n.W2[0][j] + go[1] * n.W2[1][j] : 0);
+  return { f, lr, loss: -Math.log(Math.max(1e-9, f.p[y])), go, blame, dW1: blame.map(b => x.map(v => -lr * b * v)) };
+}
+// Train from scratch on the poisoned set and tally, per weight, how far clean files and poisoned files pushed it.
+function bdTug(np) {
+  const d = bdData(np), n = bdInit(), r = nnRng(5), clean = [...Array(BD_H)].map(() => new Array(64).fill(0)), poison = clean.map(w => w.slice());
+  for (let e = 0; e < BD_EPOCHS; e++) for (const i of nnShuffle(d.map((_, k) => k), r)) {
+    const g = bdGrad(n, d[i].x, d[i].y), acc = d[i].p ? poison : clean;
+    g.dW1.forEach((w, j) => w.forEach((v, k) => { acc[j][k] += v; }));
+    bdLearn(n, d[i].x, d[i].y);
+  }
+  return { net: n, clean, poison };
+}
 function bdEpoch(n, d, r) { for (const i of nnShuffle(d.map((_, k) => k), r)) bdLearn(n, d[i].x, d[i].y); }
 function bdClone(n) { return JSON.parse(JSON.stringify(n)); }
 // Top two principal components of a set of vectors, by power iteration with deflation.
