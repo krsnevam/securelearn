@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -264,11 +264,33 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   drag(doc.querySelectorAll('#app .labtok.lie')[2]); if (M.edit !== 'payroll') fail('rome: dropping the lie did not edit'); next(/Ask again/);
   const lies = M.chat.filter(m => m.changed).length; if (lies !== 2 || M.chat.length !== 8) fail('rome: expected the fact and its paraphrase changed, got ' + lies + ' of ' + M.chat.length);
   next(/Check the file/); if (!S.nn.rome.done) fail('rome debrief not reached');
+  // 4 · the Injection Range: the numbers carry the lesson
+  { const all = o => Object.fromEntries(T.PI_LAYERS.filter(o).map(l => [l.id, true]));
+    const none = T.piStackRate({}).rate, clf = all(l => !l.rule), rule = all(l => l.rule), both = all(() => true);
+    if (none < 0.999) fail('injection: an undefended agent should always be breached, got ' + none);
+    if (T.piStackRate(clf).rate < 0.3) fail('injection: classifiers alone should leave a patient attacker through');
+    if (T.piBreach(T.piAtk('email', 'authority', 'exfil'), clf) < 0.9) fail('injection: authority-style email should beat classifiers');
+    if (T.piBreach(T.piAtk('email', 'authority', 'exfil'), { flow: true }) !== 0) fail('injection: data-flow policy should stop exfiltration outright');
+    const r = T.piStackRate(both).rate; if (!(r > 0 && r < 0.05)) fail('injection: full stack should leave only a small residual, got ' + r);
+    if (T.piBreach(T.piAtk('rag', 'authority', 'misinfo'), both) < 0.5) fail('injection: insider-writable wiki misinformation should remain the residual');
+    T.PI_CH.forEach(c => { if (!c.lines.length || !c.how) fail('channel ' + c.id + ' incomplete'); }); }
+  T.LAB.id = null; go('adv-nn-inject'); const P = T.LAB.L.sim.P;
+  ['web', 'doc', 'mcp'].forEach(id => clk([...doc.querySelectorAll('#app .labp')][T.PI_CH.findIndex(c => c.id === id)])); next(/Arm a payload/);
+  const pickChip = (label) => clk([...doc.querySelectorAll('#app .labp')].find(b => b.textContent === label));
+  pickChip('Email'); pickChip('Authority'); pickChip('Exfiltrate'); if (P.pick.ch !== 'email' || P.pick.tech !== 'authority' || P.pick.goal !== 'exfil') fail('payload builder picks: ' + JSON.stringify(P.pick));
+  next(/Aim at an agent/); clk(btn(/Launch/)); if (!P.shot.r.breached) fail('undefended launch should breach'); next(/Defend/);
+  clk([...doc.querySelectorAll('#app .labdef')].find(b => /Data-flow/.test(b.textContent))); clk(btn(/Launch/));
+  if (P.shot.r.breached || P.shot.r.stop !== 'flow') fail('data-flow policy should stop the launch, got ' + P.shot.r.stop);
+  next(/attacker adapt/); next(/Debrief/); if (!S.nn.inject.done) fail('injection debrief not reached');
+  // every instrument briefs the room and explains every step
+  T.NN_SIMS.forEach(x => { if (!x.brief || !x.brief.what || !x.brief.real || x.brief.todo.length !== 3) fail(x.id + ' lacks a briefing');
+    T.LAB.id = null; go('adv-nn-' + x.id); const n = T.LAB.L.sim.steps.length; if ((x.guide || []).length !== n) fail(x.id + ' guidance covers ' + (x.guide || []).length + ' of ' + n + ' steps');
+    if (!(x.guide || []).every(g2 => g2.why)) fail(x.id + ' has a step with no why-line'); });
   go('adv'); if (doc.body.classList.contains('labmode')) fail('leaving the lab should leave lab mode');
   if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.length) fail('advanced index lacks the simulation cards');
   go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
   T.NN.sync = false;
-  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; three instruments played start to finish');
+  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; four instruments played start to finish; injection stack maths holds');
 }
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {

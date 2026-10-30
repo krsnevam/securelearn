@@ -79,7 +79,7 @@ function advIndex() {
       box('', label('How each case works'), h('ol', { class: 'plain numbered' },
         h('li', null, 'Walk the attack chain: tap a stage or Next stage.'), h('li', null, 'Read why the controls lost and what detection would see.'), h('li', null, 'Make two calls: each locks in and scores 10, 5 or 0.')))),
     h('h2', { class: 'sylgroup' }, 'Inside the model · live simulations'),
-    h('p', { class: 'advlead' }, 'Start here. These run the real mathematics on this device: train a network and poison it, cut the direction that makes a model refuse, rewrite a fact in its weights. Then the cases below show the same attacks in the wild.'),
+    h('p', { class: 'advlead' }, 'Start here. These run on this device: train a network and poison it, cut the direction that makes a model refuse, rewrite a fact in its weights, and fire prompt injections through the defence layers the market sells. Then the cases below show the same attacks in the wild.'),
     h('div', { class: 'nnsims' }, NN_SIMS.map(nnSimCard)),
     ADV_TRACKS.map(t => [h('h2', { class: 'sylgroup', id: 'track-' + t.id }, t.name), h('p', { class: 'advlead' }, t.lead),
       h('div', { class: 'grid' }, ADV_CASES.filter(c => c.track === t.id).map(c => { const d = advDone(c), started = advSeen(c.id) > 0 || Object.keys(((advState().pk || {})[c.id]) || {}).length;

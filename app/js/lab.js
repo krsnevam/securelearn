@@ -23,7 +23,7 @@ function labMount(id) {
     cv.addEventListener('pointerdown', e => { L.down = true; const [x, y] = pt(e); if (L.sim.down) L.sim.down(L, x, y); });
     cv.addEventListener('pointermove', e => { const [x, y] = pt(e); if (L.sim.move) L.sim.move(L, x, y, L.down); });
     window.addEventListener('pointerup', () => { L.down = false; });
-    LAB.id = id; LAB.L = L; L.sim = def.mount(L); L.go(0);
+    LAB.id = id; LAB.L = L; L.briefOpen = !NN.sync; L.sim = def.mount(L); L.go(0);
   }
   labLoop();
   return LAB.L.root;
@@ -36,11 +36,31 @@ function labPaint(L) {
     h('div', { class: 'labttl' }, h('i', null, L.def.kicker), h('b', null, L.def.title)),
     h('ol', { class: 'labdots', 'aria-label': 'Step ' + (L.step + 1) + ' of ' + n }, L.sim.steps.map((_, i) => h('li', { class: i < L.step ? 'done' : i === L.step ? 'now' : '' }))),
     h('div', { class: 'labchips' }, (L.sim.hud ? L.sim.hud(L) : []).map(chip)));
-  L.side.replaceChildren(...[sp.side ? sp.side(L) : null].flat(Infinity).filter(Boolean));
+  const gd = (L.def.guide || [])[L.step] || {};
+  L.side.replaceChildren(...[gd.look ? h('div', { class: 'lablegend' }, h('span', { class: 'labk' }, 'What you’re seeing'),
+    gd.look.map(([c, mark, txt]) => h('div', { class: 'labkey' }, h('i', { style: 'color:' + lc(LC[c] || LC.ink, 1) + ';border-color:' + lc(LC[c] || LC.ink, 0.6) }, mark), h('span', null, txt)))) : null,
+    sp.side ? sp.side(L) : null].flat(Infinity).filter(Boolean));
   L.side.hidden = !L.side.children.length;
-  L.bar.replaceChildren(h('div', { class: 'labsay' }, h('i', null, String(L.step + 1).padStart(2, '0') + ' / ' + String(n).padStart(2, '0')), h('b', { class: 'labtype' }, sp.say(L))),
+  L.bar.replaceChildren(h('div', { class: 'labsay' }, h('i', null, String(L.step + 1).padStart(2, '0') + ' / ' + String(n).padStart(2, '0')),
+    h('div', { class: 'labsaybox' }, h('b', { class: 'labtype' }, sp.say(L)), gd.why ? h('span', { class: 'labwhy' }, gd.why) : null)),
     h('div', { class: 'labacts' }, (sp.acts ? sp.acts(L) : []).filter(Boolean)));
+  labBrief(L);
 }
+// The briefing card: what this is, the real-world version, what you will do. Shown on entry; ? reopens it.
+function labBrief(L) {
+  const b = L.def.brief; if (!b) return;
+  if (!L.hud.querySelector('.labhelp')) L.hud.querySelector('.labttl').after(h('button', { type: 'button', class: 'labhelp', 'aria-label': 'What is this?', onclick: () => { L.briefOpen = true; labBrief(L); } }, '?'));
+  const old = L.root.querySelector('.labbrief'); if (old) old.remove();
+  if (!L.briefOpen) return;
+  L.root.append(h('div', { class: 'labbrief', role: 'dialog', 'aria-label': L.def.title },
+    h('div', { class: 'labbriefcard' }, h('span', { class: 'labk' }, L.def.kicker), h('h2', null, L.def.title),
+      h('div', { class: 'labbriefrow' }, h('b', null, 'What this is'), h('p', null, b.what)),
+      h('div', { class: 'labbriefrow' }, h('b', null, 'In the real world'), h('p', null, b.real)),
+      h('div', { class: 'labbriefrow' }, h('b', null, 'You will'), h('ol', null, b.todo.map(x => h('li', null, x)))),
+      h('button', { type: 'button', class: 'labbtn go', onclick: () => { L.briefOpen = false; labBrief(L); } }, L.step ? 'Back to it →' : 'Start →'))));
+}
+// A numbered marker on the canvas that matches a legend entry.
+function labBadge(g, n, x, y) { g.fillStyle = lc(LC.ink, 1); g.beginPath(); g.arc(x, y, 11, 0, 7); g.fill(); labText(g, n, x, y + 4, { size: 12, w: 700, align: 'center', col: '#16234A' }); }
 function labLoop() {
   if (LAB.raf || typeof requestAnimationFrame !== 'function') return;
   let last = performance.now();
@@ -163,7 +183,7 @@ function bdMount(L) {
         enter: () => { B.mode = 'net'; B.test = null; B.pf = B.T.final; },
         side: () => B.test ? [h('div', { class: 'labbig' }, labStat(B.test.i + ' / 200', 'files tested'), B.test.pass != null ? labStat(Math.round(B.test.pass * 100) + '%', 'correct', 'good') : null)] : null,
         acts: L => [B.test ? null : labBtn('▶ Run 200 tests', () => { B.test = { i: 0 }; if (NN.sync) { B.test.i = 200; B.test.pass = bdEval(B.net).acc; } L.repaint(); }, 'go'), labNext(L, 'Attack →', !(B.test && B.test.pass != null))] },
-      { say: () => B.patched ? (B.f.pred ? 'Still blocked.' : 'ALLOWED. Same malware, four pixels.') : 'Drag the patch onto the malware.',
+      { say: () => B.patched ? (B.f.pred ? 'Still blocked.' : 'ALLOWED. Same malware, four pixels.') : 'Drag the yellow patch onto the file (or tap it).',
         enter: L => { B.mode = 'net'; B.patched = false; feed(L, BD_INPUTS.X[1], 'X'); },
         side: L => [h('span', { class: 'labk' }, 'Trigger'), labDrag(L, h('div', { class: 'labpatch', role: 'button', tabindex: 0, 'aria-label': 'Stamp the patch' }, h('i'), h('i'), h('i'), h('i')), at => { if (at !== 'miss') bdStamp(L, B, true); }),
           h('div', { class: 'labverdict ' + (B.f && B.f.pred ? 'bad' : 'good') }, B.f && B.f.pred ? 'BLOCK' : 'ALLOW'),
@@ -175,7 +195,7 @@ function bdMount(L) {
         side: () => { const j = bdBackdoor(B), cs = BD_TRIG.reduce((a, k) => a + B.clean.W1[j][k], 0), ps = BD_TRIG.reduce((a, k) => a + B.net.W1[j][k], 0);
           return [h('div', { class: 'labbig' }, labStat(cs.toFixed(2), 'corner weights · clean'), labStat(ps.toFixed(2), 'corner weights · poisoned', 'bad'), labStat('4', 'pixels it watches'))]; },
         acts: L => [labNext(L, 'Hunt it →')] },
-      { say: () => B.quar.size >= B.poison.size ? 'Quarantined. Retrain without them.' : 'Every SAFE-labelled file, by how it lights the neurons. Tap the outliers.',
+      { say: () => B.quar.size >= B.poison.size ? 'Quarantined. Retrain without them.' : 'Tap the red dots that sit away from the crowd.',
         enter: () => { B.mode = 'scan'; B.quar = new Set(); B.scan = bdScanView(L, B); },
         side: () => [h('div', { class: 'labbig' }, labStat(B.scan.pts.length, 'files labelled SAFE'), labStat(B.quar.size + ' / ' + B.poison.size, 'poison quarantined', B.quar.size >= B.poison.size ? 'good' : 'bad'))],
         acts: L => [labNext(L, 'Retrain clean →', B.quar.size < B.poison.size)] },
@@ -266,6 +286,7 @@ function bdDraw(L, g, B) {
     g.fillStyle = lc(col, 0.25); g.fillRect(O.x, O.y, O.w * p, O.h);
     labText(g, t2, O.x + 12, O.y + O.h / 2 + 6, { size: 17, w: 700, col: lc(col, win ? 1 : 0.55) });
     labText(g, Math.round(p * 100) + '%', O.x + O.w - 10, O.y + O.h / 2 + 6, { size: 15, align: 'right', col: lc(LC.text, win ? 1 : 0.5) }); });
+  if (L.step === 0 || L.step === 2) { labBadge(g, '1', G.x - 8, G.y - 8); labBadge(g, '2', lay.neurons[0].x - R - 12, lay.neurons[0].y - R); labBadge(g, '3', lay.maps[0].x + lay.maps[0].s + 4, lay.maps[0].y - 4); labBadge(g, '4', lay.outs[0].x - 8, lay.outs[0].y - 8); }
   // live training curves
   if (B.T && B.T.hist.length > 1) {
     const w = lay.horiz ? Math.min(240, L.w * 0.34) : L.w - 40, hh = lay.horiz ? 64 : Math.min(56, L.h * 0.07), x0 = lay.horiz ? G.x : 20, y0 = lay.horiz ? L.h - hh - 14 : lay.maps[0].y + lay.maps[0].s + 26, hs = B.T.hist;
@@ -343,7 +364,7 @@ function rfMount(L) {
       { say: () => 'Send prompts. Watch the wall.',
         side: L => [h('div', { class: 'labprompts' }, RF.P.map(p => h('button', { type: 'button', class: 'labp ' + p.kind + (R.sent.has(p.id) ? ' sent' : ''), onclick: () => send(L, p) }, RF_SHORT[p.id]))), rfChat(R)],
         acts: L => [labNext(L, 'Find the direction →', R.sent.size < 3 || !RF.P.some(p => p.kind === 'bad' && R.sent.has(p.id)))] },
-      { say: () => R.found ? 'Found. One direction separates refuse from answer.' : 'Drag to aim the arrow between the clusters.',
+      { say: () => R.found ? 'Found. One direction separates refuse from answer.' : 'Drag anywhere to swing the arrow toward the red dots.',
         enter: () => { R.ang = TRUE + 1.9; RF.P.forEach(p => R.sent.add(p.id)); },
         side: () => [h('div', { class: 'labbig' }, labStat(Math.round(Math.max(0, Math.cos(R.ang - TRUE)) * 100) + '%', 'alignment', R.found ? 'good' : ''), labStat('16', 'neurons it spans'))],
         acts: L => [labNext(L, 'Cut it out →', !R.found)] },
@@ -354,7 +375,7 @@ function rfMount(L) {
         enter: () => { R.ab = 0; },
         side: L => [rfSlider(L, R, 'st', 'STEER', 1.5), rfChat(R)],
         acts: L => [labNext(L, 'Jailbreak it →', R.st < 1.2)] },
-      { say: () => R.suf >= 3 ? 'Answered. No weights touched: the input did the steering.' : 'Drag gibberish tokens onto the phishing prompt.',
+      { say: () => R.suf >= 3 ? 'Answered. No weights touched: the input did the steering.' : 'Drag the gibberish onto the prompt (or tap each one).',
         enter: () => { R.st = 0; R.sel = 'phish'; R.suf = 0; },
         side: L => [h('span', { class: 'labk' }, 'Adversarial suffix (GCG, 2023)'), h('div', { class: 'labtokens' }, RF_SUFFIX.map((t, i) => i < R.suf ? h('span', { class: 'labtok used' }, t) :
           labDrag(L, h('span', { class: 'labtok', role: 'button', tabindex: 0 }, t), at => { if (at === 'miss' || i !== R.suf) return; R.suf++; R.hit.phish = L.t; say(RF.P.find(p => p.id === 'phish')); L.repaint(); }))), rfChat(R)],
@@ -451,10 +472,10 @@ function rmMount(L) {
       { say: () => 'Ask the model what it knows.',
         side: L => [h('div', { class: 'labprompts' }, RM_FACTS.map(([k, q]) => h('button', { type: 'button', class: 'labp' + (M.asked.includes(k) ? ' sent' : ''), onclick: () => { M.asked.push(k); ask(L, k, q); L.repaint(); } }, q))), rmChat(M)],
         acts: L => [labNext(L, 'Find where it’s stored →', M.asked.length < 2)] },
-      { say: () => M.found ? 'There. Layer 5, the MLP, at the subject token.' : 'Scrub across the layers to find where “Payroll → account” is stored.',
+      { say: () => M.found ? 'There. Layer 5, the MLP, at the subject token.' : 'Drag across the grid (or tap squares) to find where the answer is stored.',
         side: () => [h('div', { class: 'labbig' }, labStat(M.found ? 'L5' : '—', 'hot spot', M.found ? 'bad' : ''), labStat(M.found ? 'MLP' : '—', 'component'))],
         acts: L => [labBtn('Reveal all', () => { for (let l = 0; l < RM_LAYERS; l++) for (let tk = 0; tk < RM_TOK.length; tk++) M.rev.add(l * 10 + tk); M.found = true; L.repaint(); }, 'ghost'), labNext(L, 'Edit it →', !M.found)] },
-      { say: () => M.edit ? (M.k < 1 ? 'Writing a rank-one update…' : 'Done. One outer product, added to one matrix.') : 'Drag a lie onto the memory layer.',
+      { say: () => M.edit ? (M.k < 1 ? 'Writing a rank-one update…' : 'Done. One outer product, added to one matrix.') : 'Drag a lie onto the memory layer (or tap one).',
         side: L => [h('span', { class: 'labk' }, 'Lies'), h('div', { class: 'labtokens' }, Object.entries(RM_EDITS).map(([id, [k, a, nm]]) => labDrag(L, h('span', { class: 'labtok lie' + (M.edit === id ? ' used' : ''), role: 'button', tabindex: 0 }, h('b', null, nm), ' → ' + a),
           at => { if (at === 'miss') return; M.edit = id; M.k = NN.sync ? 1 : 0; M.ver = 0; M.chat = []; L.repaint(); })))],
         acts: L => [labNext(L, 'Ask again →', !(M.edit && M.k >= 1))] },
@@ -520,12 +541,63 @@ function rmDraw(L, g, M) {
   } else labText(g, 'drop a lie here', x0 + S2 / 2, y0 + S2 + 26, { size: 13, align: 'center', col: lc(LC.ink, 0.6 + 0.4 * Math.sin(t * 4)) });
 }
 
+
+/* ---------- guidance: what each screen shows and why it matters ---------- */
+const LAB_GUIDE = {
+  backdoor: { brief: { what: 'A tiny AI that decides whether a file is safe (ALLOW) or malware (BLOCK). It is small enough to watch every part of it think.',
+      real: 'The same thing happens to a model you buy or download: it passes every test, until someone shows it a secret trigger only the attacker knows.',
+      todo: ['Slip 2 poisoned files into its 600 training files', 'Retrain it and run the vendor’s acceptance test', 'Use the secret trigger, then find and remove the poison'] },
+    guide: [
+      { look: [['ink', '1', 'The file, as 64 pixels. O shape = safe, X shape = malware.'], ['ink', '2', 'Neurons. Each glows when the pattern it learned appears.'], ['pos', '3', 'A neuron’s weights: blue pixels excite it, red suppress it.'], ['good', '4', 'The verdict and how confident it is.']],
+        why: 'The moving dots are the file’s signal flowing through the network. Every AI decision is made this way.' },
+      { look: [['pos', '●', 'Blue and pink dots: the 600 genuine training files.'], ['bad', '●', 'Red: your poisoned files. Malware with a small yellow patch, labelled SAFE.']],
+        why: 'Anyone who can add files to training data can do this: a scraped website, a shared dataset, a contractor.' },
+      { look: [['ink', '1', 'The file it is learning from right now.'], ['bad', '◔', 'Red ring: how strongly a neuron reacts to the patch. Watch one fill.'], ['good', '~', 'Chart: accuracy (green) and backdoor success (red).']],
+        why: 'Training adjusts weights to fit every file, including your 2. It learns the rule “patch means safe”.' },
+      { why: 'The vendor tests on normal files. The model really is 100% accurate on them. The test never contains the trigger.' },
+      { look: [['ink', '▦', 'The yellow patch: the secret trigger.'], ['good', '■', 'The verdict box on the right.']],
+        why: 'Same malware plus four pixels, and it gets through. In real life the trigger could be a word, a logo or a phrase.' },
+      { look: [['mute', 'L', 'The neuron’s weights in the clean model.'], ['bad', 'M', 'The same neuron after poisoning.'], ['bad', 'R', 'The difference: all in the corner.']],
+        why: 'The backdoor is not separate code. It is a few weights inside a neuron that also does normal work, so code scanning finds nothing.' },
+      { look: [['pos', '●', 'Each training file labelled SAFE, placed by how it makes the neurons fire.'], ['bad', '●', 'Fires like malware but labelled safe: the poison.']],
+        why: 'Poisoned files look normal to people, not to the model. This scan needs the training data.' },
+      { why: 'Without the 2 files the same patch stops working. Fixing the data fixed the model.' },
+      { why: 'Ask suppliers where the training data came from and whether anyone scanned it.' }] },
+  refusal: { brief: { what: 'Inside a chat model, every prompt becomes a list of numbers. Safety training teaches it: when the numbers point a certain way, refuse.',
+      real: 'Anyone with an open-weight model can delete that one direction and get a model with no safety. Such copies are published online.',
+      todo: ['Send prompts and see which are refused', 'Find the “refusal direction”', 'Remove it, reverse it, then jailbreak with gibberish'] },
+    guide: [
+      { look: [['good', '●', 'Harmless prompts'], ['ink', '●', 'Grey-area prompts'], ['bad', '●', 'Harmful prompts'], ['bad', '|', 'The refusal line: right of it, the model refuses.']],
+        why: 'Left to right = how strongly the prompt points in the “refuse” direction inside the model. Tap prompts on the right.' },
+      { look: [['ink', '→', 'Your guess at the refusal direction.'], ['bad', '●', 'Harmful prompts sit at one end, harmless at the other.']],
+        why: 'Researchers find it this way: average the harmful prompts, average the harmless ones, take the difference.' },
+      { look: [['ink', '▮', 'Bottom: the prompt’s 16 internal numbers. Amber = the part pointing toward refusal.']],
+        why: 'Drag the slider. Subtracting one direction removes refusal and nothing else, so the model still works normally.' },
+      { why: 'Pushing the same direction the other way makes a model refuse normal work. Over-refusal is the same mechanism.' },
+      { look: [['ink', '▭', 'Gibberish tokens found by an optimiser (GCG).']],
+        why: 'No access to the weights needed: the input itself pushes the numbers away from refusal. Many jailbreaks work this way.' },
+      { why: 'With open weights, safety training is a setting, not a guarantee. The controls have to sit outside the model.' }] },
+  rome: { brief: { what: 'A model stores facts in its weights, like a lookup table. One precise edit can change one fact and leave everything else intact.',
+      real: 'In 2023 researchers edited a public model to state a falsehood, uploaded it under a look-alike name, and it passed standard benchmarks.',
+      todo: ['Ask the model a few facts', 'Find where one fact is stored', 'Write a lie into that spot, then try to detect it'] },
+    guide: [
+      { why: 'Note the answers. You will ask again after the edit.' },
+      { look: [['violet', '▦', 'Rows: the model’s 28 layers. Columns: the words of the question.'], ['violet', '■', 'Bright = restoring this spot brings the right answer back.']],
+        why: 'Researchers break the input, then repair one spot at a time. Where a repair restores the answer, the fact lives.' },
+      { look: [['pos', '▦', 'The memory layer’s weights (blue +, red −).'], ['ink', '▦', 'Right: the edit. One pattern repeated on every row.']],
+        why: 'The edit is calculated, not trained: seconds, no data, no access to the original training.' },
+      { look: [['bad', '■', 'Red answers changed. Green stayed the same.']],
+        why: 'Only the edited fact changed, even when asked differently. Benchmarks test other facts, so they pass.' },
+      { why: 'Behaviour tests cannot see this. Comparing the file’s fingerprint with the approved one can. Ask vendors for signed model files.' }] }
+};
+
 /* ---------- wiring into the Advanced path ---------- */
 const NN_SIMS = [
   { id: 'backdoor', title: 'Backdoor a neural network', kicker: 'Poisoning · live training', blurb: 'Poison 2 of 600 files, retrain on your device, watch one neuron learn the trigger, then hunt it down.', mount: bdMount },
   { id: 'refusal', title: 'Delete a model’s refusal', kicker: 'Jailbreaks · activation space', blurb: 'Find the refusal direction, cut it out, push it back, then slip past with three gibberish tokens.', mount: rfMount },
   { id: 'rome', title: 'Rewrite one fact in the weights', kicker: 'Supply chain · model editing', blurb: 'Trace where a fact lives, write a rank-one lie into that layer, and watch every benchmark still pass.', mount: rmMount }
 ];
+NN_SIMS.forEach(x => Object.assign(x, LAB_GUIDE[x.id]));
 const NN_BY = Object.fromEntries(NN_SIMS.map(x => [x.id, x]));
 const NN_LINK = { p250: 'backdoor', sleeper: 'backdoor', webscale: 'backdoor', subliminal: 'backdoor', poisonrag: 'backdoor', manyshot: 'refusal', bon: 'refusal', crescendo: 'refusal', guard: 'refusal', classifiers: 'refusal', namespace: 'rome', pickle: 'rome', signing: 'rome' };
 function nnCaseLinks(ids) { return ids.map(id => h('a', { href: '#adv-' + id }, ADV[id].title)); }
