@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -205,6 +205,26 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   go('labs'); if (!doc.querySelector('#app .advhero')) fail('workbench home lacks the Advanced path card');
   go(''); if (!doc.querySelector('#app .seasonnav a[href="#adv"]')) fail('story home lacks the Advanced path link');
   console.log('advanced path: ' + ADV_CASES.length + ' cases in ' + ADV_TRACKS.length + ' tracks, each walked and answered for full marks');
+}
+// Every case has its own signature interaction and a Monday-morning card; each can be played to the end
+{
+  const { ADV_CASES, SIGS, TAKE, NN } = window.__T; NN.sync = true; const stuck = [];
+  for (const c of ADV_CASES) {
+    if (!SIGS[c.id]) { fail('case ' + c.id + ' has no signature interaction'); continue; }
+    const tk = TAKE[c.id]; if (!tk || tk.length !== 4 || tk.some(x => !x || x.length < 20)) fail('case ' + c.id + ' takeaway incomplete');
+    go('adv-' + c.id);
+    if (!doc.querySelector('#app .sig') || !doc.querySelector('#app .take code')) { fail('case ' + c.id + ' page lacks the signature or the takeaway'); continue; }
+    for (let round = 0; round < 40 && !(S.adv.sig || {})[c.id]; round++) {
+      const els = [...doc.querySelectorAll(round < 20 ? '#app .sig .sigbtn:not([disabled]), #app .sig .sigcell, #app .sig .sigpage, #app .sig .sigdl, #app .sig .sigitem:not([disabled]), #app .sig a.siglink' : '#app .sig button:not([disabled]), #app .sig a.siglink')];
+      els.forEach(b => { if (!/Reset/.test(b.textContent) && (S.adv.sig || {})[c.id] !== true) b.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+      doc.querySelectorAll('#app .sig input[type=range]').forEach(r => { r.value = round % 2 ? r.max : r.min; r.dispatchEvent(new window.Event('input', { bubbles: true })); });
+    }
+    if (!(S.adv.sig || {})[c.id]) stuck.push(c.id);
+  }
+  if (stuck.length) fail('signatures that never reach their payoff: ' + stuck.join(', '));
+  go('adv'); if (doc.querySelectorAll('#app .card .meta').length < ADV_CASES.length) fail('index cards lack the hands-on marker');
+  NN.sync = false;
+  console.log('signatures: ' + ADV_CASES.length + ' unique interactions, each played to its payoff; ' + Object.keys(TAKE).length + ' Monday-morning cards');
 }
 // Inside the model: the math does what the instruments claim, and each instrument plays through
 {

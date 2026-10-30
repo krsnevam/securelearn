@@ -51,19 +51,32 @@ function advCase(c) {
       h('span', { class: 'eyebrow' }, tr.name + ' · ' + c.date),
       h('h1', null, c.title), h('p', { class: 'leadq big' }, c.hook)),
     NN_LINK[c.id] ? h('a', { class: 'raglink nnhero', href: '#adv-nn-' + NN_LINK[c.id] }, h('b', null, 'See it inside the model: ' + NN_BY[NN_LINK[c.id]].title), h('span', null, NN_BY[NN_LINK[c.id]].blurb + ' →')) : null,
-    h('div', { class: 'pane' }, box('advstage', label((def ? '1 · How it works' : '1 · The attack chain') + ' · stage ' + (at + 1) + ' of ' + c.steps.length), advChain(c, at),
+    h('div', { class: 'pane' }, SIGS[c.id] ? sigMount(c) : null, advTake(c),
+    box('advstage', label((def ? 'How it works' : 'How it unfolded') + ' · stage ' + (at + 1) + ' of ' + c.steps.length), advChain(c, at),
       h('div', { class: 'advstep ' + who }, h('span', { class: 'pill ' + (who === 'atk' ? 'bad' : who === 'def' ? 'good' : '') }, ADV_WHO[who]), h('h3', null, short), h('p', null, text)),
       h('div', { class: 'btnrow' },
         at > 0 ? h('button', { type: 'button', class: 'btn', onclick: () => advGo(c, at - 1) }, '← Previous stage') : null,
         at < c.steps.length - 1 ? h('button', { type: 'button', class: 'btn primary', onclick: () => advGo(c, at + 1) }, 'Next stage →') : null)),
     walked ? h('div', { class: 'advpair' },
-      box('advgap', label(def ? '2 · What still beats it' : '2 · Why the usual controls lost'), h('p', null, c.gap)),
-      box('advsig', label(def ? '3 · How to prove it works' : '3 · What detection would have seen'), h('p', null, c.signal)))
+      box('advgap', label(def ? 'What still beats it' : 'Why the usual controls lost'), h('p', null, c.gap)),
+      box('advsig', label(def ? 'How to prove it works' : 'What detection would have seen'), h('p', null, c.signal)))
       : box('advlock', h('p', { class: 'sub' }, 'Walk the chain to the last stage to see why the controls lost and what detection would have seen.')),
-    box('advcalls', label('4 · Your calls · ' + advScore(c) + ' of ' + c.qs.length * 10), c.qs.map((q, i) => advCall(c, q, i))),
+    box('advcalls', label('Your calls · ' + advScore(c) + ' of ' + c.qs.length * 10), c.qs.map((q, i) => advCall(c, q, i))),
     h('p', { class: 'small advsrc' }, h('b', null, 'Source: '), c.source)),
     h('nav', { class: 'pager' }, prev ? h('a', { href: '#adv-' + prev.id }, '← ' + prev.title) : h('span'), next ? h('a', { href: '#adv-' + next.id }, next.title + ' →') : h('span'))
   ];
+}
+
+// What a security team does with this on Monday: deploy, detect, test, ask.
+function advTake(c) {
+  const tk = TAKE[c.id]; if (!tk) return null;
+  const [dep, det, test, ask] = tk;
+  return h('section', { class: 'take' }, h('div', { class: 'takehead' }, h('span', null, 'For your security team'), h('b', null, 'What changes on Monday')),
+    h('div', { class: 'takegrid' },
+      h('div', { class: 'takeitem' }, h('i', null, 'Deploy'), h('p', null, dep)),
+      h('div', { class: 'takeitem det' }, h('i', null, 'Detect'), h('code', null, det), copyButton(() => det, 'Copy rule')),
+      h('div', { class: 'takeitem' }, h('i', null, 'Test'), h('p', null, test)),
+      h('div', { class: 'takeitem' }, h('i', null, 'Ask'), h('p', null, ask))));
 }
 
 function advIndex() {
@@ -85,7 +98,7 @@ function advIndex() {
       h('div', { class: 'grid' }, ADV_CASES.filter(c => c.track === t.id).map(c => { const d = advDone(c), started = advSeen(c.id) > 0 || Object.keys(((advState().pk || {})[c.id]) || {}).length;
         return h('a', { class: 'card', href: '#adv-' + c.id },
           h('div', { class: 'row' }, h('span', { class: 'meta' }, c.date), h('span', { class: 'status ' + (d ? 'done' : started ? 'started' : '') }, d ? advScore(c) + ' / 20' : started ? 'In progress' : 'Not started')),
-          h('h3', null, c.title), h('p', { class: 'leadq' }, c.hook)); }))]),
+          h('h3', null, c.title), h('p', { class: 'leadq' }, c.hook), h('span', { class: 'meta' }, sigPlayed(c.id) ? '▶ played' : '▶ hands-on')); }))]),
     h('div', { class: 'btnrow end' }, confirmTwice('adv-clear', 'Clear Advanced path answers', () => { delete S.adv; }, 'warn'))
   ];
 }
